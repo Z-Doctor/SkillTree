@@ -1,0 +1,11 @@
+{
+  "homepage": "<homepage/download page for your mod>",
+  "<1.12.2>": {
+    "<1.0.0.0>": "<Created Mod>", 
+  },
+  ...
+  "promos": {
+    "<1.12.2>-latest": "<1.0.0.0>",
+    "<1.12.2>-recommended": "<1.0.0.0>"
+  }
+}
