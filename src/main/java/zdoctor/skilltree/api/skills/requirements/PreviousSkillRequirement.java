@@ -1,6 +1,6 @@
 package zdoctor.skilltree.api.skills.requirements;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.EntityLivingBase;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
 import zdoctor.skilltree.api.skills.ISkillRequirment;
@@ -15,12 +15,12 @@ public class PreviousSkillRequirement implements ISkillRequirment {
 	}
 
 	@Override
-	public boolean test(EntityPlayer player) {
+	public boolean test(EntityLivingBase player) {
 		return SkillTreeApi.hasSkill(player, skill);
 	}
 
 	@Override
-	public void onFufillment(EntityPlayer player) {
+	public void onFufillment(EntityLivingBase player) {
 	}
 
 	@Override

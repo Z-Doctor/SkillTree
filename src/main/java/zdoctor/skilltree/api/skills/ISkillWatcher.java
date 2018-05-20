@@ -1,6 +1,6 @@
 package zdoctor.skilltree.api.skills;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.EntityLivingBase;
 import zdoctor.skilltree.skills.SkillBase;
 import zdoctor.skilltree.skills.SkillSlot;
 
@@ -9,5 +9,5 @@ import zdoctor.skilltree.skills.SkillSlot;
  *
  */
 public interface ISkillWatcher {
-	public void onActiveTick(EntityPlayer player, SkillBase skill, SkillSlot skillSlot);
+	public void onActiveTick(EntityLivingBase entity, SkillBase skill, SkillSlot skillSlot);
 }

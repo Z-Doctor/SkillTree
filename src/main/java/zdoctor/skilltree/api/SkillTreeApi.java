@@ -2,6 +2,7 @@ package zdoctor.skilltree.api;
 
 import java.util.List;
 
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.WorldServer;
@@ -24,32 +25,32 @@ public class SkillTreeApi {
 	@CapabilityInject(ISkillHandler.class)
 	public static Capability<ISkillHandler> SKILL_CAPABILITY = null;
 
-	public static ISkillHandler getSkillHandler(EntityPlayer player) {
+	public static ISkillHandler getSkillHandler(EntityLivingBase player) {
 		ISkillHandler handler = player.getCapability(SKILL_CAPABILITY, null);
-		handler.setPlayer(player);
+		handler.setOwner(player);
 		return handler;
 	}
 
-	public static boolean hasSkill(EntityPlayer player, SkillBase skill) {
+	public static boolean hasSkill(EntityLivingBase player, SkillBase skill) {
 		ISkillHandler skillHandler = getSkillHandler(player);
 		return skillHandler.hasSkill(skill);
 	}
 
-	public static boolean hasSkillRequirements(EntityPlayer player, SkillBase skill) {
+	public static boolean hasSkillRequirements(EntityLivingBase player, SkillBase skill) {
 		return getSkillSlot(player, skill).getSkill().hasRequirments(player);
 	}
 
-	public static boolean isSkillActive(EntityPlayer player, SkillBase skill) {
+	public static boolean isSkillActive(EntityLivingBase player, SkillBase skill) {
 		ISkillHandler skillHandler = getSkillHandler(player);
 		return skillHandler.isSkillActive(skill);
 	}
 
-	public static boolean canBuySkill(EntityPlayer player, SkillBase skill) {
+	public static boolean canBuySkill(EntityLivingBase player, SkillBase skill) {
 		ISkillHandler skillHandler = getSkillHandler(player);
 		return skillHandler.canBuySkill(skill);
 	}
 
-	public static void buySkill(EntityPlayer player, SkillBase skill) {
+	public static void buySkill(EntityLivingBase player, SkillBase skill) {
 		ISkillHandler skillHandler = getSkillHandler(player);
 		skillHandler.buySkill(skill);
 	}
@@ -61,7 +62,7 @@ public class SkillTreeApi {
 	 * @param skill
 	 * @return
 	 */
-	public static SkillSlot getSkillSlot(EntityPlayer player, SkillBase skill) {
+	public static SkillSlot getSkillSlot(EntityLivingBase player, SkillBase skill) {
 		return new SkillSlot(skill, hasSkill(player, skill), isSkillActive(player, skill));
 	}
 
@@ -75,18 +76,20 @@ public class SkillTreeApi {
 	}
 
 	/**
-	 * Sends update to all receivers to sync data
+	 * Sends update to all receivers to sync data, should be called on server
 	 */
-	@SideOnly(Side.SERVER)
 	public static void syncServerSkills(EntityPlayer player, List<EntityPlayer> receivers) {
+		if (!(player instanceof EntityPlayerMP))
+			return;
 		CPacketSyncSkills pkt = new CPacketSyncSkills(player);
 		for (EntityPlayer receiver : receivers) {
 			SkillTreePacketHandler.INSTANCE.sendTo(pkt, (EntityPlayerMP) receiver);
 		}
 	}
 
-	@SideOnly(Side.SERVER)
 	public static void syncServerSkillsAll(EntityPlayer player) {
+		if (!(player instanceof EntityPlayerMP) || !(ModMain.proxy.getWorld() instanceof WorldServer))
+			return;
 		CPacketSyncSkills pkt = new CPacketSyncSkills(player);
 		for (EntityPlayer receiver : ((WorldServer) ModMain.proxy.getWorld()).playerEntities) {
 			SkillTreePacketHandler.INSTANCE.sendTo(pkt, (EntityPlayerMP) receiver);
@@ -113,7 +116,7 @@ public class SkillTreeApi {
 
 	public static void resetSkillHandler(EntityPlayer entityplayer) {
 		SkillHandler skillhandler = new SkillHandler();
-		skillhandler.setPlayer(entityplayer);
+		skillhandler.setOwner(entityplayer);
 		SkillTreeApi.getSkillHandler(entityplayer).deserializeNBT(skillhandler.serializeNBT());
 		SkillTreeApi.syncServerSkillsAll(entityplayer);
 	}

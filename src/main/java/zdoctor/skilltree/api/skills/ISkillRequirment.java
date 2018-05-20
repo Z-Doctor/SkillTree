@@ -3,14 +3,15 @@ package zdoctor.skilltree.api.skills;
 import java.util.function.Predicate;
 
 import net.minecraft.client.resources.I18n;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 
-public interface ISkillRequirment extends Predicate<EntityPlayer> {
+public interface ISkillRequirment extends Predicate<EntityLivingBase> {
 	/**
 	 * What happens when the player pays the requirements
 	 * 
 	 */
-	public void onFufillment(EntityPlayer player);
+	public void onFufillment(EntityLivingBase entity);
 
 	/**
 	 * What shows up in the tooltip, will be formatted
@@ -31,8 +32,8 @@ public interface ISkillRequirment extends Predicate<EntityPlayer> {
 	/**
 	 * Gets the text color based on if the player has the skill or not.
 	 */
-	public default int getTextColor(EntityPlayer player) {
-		return !test(player) ? 0xFF0000 : 0x00FF00;
+	public default int getTextColor(EntityLivingBase entity) {
+		return !test(entity) ? 0xFF0000 : 0x00FF00;
 	}
 
 }

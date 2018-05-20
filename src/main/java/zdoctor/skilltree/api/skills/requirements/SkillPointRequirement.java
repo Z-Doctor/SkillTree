@@ -1,6 +1,6 @@
 package zdoctor.skilltree.api.skills.requirements;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.EntityLivingBase;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
 import zdoctor.skilltree.api.skills.ISkillHandler;
@@ -15,13 +15,13 @@ public class SkillPointRequirement implements ISkillRequirment {
 	}
 
 	@Override
-	public boolean test(EntityPlayer player) {
+	public boolean test(EntityLivingBase player) {
 		ISkillHandler skillHandler = SkillTreeApi.getSkillHandler(player);
 		return skillHandler.getSkillPoints() >= requiredPoints;
 	}
 
 	@Override
-	public void onFufillment(EntityPlayer player) {
+	public void onFufillment(EntityLivingBase player) {
 		ISkillHandler skillHandler = SkillTreeApi.getSkillHandler(player);
 		skillHandler.addPoints(-requiredPoints);
 

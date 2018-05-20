@@ -1,5 +1,6 @@
 package zdoctor.skilltree.api.skills.requirements;
 
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import zdoctor.skilltree.api.SkillTreeApi;
 import zdoctor.skilltree.api.skills.ISkillRequirment;
@@ -34,12 +35,12 @@ public class NameRequirment implements ISkillRequirment {
 	}
 
 	@Override
-	public boolean test(EntityPlayer t) {
+	public boolean test(EntityLivingBase t) {
 		return true;
 	}
 
 	@Override
-	public void onFufillment(EntityPlayer player) {
+	public void onFufillment(EntityLivingBase player) {
 
 	}
 
@@ -49,7 +50,7 @@ public class NameRequirment implements ISkillRequirment {
 	}
 
 	@Override
-	public int getTextColor(EntityPlayer player) {
+	public int getTextColor(EntityLivingBase player) {
 		return SkillTreeApi.hasSkill(player, skill) ? colorObtained : colorNotObtained;
 	}
 

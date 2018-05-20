@@ -1,7 +1,7 @@
 package zdoctor.skilltree.client;
 
 import net.minecraft.client.resources.I18n;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.EntityLivingBase;
 import zdoctor.skilltree.api.skills.ISkillRequirment;
 
 public class SkillToolTip {
@@ -10,8 +10,8 @@ public class SkillToolTip {
 	private int color;
 	private Object[] parameters;
 
-	public SkillToolTip(EntityPlayer player, ISkillRequirment requirement) {
-		this(requirement.getDescription(), requirement.getTextColor(player), requirement.getDescriptionValues());
+	public SkillToolTip(EntityLivingBase entity, ISkillRequirment requirement) {
+		this(requirement.getDescription(), requirement.getTextColor(entity), requirement.getDescriptionValues());
 	}
 
 	public SkillToolTip(String tranlateKey, int textColor, Object... descriptionValues) {

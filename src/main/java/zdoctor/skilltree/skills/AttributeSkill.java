@@ -1,8 +1,8 @@
 package zdoctor.skilltree.skills;
 
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttribute;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
@@ -28,14 +28,14 @@ public class AttributeSkill extends Skill {
 		modifierIn.setSaved(false);
 	}
 
-	public void modifyPlayer(EntityPlayer player) {
+	public void modifyEntity(EntityLivingBase player) {
 		if (!player.getEntityAttribute(getAttribute()).hasModifier(getModifier())) {
 			player.getEntityAttribute(getAttribute()).applyModifier(getModifier());
 			// System.out.println("Added Modifier: " + getModifier());
 		}
 	}
 
-	public void removePlayerModify(EntityPlayer player) {
+	public void removeEntityModifier(EntityLivingBase player) {
 		// System.out.println("Modifiyer: " + getModifier());
 		if (player.getEntityAttribute(getAttribute()).hasModifier(getModifier())) {
 			player.getEntityAttribute(getAttribute()).removeModifier(getModifier());
@@ -52,12 +52,12 @@ public class AttributeSkill extends Skill {
 	}
 
 	@Override
-	public void onSkillActivated(EntityPlayer player) {
-		modifyPlayer(player);
+	public void onSkillActivated(EntityLivingBase player) {
+		modifyEntity(player);
 	}
 
 	@Override
-	public void onSkillDeactivated(EntityPlayer player) {
-		removePlayerModify(player);
+	public void onSkillDeactivated(EntityLivingBase player) {
+		removeEntityModifier(player);
 	}
 }

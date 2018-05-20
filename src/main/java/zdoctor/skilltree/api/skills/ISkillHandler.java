@@ -2,6 +2,7 @@ package zdoctor.skilltree.api.skills;
 
 import java.util.ArrayList;
 
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -33,11 +34,10 @@ public interface ISkillHandler extends INBTSerializable<NBTTagCompound> {
 	public ArrayList<SkillSlot> getSkillSlots();
 
 	/**
-	 * Sets the player of the skill handler.
+	 * Sets the owner of the skill handler.
 	 * 
-	 * @param player
 	 */
-	public void setPlayer(EntityPlayer player);
+	public void setOwner(EntityLivingBase entity);
 
 	/**
 	 * Returns the {@link SkillSlot} associated with the {@link SkillBase} in the
@@ -79,8 +79,8 @@ public interface ISkillHandler extends INBTSerializable<NBTTagCompound> {
 
 	public void reloadHandler();
 
-	public EntityPlayer getPlayer();
-
+	public EntityLivingBase getOwner();
+	
 	public void tickEvent();
 
 }

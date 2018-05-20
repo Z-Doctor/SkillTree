@@ -3,6 +3,7 @@ package zdoctor.skilltree.skills;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -25,7 +26,7 @@ public class Skill extends SkillBase {
 	}
 
 	@Override
-	public List<SkillToolTip> getToolTip(EntityPlayer player) {
+	public List<SkillToolTip> getToolTip(EntityLivingBase player) {
 		List<SkillToolTip> toolTip = new ArrayList<>();
 		toolTip.add(new SkillToolTip(player, getNameRequirement()));
 		getRequirments(SkillTreeApi.hasSkill(player, this))
@@ -35,17 +36,17 @@ public class Skill extends SkillBase {
 	}
 
 	@Override
-	public void onSkillActivated(EntityPlayer player) {
+	public void onSkillActivated(EntityLivingBase player) {
 
 	}
 
 	@Override
-	public void onSkillDeactivated(EntityPlayer player) {
+	public void onSkillDeactivated(EntityLivingBase player) {
 
 	}
 
 	@Override
-	public boolean hasRequirments(EntityPlayer player) {
+	public boolean hasRequirments(EntityLivingBase player) {
 		if (hasParent() && !SkillTreeApi.hasSkill(player, getParent()))
 			return false;
 

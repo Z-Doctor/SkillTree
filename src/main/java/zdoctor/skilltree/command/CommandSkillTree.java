@@ -143,9 +143,9 @@ public class CommandSkillTree extends CommandBase {
 				SkillTreeApi.syncServerSkillsAll(entityplayer);
 				for (int i = neededSkills.size() - 1; i >= 0; i--) {
 					if (SkillTreeApi.hasSkill(entityplayer, neededSkills.get(i).getSkill()))
-						notifyCommandListener(sender, this, "commands.skilltree.success.give", entityplayer.getName(),
+						notifyCommandListener(sender, this, "commands.skilltree.success.give",
 								I18n.translateToLocal(neededSkills.get(i).getSkill().getUnlocaizedName()),
-								entityplayer.getName());
+								entityplayer.getName(), entityplayer.getName());
 					else
 						notifyCommandListener(sender, this, "commands.skilltree.failure.give", entityplayer.getName(),
 								I18n.translateToLocal(neededSkills.get(i).getSkill().getUnlocaizedName()),
@@ -170,10 +170,11 @@ public class CommandSkillTree extends CommandBase {
 							entityplayer.getName(), skillName1);
 				SkillTreeApi.getSkillHandler(entityplayer).setSkillObtained(skill1, false);
 				if (!SkillTreeApi.hasSkill(entityplayer, skill1))
-					notifyCommandListener(sender, this, "commands.skilltree.success.remove", entityplayer.getName(),
-							skillName1);
+					notifyCommandListener(sender, this, "commands.skilltree.success.remove",
+							I18n.translateToLocal(skillName1), entityplayer.getName());
 				else
-					throw new CommandException("commands.skilltree.failure.remove", entityplayer.getName(), skillName1);
+					throw new CommandException("commands.skilltree.failure.remove", I18n.translateToLocal(skillName1),
+							entityplayer.getName());
 				break;
 			default:
 				throw new CommandException("commands.skilltree.failure.action", action);

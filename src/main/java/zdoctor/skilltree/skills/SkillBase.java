@@ -8,6 +8,7 @@ import java.util.List;
 import com.ibm.icu.impl.IllegalIcuArgumentException;
 
 import net.minecraft.client.resources.I18n;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -173,13 +174,13 @@ public abstract class SkillBase {
 		return id;
 	}
 
-	public abstract List<SkillToolTip> getToolTip(EntityPlayer player);
+	public abstract List<SkillToolTip> getToolTip(EntityLivingBase entity);
 
-	public abstract void onSkillActivated(EntityPlayer player);
+	public abstract void onSkillActivated(EntityLivingBase entity);
 
-	public abstract void onSkillDeactivated(EntityPlayer player);
+	public abstract void onSkillDeactivated(EntityLivingBase entity);
 
-	public abstract boolean hasRequirments(EntityPlayer player);
+	public abstract boolean hasRequirments(EntityLivingBase entity);
 
 	public static SkillBase getSkillByKey(ResourceLocation key) {
 		return Skill_Registry.get(key);

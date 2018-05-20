@@ -3,6 +3,7 @@ package zdoctor.skilltree.skills;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -21,7 +22,7 @@ public class SkillHandler implements ISkillHandler {
 	protected HashMap<ISkillWatcher, SkillSlot> trackerCodex = new HashMap();
 
 	protected HashMap<SkillBase, SkillSlot> skillsCodex = new HashMap();
-	private EntityPlayer player;
+	private EntityLivingBase owner;
 	private int skillPoints;
 
 	public SkillHandler() {
@@ -69,7 +70,7 @@ public class SkillHandler implements ISkillHandler {
 			this.skillsCodex.put(skillSlot.getSkill(), skillSlot);
 		}
 		skillPoints = nbt.getInteger("SkillPoints");
-		if (getPlayer() != null)
+		if (getOwner() != null)
 			reloadHandler();
 	}
 
@@ -105,18 +106,18 @@ public class SkillHandler implements ISkillHandler {
 		});
 
 		if (skillSlot.isActive())
-			skillSlot.getSkill().onSkillActivated(getPlayer());
+			skillSlot.getSkill().onSkillActivated(getOwner());
 		else
-			skillSlot.getSkill().onSkillDeactivated(getPlayer());
+			skillSlot.getSkill().onSkillDeactivated(getOwner());
 	}
 
 	@Override
 	public void reloadHandler() {
 		skillsCodex.values().forEach(skillSlot -> {
 			if (skillSlot.isActive())
-				skillSlot.getSkill().onSkillActivated(getPlayer());
+				skillSlot.getSkill().onSkillActivated(getOwner());
 			else
-				skillSlot.getSkill().onSkillDeactivated(getPlayer());
+				skillSlot.getSkill().onSkillDeactivated(getOwner());
 		});
 	}
 
@@ -132,7 +133,7 @@ public class SkillHandler implements ISkillHandler {
 
 	@Override
 	public boolean hasRequirements(SkillBase skill) {
-		return skill.hasRequirments(getPlayer());
+		return skill.hasRequirments(getOwner());
 	}
 
 	@Override
@@ -141,19 +142,19 @@ public class SkillHandler implements ISkillHandler {
 	}
 
 	@Override
-	public void setPlayer(EntityPlayer player) {
-		this.player = player;
+	public void setOwner(EntityLivingBase player) {
+		this.owner = player;
 		reloadHandler();
 	}
 
 	@Override
-	public EntityPlayer getPlayer() {
-		return player;
+	public EntityLivingBase getOwner() {
+		return owner;
 	}
 
 	@Override
 	public boolean canBuySkill(SkillBase skill) {
-		return skill.hasParent() ? hasSkill(skill.getParent()) : true && skill.hasRequirments(getPlayer());
+		return skill.hasParent() ? hasSkill(skill.getParent()) : true && skill.hasRequirments(getOwner());
 	}
 
 	@Override
@@ -161,7 +162,7 @@ public class SkillHandler implements ISkillHandler {
 		if (canBuySkill(skill)) {
 			setSkillObtained(skill, true);
 			setSkillActive(skill, true);
-			skill.getRequirments(false).forEach(requirement -> requirement.onFufillment(getPlayer()));
+			skill.getRequirments(false).forEach(requirement -> requirement.onFufillment(getOwner()));
 		}
 	}
 
@@ -185,7 +186,7 @@ public class SkillHandler implements ISkillHandler {
 	public void tickEvent() {
 		trackerCodex.forEach((watcher, slot) -> {
 			if (slot.isActive())
-				watcher.onActiveTick(player, slot.getSkill(), slot);
+				watcher.onActiveTick(owner, slot.getSkill(), slot);
 		});
 	}
 

@@ -1,5 +1,6 @@
 package zdoctor.skilltree.api.skills.requirements;
 
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.skills.ISkillRequirment;
@@ -17,13 +18,16 @@ public class LevelRequirement implements ISkillRequirment {
 	}
 
 	@Override
-	public boolean test(EntityPlayer t) {
-		return t.experienceLevel >= levelRequirment;
+	public boolean test(EntityLivingBase t) {
+		if (t instanceof EntityPlayer)
+			return ((EntityPlayer) t).experienceLevel >= levelRequirment;
+		return false;
 	}
 
 	@Override
-	public void onFufillment(EntityPlayer player) {
-		player.addExperienceLevel(-levelRequirment);
+	public void onFufillment(EntityLivingBase player) {
+		if (player instanceof EntityPlayer)
+			((EntityPlayer) player).addExperienceLevel(-levelRequirment);
 	}
 
 	@Override
