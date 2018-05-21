@@ -7,6 +7,7 @@ import net.minecraft.util.ResourceLocation;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
 import zdoctor.skilltree.api.enums.EnumSkillInteractType;
+import zdoctor.skilltree.api.enums.SkillFrameType;
 import zdoctor.skilltree.api.skills.ISkillToggle;
 import zdoctor.skilltree.network.SkillTreePacketHandler;
 import zdoctor.skilltree.network.play.server.SPacketSkillSlotInteract;
@@ -71,10 +72,15 @@ public class GuiSkillButton extends GuiButton {
 	}
 
 	protected void drawSkillBackground(Minecraft mc, int posX, int posY) {
+		if (skill.getFrameType() == SkillFrameType.NONE)
+			return;
+
 		GlStateManager.color(1, 1, 1, 1);
 		mc.getTextureManager().bindTexture(GuiReference.SKILL_TREE_BACKGROUND);
 		boolean isActive = SkillTreeApi.isSkillActive(mc.player, skill);
-		drawScaledCustomSizeModalRect(posX, posY, textureX, textureY + (isActive ? 0 : 26), 26, 26, 16, 16, 256, 256);
+		int xOffset = textureX + (skill.getFrameType().ordinal() % 4) * 26;
+		int yOffset = textureY + (skill.getFrameType().ordinal() / 4) * 26;
+		drawScaledCustomSizeModalRect(posX, posY, xOffset, yOffset + (isActive ? 0 : 26), 26, 26, 16, 16, 256, 256);
 	}
 
 	protected void drawSkillIcon(Minecraft mc, int posX, int posY) {

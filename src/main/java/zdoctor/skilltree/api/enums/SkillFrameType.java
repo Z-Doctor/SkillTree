@@ -4,5 +4,5 @@ public enum SkillFrameType {
 	NORMAL,
 	SPECIAL,
 	ROUNDED,
-	CUSTOM
+	NONE
 }
