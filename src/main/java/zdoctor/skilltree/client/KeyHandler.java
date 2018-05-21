@@ -30,7 +30,6 @@ public class KeyHandler {
 
 		if (e.phase == Phase.START) {
 			if (FMLClientHandler.instance().getClient().inGameHasFocus && OPEN_SKILL_TREE.isPressed()) {
-				SkillTreeApi.SyncClientSkills(Minecraft.getMinecraft().player);
 				FMLClientHandler.instance().showGuiScreen(new GuiSkillTree());
 			}
 		}

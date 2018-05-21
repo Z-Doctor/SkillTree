@@ -16,7 +16,12 @@ public class GuiSkillButton extends GuiButton {
 	public static final ResourceLocation SKILL_TREE_BACKGROUND = new ResourceLocation(
 			ModMain.MODID + ":textures/gui/skilltree/skill_tree.png");
 
-	private SkillBase skill;
+	public int textureX = 72;
+	public int textureY = 140;
+
+	public SkillBase skill;
+	public boolean hasRequirements;
+	public boolean hasSkill;
 
 	public GuiSkillButton(SkillBase skill, int startX, int startY) {
 		this(0, skill, startX + 13 + 19 * skill.getColumn(), startY + 21 + 18 * skill.getRow(), 16, 16, "");
@@ -33,22 +38,51 @@ public class GuiSkillButton extends GuiButton {
 		if (this.visible) {
 			this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width
 					&& mouseY < this.y + this.height;
-			if (!SkillTreeApi.hasSkill(mc.player, skill)) {
-				boolean hasRequirements = SkillTreeApi.hasSkillRequirements(mc.player, skill);
-				if (hasRequirements && hovered) {
+			hasRequirements = SkillTreeApi.hasSkillRequirements(mc.player, skill);
+			hasSkill = SkillTreeApi.hasSkill(mc.player, skill);
 
-				} else {
-					GlStateManager.pushMatrix();
-					drawRect(this.x, this.y, this.x + width, this.y + height, 0xCC505050);
-					mc.getTextureManager().bindTexture(SKILL_TREE_BACKGROUND);
-					GlStateManager.enableAlpha();
-					GlStateManager.color(1, 1, 1, 1);
-					int lockType = hasRequirements ? 18 : 0;
-					drawScaledCustomSizeModalRect(this.x, this.y, lockType, 176, 18, 18, 16, 16, 256, 256);
-					GlStateManager.popMatrix();
-				}
-			}
+			GlStateManager.pushMatrix();
+			drawSkillBackground(mc, this.x, this.y);
+			GlStateManager.popMatrix();
+
+			GlStateManager.pushMatrix();
+			drawSkillIcon(mc, this.x, this.y);
+			GlStateManager.popMatrix();
+
+			GlStateManager.pushMatrix();
+			renderSkillOverlay(mc, this.x, this.y);
+			GlStateManager.popMatrix();
+
 		}
+
+	}
+
+	private void renderSkillOverlay(Minecraft mc, int posX, int posY) {
+		GlStateManager.disableDepth();
+		GlStateManager.enableAlpha();
+
+		if (!hasSkill && !(hasRequirements && hovered)) {
+			drawRect(this.x, this.y, this.x + width, this.y + height, 0xCC505050);
+			mc.getTextureManager().bindTexture(SKILL_TREE_BACKGROUND);
+			int lockType = hasRequirements ? 18 : 0;
+			GlStateManager.color(1, 1, 1, 1);
+			drawScaledCustomSizeModalRect(posX, posY, lockType, 176, 18, 18, 16, 16, 256, 256);
+		}
+	}
+
+	protected void drawSkillBackground(Minecraft mc, int posX, int posY) {
+		GlStateManager.color(1, 1, 1, 1);
+		mc.getTextureManager().bindTexture(GuiReference.SKILL_TREE_BACKGROUND);
+		boolean isActive = SkillTreeApi.isSkillActive(mc.player, skill);
+		drawScaledCustomSizeModalRect(posX, posY, textureX, textureY + (isActive ? 0 : 26), 26, 26, 16, 16, 256, 256);
+	}
+
+	protected void drawSkillIcon(Minecraft mc, int posX, int posY) {
+		GlStateManager.translate(posX, posY, 0);
+		GlStateManager.scale(0.5, 0.5, 1);
+		GlStateManager.enableDepth();
+		mc.getRenderItem().renderItemAndEffectIntoGUI(skill.getIcon(), 8, 8);
+		GlStateManager.disableDepth();
 	}
 
 	public SkillBase getSkill() {

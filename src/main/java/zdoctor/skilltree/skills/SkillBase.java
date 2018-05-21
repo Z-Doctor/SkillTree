@@ -14,6 +14,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import zdoctor.skilltree.api.enums.SkillFrameType;
 import zdoctor.skilltree.api.skills.ISkillRequirment;
 import zdoctor.skilltree.api.skills.ISkillTickable;
 import zdoctor.skilltree.api.skills.requirements.DescriptionRequirment;
@@ -35,8 +36,10 @@ public abstract class SkillBase {
 	private String skillName;
 	private ResourceLocation registryName;
 
-	public int column;
-	public int row;
+	public final int column;
+	public final int row;
+
+	private SkillFrameType frameType;
 
 	private ArrayList<SkillBase> children = new ArrayList<>();
 	private ArrayList<ISkillRequirment> requirements = new ArrayList<>();
@@ -51,10 +54,16 @@ public abstract class SkillBase {
 	private NameRequirment nameReq;
 
 	public SkillBase(String name, int column, int row, ItemStack iconIn, ISkillRequirment... requirements) {
+		this(name, column, row, SkillFrameType.NORMAL, iconIn, requirements);
+	}
+
+	public SkillBase(String name, int column, int row, SkillFrameType type, ItemStack iconIn,
+			ISkillRequirment... requirements) {
 		this.skillName = name;
 		this.registryName = new ResourceLocation(Loader.instance().activeModContainer().getModId() + ":" + skillName);
 		this.column = Math.min(Math.max(0, column), 12);
 		this.row = Math.min(Math.max(0, row), 5);
+		this.frameType = type;
 		this.icon = iconIn;
 		nameReq = new NameRequirment(this);
 		Collections.addAll(this.requirements, requirements);
@@ -87,6 +96,15 @@ public abstract class SkillBase {
 
 	public DescriptionRequirment getDescriptionRequirement() {
 		return descReq;
+	}
+
+	public SkillFrameType getFrameType() {
+		return frameType;
+	}
+
+	public SkillBase setFrameType(SkillFrameType frameType) {
+		this.frameType = frameType;
+		return this;
 	}
 
 	protected SkillBase addChildren(SkillBase childIn) {

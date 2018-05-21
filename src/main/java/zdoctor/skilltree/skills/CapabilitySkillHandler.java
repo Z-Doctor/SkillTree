@@ -2,7 +2,6 @@ package zdoctor.skilltree.skills;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -13,7 +12,6 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -51,9 +49,16 @@ public class CapabilitySkillHandler {
 	}
 
 	@SubscribeEvent
-	public void entityTracking(EntityJoinWorldEvent e) {
+	public void entityJoinedWorld(EntityJoinWorldEvent e) {
 		if (e.getEntity() instanceof EntityLivingBase) {
 			SkillTreeApi.getSkillHandler((EntityLivingBase) e.getEntity()).setOwner((EntityLivingBase) e.getEntity());
+			SkillTreeApi.syncSkills((EntityLivingBase) e.getEntity());
+			// if(e.getEntity() instanceof EntityPlayer) {
+			// SkillTreeApi.syncServerSkillsAll((EntityPlayer) e.getEntity());
+			// }
+
+			// SkillTreeApi.syncServerSkillsAll(player);
+			// SkillTreeApi.SyncClientSkills(Minecraft.getMinecraft().player);
 		}
 	}
 
@@ -75,7 +80,7 @@ public class CapabilitySkillHandler {
 	public void playerTracking(PlayerEvent.StartTracking e) {
 		Entity target = e.getTarget();
 		if (target instanceof EntityPlayerMP)
-			SkillTreeApi.syncServerSkillsAll(e.getEntityPlayer());
+			SkillTreeApi.syncSkills(e.getEntityPlayer());
 	}
 
 	@SubscribeEvent

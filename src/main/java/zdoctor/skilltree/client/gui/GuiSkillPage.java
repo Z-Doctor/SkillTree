@@ -78,32 +78,32 @@ public class GuiSkillPage extends GuiSkillScreen {
 			renderCustomBackround(partialTicks, mouseX, mouseY);
 		}
 
-		int startX = 13 + guiLeft;
-		int startY = 21 + guiTop;
-		int textureX = 72;
-		int textureY = 140;
+//		int startX = 13 + guiLeft;
+//		int startY = 21 + guiTop;
+//		int textureX = 72;
+//		int textureY = 140;
 
 		for (SkillBase skill : page.getSkillList()) {
 			drawConnectivity(skill, guiLeft, guiTop, true);
 			drawConnectivity(skill, guiLeft, guiTop, false);
 		}
-		for (SkillBase skill : page.getSkillList()) {
-			GlStateManager.enableAlpha();
-			GlStateManager.color(1, 1, 1, 1);
-			this.mc.getTextureManager().bindTexture(GuiReference.SKILL_TREE_BACKGROUND);
-			int posX = startX + 19 * skill.getColumn();
-			int posY = startY + 18 * skill.getRow();
-			boolean isActive = SkillTreeApi.isSkillActive(mc.player, skill);
-			drawScaledCustomSizeModalRect(posX, posY, textureX, textureY + (isActive ? 0 : 26), 26, 26, 16, 16, 256,
-					256);
-			GlStateManager.pushMatrix();
-			GlStateManager.translate(posX, posY, 0);
-			GlStateManager.scale(0.5, 0.5, 1);
-			GlStateManager.enableDepth();
-			itemRender.renderItemAndEffectIntoGUI(skill.getIcon(), 8, 8);
-			GlStateManager.popMatrix();
-
-		}
+//		for (SkillBase skill : page.getSkillList()) {
+//			GlStateManager.enableAlpha();
+//			GlStateManager.color(1, 1, 1, 1);
+//			this.mc.getTextureManager().bindTexture(GuiReference.SKILL_TREE_BACKGROUND);
+//			int posX = startX + 19 * skill.getColumn();
+//			int posY = startY + 18 * skill.getRow();
+//			boolean isActive = SkillTreeApi.isSkillActive(mc.player, skill);
+//			drawScaledCustomSizeModalRect(posX, posY, textureX, textureY + (isActive ? 0 : 26), 26, 26, 16, 16, 256,
+//					256);
+//			GlStateManager.pushMatrix();
+//			GlStateManager.translate(posX, posY, 0);
+//			GlStateManager.scale(0.5, 0.5, 1);
+//			GlStateManager.enableDepth();
+//			itemRender.renderItemAndEffectIntoGUI(skill.getIcon(), 8, 8);
+//			GlStateManager.popMatrix();
+//
+//		}
 	}
 
 	protected void renderCustomBackround(float partialTicks, int mouseX, int mouseY) {

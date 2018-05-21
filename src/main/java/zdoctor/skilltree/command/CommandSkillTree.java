@@ -88,7 +88,7 @@ public class CommandSkillTree extends CommandBase {
 				try {
 					int pointsToAdd = Integer.parseInt(pointString);
 					SkillTreeApi.addSkillPoints(entityplayer, pointsToAdd);
-					SkillTreeApi.syncServerSkillsAll(entityplayer);
+					SkillTreeApi.syncSkills(entityplayer);
 					if (pointsToAdd >= 0)
 						notifyCommandListener(sender, this, "commands.skilltree.success.addPoints", pointsToAdd,
 								entityplayer.getName());
@@ -111,7 +111,7 @@ public class CommandSkillTree extends CommandBase {
 						skillSlot.setActive();
 					});
 					SkillTreeApi.reloadHandler(entityplayer);
-					SkillTreeApi.syncServerSkillsAll(entityplayer);
+					SkillTreeApi.syncSkills(entityplayer);
 					notifyCommandListener(sender, this, "commands.skilltree.success.give.all", entityplayer.getName(),
 							entityplayer.getName());
 					break;
@@ -140,7 +140,7 @@ public class CommandSkillTree extends CommandBase {
 				}
 
 				SkillTreeApi.reloadHandler(entityplayer);
-				SkillTreeApi.syncServerSkillsAll(entityplayer);
+				SkillTreeApi.syncSkills(entityplayer);
 				for (int i = neededSkills.size() - 1; i >= 0; i--) {
 					if (SkillTreeApi.hasSkill(entityplayer, neededSkills.get(i).getSkill()))
 						notifyCommandListener(sender, this, "commands.skilltree.success.give",
@@ -158,7 +158,7 @@ public class CommandSkillTree extends CommandBase {
 				SkillBase skill1 = SkillBase.getSkillByKey(new ResourceLocation(skillName1));
 				if (skillName1.equalsIgnoreCase("all")) {
 					SkillTreeApi.getSkillHandler(entityplayer).deserializeNBT(new SkillHandler().serializeNBT());
-					SkillTreeApi.syncServerSkillsAll(entityplayer);
+					SkillTreeApi.syncSkills(entityplayer);
 					notifyCommandListener(sender, this, "commands.skilltree.success.reset", entityplayer.getName());
 					break;
 				}

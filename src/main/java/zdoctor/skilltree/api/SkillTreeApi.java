@@ -8,8 +8,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.skills.ISkillHandler;
 import zdoctor.skilltree.api.skills.ISkillToggle;
@@ -20,7 +18,7 @@ import zdoctor.skilltree.skills.SkillHandler;
 import zdoctor.skilltree.skills.SkillSlot;
 
 public class SkillTreeApi {
-	public static final String DEPENDENCY = "required-after:skilltree@[1.0.1.1,)";
+	public static final String DEPENDENCY = "required-after:skilltree@[1.1.0.0,)";
 
 	@CapabilityInject(ISkillHandler.class)
 	public static Capability<ISkillHandler> SKILL_CAPABILITY = null;
@@ -65,36 +63,19 @@ public class SkillTreeApi {
 		return new SkillSlot(skill, hasSkill(player, skill), isSkillActive(player, skill));
 	}
 
-	/**
-	 * Request and update from the server
-	 */
-	@SideOnly(Side.CLIENT)
-	public static void SyncClientSkills(EntityPlayer player) {
-		CPacketSyncSkills pkt = new CPacketSyncSkills(player);
-		SkillTreePacketHandler.INSTANCE.sendToServer(pkt);
-	}
-
-	/**
-	 * Sends update to all receivers to sync data, should be called on server
-	 */
-	public static void syncServerSkills(EntityPlayer player, List<EntityPlayer> receivers) {
-		if (!(player instanceof EntityPlayerMP))
-			return;
-		CPacketSyncSkills pkt = new CPacketSyncSkills(player);
-		for (EntityPlayer receiver : receivers) {
-			SkillTreePacketHandler.INSTANCE.sendTo(pkt, (EntityPlayerMP) receiver);
+	public static void syncSkills(EntityLivingBase entity) {
+		if (ModMain.proxy.getWorld() instanceof WorldServer) {
+			CPacketSyncSkills pkt = new CPacketSyncSkills(entity);
+			for (EntityPlayer receiver : ((WorldServer) ModMain.proxy.getWorld()).playerEntities) {
+				SkillTreePacketHandler.INSTANCE.sendTo(pkt, (EntityPlayerMP) receiver);
+			}
+		} else {
+			CPacketSyncSkills pkt = new CPacketSyncSkills(entity);
+			SkillTreePacketHandler.INSTANCE.sendToServer(pkt);
 		}
-	}
 
-	public static void syncServerSkillsAll(EntityPlayer player) {
-		if (!(player instanceof EntityPlayerMP) || !(ModMain.proxy.getWorld() instanceof WorldServer))
-			return;
-		CPacketSyncSkills pkt = new CPacketSyncSkills(player);
-		for (EntityPlayer receiver : ((WorldServer) ModMain.proxy.getWorld()).playerEntities) {
-			SkillTreePacketHandler.INSTANCE.sendTo(pkt, (EntityPlayerMP) receiver);
-		}
 	}
-
+	
 	public static void sellSkill(EntityPlayer player, SkillBase skill) {
 		// TODO Auto-generated method stub
 
@@ -117,7 +98,7 @@ public class SkillTreeApi {
 		SkillHandler skillhandler = new SkillHandler();
 		skillhandler.setOwner(entityplayer);
 		SkillTreeApi.getSkillHandler(entityplayer).deserializeNBT(skillhandler.serializeNBT());
-		SkillTreeApi.syncServerSkillsAll(entityplayer);
+		SkillTreeApi.syncSkills(entityplayer);
 	}
 
 	public static void reloadHandler(EntityPlayer player) {
@@ -130,4 +111,5 @@ public class SkillTreeApi {
 		}
 	}
 
+	
 }

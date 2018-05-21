@@ -5,16 +5,14 @@ import java.util.ArrayList;
 import org.apache.logging.log4j.Logger;
 
 import net.minecraft.world.World;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import zdoctor.skilltree.EasyConfig;
 import zdoctor.skilltree.EasyConfig.BooleanProperty;
-import zdoctor.skilltree.skills.SkillBase;
-import zdoctor.skilltree.skills.SkillSlot;
 import zdoctor.skilltree.ModMain;
+import zdoctor.skilltree.skills.SkillBase;
 
 public abstract class CommonProxy {
 	public static final ArrayList<SkillBase> SkillWatcher_Registry = new ArrayList<>();
@@ -43,11 +41,5 @@ public abstract class CommonProxy {
 	}
 
 	public abstract World getWorld();
-
-//	public void onTick() {
-//		
-//		// System.out.println("Tick: " +
-//		// FMLCommonHandler.instance().getEffectiveSide());
-//	}
 
 }

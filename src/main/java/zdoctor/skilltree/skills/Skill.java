@@ -8,6 +8,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import zdoctor.skilltree.api.SkillTreeApi;
+import zdoctor.skilltree.api.enums.SkillFrameType;
 import zdoctor.skilltree.api.skills.ISkillRequirment;
 import zdoctor.skilltree.client.SkillToolTip;
 
@@ -17,12 +18,25 @@ public class Skill extends SkillBase {
 		this(name, column, row, new ItemStack(iconIn), new ISkillRequirment[0]);
 	}
 
+	public Skill(String name, int column, int row, SkillFrameType type, Item iconIn) {
+		this(name, column, row, type, new ItemStack(iconIn), new ISkillRequirment[0]);
+	}
+
 	public Skill(String name, int column, int row, ItemStack iconIn) {
 		this(name, column, row, iconIn, new ISkillRequirment[0]);
 	}
 
+	public Skill(String name, int column, int row, SkillFrameType type, ItemStack iconIn) {
+		this(name, column, row, type, iconIn, new ISkillRequirment[0]);
+	}
+
 	public Skill(String name, int column, int row, ItemStack iconIn, ISkillRequirment... requirements) {
 		super(name, column, row, iconIn, requirements);
+	}
+
+	public Skill(String name, int column, int row, SkillFrameType type, ItemStack iconIn,
+			ISkillRequirment... requirements) {
+		super(name, column, row, type, iconIn, requirements);
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import java.io.IOException;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
@@ -29,9 +30,9 @@ public class CPacketSyncSkills implements IMessage {
 	public CPacketSyncSkills() {
 	}
 
-	public CPacketSyncSkills(EntityPlayer player) {
-		playerId = player.getEntityId();
-		skillTreeTag = SkillTreeApi.getSkillHandler(player).serializeNBT();
+	public CPacketSyncSkills(EntityLivingBase entity) {
+		playerId = entity.getEntityId();
+		skillTreeTag = SkillTreeApi.getSkillHandler(entity).serializeNBT();
 	}
 
 	@Override
