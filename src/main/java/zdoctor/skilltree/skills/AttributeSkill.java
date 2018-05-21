@@ -35,10 +35,10 @@ public class AttributeSkill extends Skill {
 		}
 	}
 
-	public void removeEntityModifier(EntityLivingBase player) {
+	public void removeEntityModifier(EntityLivingBase entity) {
 		// System.out.println("Modifiyer: " + getModifier());
-		if (player.getEntityAttribute(getAttribute()).hasModifier(getModifier())) {
-			player.getEntityAttribute(getAttribute()).removeModifier(getModifier());
+		if (entity.getEntityAttribute(getAttribute()).hasModifier(getModifier())) {
+			entity.getEntityAttribute(getAttribute()).removeModifier(getModifier());
 			// System.out.println("Removed Modifier: " + getModifier());
 		}
 	}
@@ -52,12 +52,14 @@ public class AttributeSkill extends Skill {
 	}
 
 	@Override
-	public void onSkillActivated(EntityLivingBase player) {
-		modifyEntity(player);
+	public void onSkillActivated(EntityLivingBase entity) {
+		if (entity.getEntityAttribute(getAttribute()) != null)
+			modifyEntity(entity);
 	}
 
 	@Override
-	public void onSkillDeactivated(EntityLivingBase player) {
-		removeEntityModifier(player);
+	public void onSkillDeactivated(EntityLivingBase entity) {
+		if (entity.getEntityAttribute(getAttribute()) != null)
+			removeEntityModifier(entity);
 	}
 }
