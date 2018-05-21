@@ -15,7 +15,7 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.api.skills.ISkillRequirment;
-import zdoctor.skilltree.api.skills.ISkillWatcher;
+import zdoctor.skilltree.api.skills.ISkillTickable;
 import zdoctor.skilltree.api.skills.requirements.DescriptionRequirment;
 import zdoctor.skilltree.api.skills.requirements.NameRequirment;
 import zdoctor.skilltree.api.skills.requirements.PreviousSkillRequirement;
@@ -64,7 +64,7 @@ public abstract class SkillBase {
 		}
 		Skill_Registry.put(registryName, this);
 		this.id = nextId++;
-		if (this instanceof ISkillWatcher)
+		if (this instanceof ISkillTickable)
 			CommonProxy.SkillWatcher_Registry.add(this);
 	}
 

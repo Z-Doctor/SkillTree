@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.skills.ISkillHandler;
-import zdoctor.skilltree.api.skills.ISkillWatcher;
+import zdoctor.skilltree.api.skills.ISkillTickable;
 import zdoctor.skilltree.events.SkillDeseralizeEvent;
 import zdoctor.skilltree.events.SkillEvent;
 import zdoctor.skilltree.events.SkillEvent.ActiveTick;
@@ -36,7 +36,7 @@ public class SkillHandler implements ISkillHandler {
 					continue;
 				SkillSlot slot = new SkillSlot(skill);
 				skillsCodex.put(skill, slot);
-				if (skill instanceof ISkillWatcher)
+				if (skill instanceof ISkillTickable)
 					trackerCodex.add(skill);
 			}
 		}
@@ -193,11 +193,11 @@ public class SkillHandler implements ISkillHandler {
 	public void onTick(SkillEvent.SkillTick e) {
 		trackerCodex.forEach(skill -> {
 			SkillSlot skillSlot = skillsCodex.get(skill);
-			if (skill instanceof ISkillWatcher && skillSlot.isObtained()) {
+			if (skill instanceof ISkillTickable && skillSlot.isObtained()) {
 				ActiveTick event = new SkillEvent.ActiveTick(owner, skillSlot, skill);
 				MinecraftForge.EVENT_BUS.post(event);
 				if (!event.isCanceled() && (skillSlot.isActive() || event.getResult() == Result.ALLOW))
-					((ISkillWatcher) skill).onActiveTick(owner, skillSlot.getSkill(), skillSlot);
+					((ISkillTickable) skill).onActiveTick(owner, skillSlot.getSkill(), skillSlot);
 			}
 		});
 	}

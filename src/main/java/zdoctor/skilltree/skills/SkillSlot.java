@@ -11,7 +11,7 @@ import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import zdoctor.skilltree.api.skills.ISkillToggle;
-import zdoctor.skilltree.api.skills.ISkillWatcher;
+import zdoctor.skilltree.api.skills.ISkillTickable;
 import zdoctor.skilltree.events.SkillEvent;
 
 public class SkillSlot implements INBTSerializable<NBTTagCompound> {

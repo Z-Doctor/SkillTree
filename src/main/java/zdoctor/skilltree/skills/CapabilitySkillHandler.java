@@ -48,7 +48,6 @@ public class CapabilitySkillHandler {
 		if (!(e.getObject() instanceof EntityLivingBase))
 			return;
 		e.addCapability(new ResourceLocation(ModMain.MODID, "SkillCapability"), new SkillCapabilityProvider());
-		// SkillTreeApi.getSkillHandler((EntityLivingBase) e.getObject());
 	}
 
 	@SubscribeEvent
