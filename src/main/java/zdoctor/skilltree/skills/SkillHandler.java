@@ -4,22 +4,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.skills.ISkillHandler;
 import zdoctor.skilltree.api.skills.ISkillWatcher;
 import zdoctor.skilltree.events.SkillDeseralizeEvent;
+import zdoctor.skilltree.events.SkillEvent;
+import zdoctor.skilltree.events.SkillEvent.ActiveTick;
 import zdoctor.skilltree.tabs.SkillTabs;
 
 public class SkillHandler implements ISkillHandler {
 
-	protected HashMap<ISkillWatcher, SkillSlot> trackerCodex = new HashMap();
+	protected ArrayList<SkillBase> trackerCodex = new ArrayList<>();
 
 	protected HashMap<SkillBase, SkillSlot> skillsCodex = new HashMap();
 	private EntityLivingBase owner;
@@ -35,7 +37,7 @@ public class SkillHandler implements ISkillHandler {
 				SkillSlot slot = new SkillSlot(skill);
 				skillsCodex.put(skill, slot);
 				if (skill instanceof ISkillWatcher)
-					trackerCodex.put((ISkillWatcher) skill, slot);
+					trackerCodex.add(skill);
 			}
 		}
 	}
@@ -143,8 +145,13 @@ public class SkillHandler implements ISkillHandler {
 
 	@Override
 	public void setOwner(EntityLivingBase player) {
+		if (player != null)
+			MinecraftForge.EVENT_BUS.unregister(this);
 		this.owner = player;
 		reloadHandler();
+
+		if (owner != null)
+			MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	@Override
@@ -182,11 +189,16 @@ public class SkillHandler implements ISkillHandler {
 		return getSkillSlot(skill).isActive();
 	}
 
-	@Override
-	public void tickEvent() {
-		trackerCodex.forEach((watcher, slot) -> {
-			if (slot.isActive())
-				watcher.onActiveTick(owner, slot.getSkill(), slot);
+	@SubscribeEvent
+	public void onTick(SkillEvent.SkillTick e) {
+		trackerCodex.forEach(skill -> {
+			SkillSlot skillSlot = skillsCodex.get(skill);
+			if (skill instanceof ISkillWatcher && skillSlot.isObtained()) {
+				ActiveTick event = new SkillEvent.ActiveTick(owner, skillSlot, skill);
+				MinecraftForge.EVENT_BUS.post(event);
+				if (!event.isCanceled() && (skillSlot.isActive() || event.getResult() == Result.ALLOW))
+					((ISkillWatcher) skill).onActiveTick(owner, skillSlot.getSkill(), skillSlot);
+			}
 		});
 	}
 

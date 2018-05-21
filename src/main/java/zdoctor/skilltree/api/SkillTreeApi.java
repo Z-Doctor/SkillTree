@@ -12,7 +12,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.skills.ISkillHandler;
-import zdoctor.skilltree.api.skills.IToggleSkill;
+import zdoctor.skilltree.api.skills.ISkillToggle;
 import zdoctor.skilltree.network.SkillTreePacketHandler;
 import zdoctor.skilltree.network.play.client.CPacketSyncSkills;
 import zdoctor.skilltree.skills.SkillBase;
@@ -20,14 +20,13 @@ import zdoctor.skilltree.skills.SkillHandler;
 import zdoctor.skilltree.skills.SkillSlot;
 
 public class SkillTreeApi {
-	public static final String DEPENDENCY = "required-after:skilltree@[1.0.0.0,)";
+	public static final String DEPENDENCY = "required-after:skilltree@[1.0.1.1,)";
 
 	@CapabilityInject(ISkillHandler.class)
 	public static Capability<ISkillHandler> SKILL_CAPABILITY = null;
 
 	public static ISkillHandler getSkillHandler(EntityLivingBase player) {
 		ISkillHandler handler = player.getCapability(SKILL_CAPABILITY, null);
-		handler.setOwner(player);
 		return handler;
 	}
 
@@ -126,7 +125,7 @@ public class SkillTreeApi {
 	}
 
 	public static void toggleSkill(EntityPlayerMP player, SkillBase skill) {
-		if (skill instanceof IToggleSkill) {
+		if (skill instanceof ISkillToggle) {
 			getSkillHandler(player).setSkillActive(skill, !isSkillActive(player, skill));
 		}
 	}

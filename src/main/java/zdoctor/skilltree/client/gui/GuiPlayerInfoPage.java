@@ -70,10 +70,8 @@ public class GuiPlayerInfoPage extends GuiSkillPage {
 		this.oldMouseX = mouseX;
 		this.oldMouseY = mouseY;
 
-		// this.mc.getTextureManager().bindTexture(GuiSkillTree.SKILL_TREE_TABS);
-		// this.drawTexturedModalRect(i - 24, j + 18, 4, 64, 25, 28);
 		int points = SkillTreeApi.getPlayerSkillPoints(thePlayer);
-		// fontRenderer.drawString("P:" + points, i - 20, j + 28, 0, false);
+
 		GlStateManager.pushMatrix();
 		GlStateManager.scale(0.9F, 0.9F, 0.9F);
 		fontRenderer.drawString(I18n.format("skilltree.points.info", points), i + 80, j + 30, 0, false);

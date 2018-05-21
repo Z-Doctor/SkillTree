@@ -1,22 +1,27 @@
 package zdoctor.skilltree.skills;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.entity.EntityEvent;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
 import zdoctor.skilltree.api.skills.ISkillHandler;
+import zdoctor.skilltree.events.SkillEvent;
 
 public class CapabilitySkillHandler {
 
@@ -33,7 +38,6 @@ public class CapabilitySkillHandler {
 			@Override
 			public void readNBT(Capability<ISkillHandler> capability, ISkillHandler instance, EnumFacing side,
 					NBTBase base) {
-				// instance.deserializeNBT((NBTTagCompound) base);
 			}
 		}, SkillHandler::new);
 
@@ -41,10 +45,17 @@ public class CapabilitySkillHandler {
 
 	@SubscribeEvent
 	public void initCapabilities(AttachCapabilitiesEvent<Entity> e) {
-		if (!(e.getObject() instanceof EntityPlayer))
+		if (!(e.getObject() instanceof EntityLivingBase))
 			return;
 		e.addCapability(new ResourceLocation(ModMain.MODID, "SkillCapability"), new SkillCapabilityProvider());
+		// SkillTreeApi.getSkillHandler((EntityLivingBase) e.getObject());
+	}
 
+	@SubscribeEvent
+	public void entityTracking(EntityJoinWorldEvent e) {
+		if (e.getEntity() instanceof EntityLivingBase) {
+			SkillTreeApi.getSkillHandler((EntityLivingBase) e.getEntity()).setOwner((EntityLivingBase) e.getEntity());
+		}
 	}
 
 	@SubscribeEvent
@@ -69,10 +80,9 @@ public class CapabilitySkillHandler {
 	}
 
 	@SubscribeEvent
-	public void playerTick(TickEvent.PlayerTickEvent event) {
-		if (event.phase == TickEvent.Phase.END) {
-			EntityPlayer player = event.player;
-			SkillTreeApi.getSkillHandler(player).tickEvent();
+	public void tickEvent(TickEvent.WorldTickEvent e) {
+		if (e.phase == TickEvent.Phase.END) {
+			MinecraftForge.EVENT_BUS.post(new SkillEvent.SkillTick());
 		}
 	}
 

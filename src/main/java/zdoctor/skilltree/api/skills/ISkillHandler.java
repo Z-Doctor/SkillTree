@@ -81,6 +81,4 @@ public interface ISkillHandler extends INBTSerializable<NBTTagCompound> {
 
 	public EntityLivingBase getOwner();
 	
-	public void tickEvent();
-
 }

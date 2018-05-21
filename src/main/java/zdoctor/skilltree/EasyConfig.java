@@ -1,9 +1,10 @@
 package zdoctor.skilltree;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.logging.log4j.Logger;
 
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
@@ -21,31 +22,19 @@ public class EasyConfig {
 	protected String modid;
 	protected Configuration config;
 	protected String defaultCatergory;
-
-	public EasyConfig() {
-	}
+	protected final Logger log;
 
 	public EasyConfig(FMLPreInitializationEvent e) {
 		this(e, "Default");
 	}
 
 	public EasyConfig(FMLPreInitializationEvent e, String defaultCatergory) {
+		log = e.getModLog();
+		log.debug("Created Config");
+		
 		this.defaultCatergory = defaultCatergory;
 		modid = Loader.instance().activeModContainer().getModId();
 		config = new Configuration(e.getSuggestedConfigurationFile());
-		open();
-		CONFIG_REGISTRY.put(modid, this);
-
-	}
-
-	public EasyConfig(File configFile, String modId) {
-		this(configFile, modId, "Default");
-	}
-
-	public EasyConfig(File configFile, String modId, String defaultCatergory) {
-		this.defaultCatergory = defaultCatergory;
-		this.modid = modId;
-		config = new Configuration(configFile);
 		open();
 		CONFIG_REGISTRY.put(modid, this);
 	}
@@ -64,6 +53,7 @@ public class EasyConfig {
 	public void open() {
 		config.load();
 		PROPERTIES.forEach(Property::save);
+		log.debug("Config Opened");
 	}
 
 	/**
@@ -72,11 +62,13 @@ public class EasyConfig {
 	 */
 	public void close() {
 		config.save();
+		log.debug("Config Closed");
 	}
 
 	public void sync() {
 		config.save();
 		PROPERTIES.forEach(Property::save);
+		log.debug("Config Sync");
 	}
 
 	public String getModid() {
@@ -93,7 +85,7 @@ public class EasyConfig {
 		protected T value;
 
 		public Property(EasyConfig config, String category, String name, T value) {
-			System.out.println("Created: " + name);
+			config.log.debug("Created Config: {}", name);
 			this.config = config;
 			this.category = category;
 			this.name = name;
@@ -147,6 +139,7 @@ public class EasyConfig {
 		@Override
 		public void save() {
 			setValue(config.getConfig().getInt(name, category, defaultValue, minValue, maxValue, comment, name));
+			config.log.debug("Saved Config - Name: {} Value: {}", name, getValue());
 		}
 
 	}
@@ -160,6 +153,7 @@ public class EasyConfig {
 		@Override
 		public void save() {
 			setValue(config.getConfig().getBoolean(name, category, defaultValue, comment, name));
+			config.log.debug("Saved Config - Name: {} Value: {}", name, getValue());
 		}
 
 	}
@@ -173,6 +167,7 @@ public class EasyConfig {
 		@Override
 		public void save() {
 			setValue(config.getConfig().getString(name, category, defaultValue, comment, name));
+			config.log.debug("Saved Config - Name: {} Value: {}", name, getValue());
 		}
 
 	}

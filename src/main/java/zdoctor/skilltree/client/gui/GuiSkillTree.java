@@ -218,8 +218,6 @@ public class GuiSkillTree extends GuiSkillScreen {
 		GlStateManager.color(1F, 1F, 1F);
 		GlStateManager.enableBlend();
 		this.drawTexturedModalRect(spacer, itemstackOffset, type, tabType, 28, 32);
-//		this.zLevel = 300.0F;
-//		this.itemRender.zLevel = 300.0F;
 		spacer = spacer + 6;
 		itemstackOffset = itemstackOffset + 8 + (isTopRow ? 1 : -1);
 		GlStateManager.enableLighting();
@@ -229,8 +227,6 @@ public class GuiSkillTree extends GuiSkillScreen {
 		GlStateManager.enableDepth();
 		this.itemRender.renderItemAndEffectIntoGUI(itemstack, spacer, itemstackOffset);
 		GlStateManager.disableLighting();
-//		this.itemRender.zLevel = 0.0F;
-//		this.zLevel = 0.0F;
 		if (isSelected) {
 			fontRenderer.drawString(tab.getTranslatedTabLabel(), this.guiLeft + 11, this.guiTop + 8, 0x404040, false);
 			fontRenderer.drawString(tab.getTranslatedTabLabel(), this.guiLeft + 10, this.guiTop + 7, 0x909090, false);
@@ -260,5 +256,5 @@ public class GuiSkillTree extends GuiSkillScreen {
 
 		super.mouseReleased(mouseX, mouseY, state);
 	}
-	
+
 }

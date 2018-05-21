@@ -7,11 +7,14 @@ import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.client.GuiPageRegistry;
 import zdoctor.skilltree.client.KeyHandler;
 import zdoctor.skilltree.client.gui.GuiPlayerInfoPage;
 import zdoctor.skilltree.skills.pages.PlayerInfoPage;
 
+@SideOnly(Side.CLIENT)
 public class ClientProxy extends CommonProxy {
 	@Override
 	public void preInit(FMLPreInitializationEvent e) {

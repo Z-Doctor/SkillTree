@@ -1,12 +1,20 @@
 package zdoctor.skilltree.skills;
 
+import java.security.acl.Owner;
+import java.util.ArrayList;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.INBTSerializable;
-import zdoctor.skilltree.api.skills.IToggleSkill;
+import net.minecraftforge.fml.common.eventhandler.Event.Result;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import zdoctor.skilltree.api.skills.ISkillToggle;
+import zdoctor.skilltree.api.skills.ISkillWatcher;
+import zdoctor.skilltree.events.SkillEvent;
 
 public class SkillSlot implements INBTSerializable<NBTTagCompound> {
-
 	private boolean obtained;
 	private SkillBase skill;
 	private NBTTagCompound skillTagCompound;
@@ -20,6 +28,9 @@ public class SkillSlot implements INBTSerializable<NBTTagCompound> {
 		this.skill = skill;
 		this.obtained = obtained;
 		this.active = active;
+
+		// if (skill instanceof ISkillWatcher)
+		// MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	public boolean isObtained() {
@@ -65,7 +76,7 @@ public class SkillSlot implements INBTSerializable<NBTTagCompound> {
 	public void deserializeNBT(NBTTagCompound nbt) {
 		skill = SkillBase.getSkillByKey(new ResourceLocation(nbt.getString("id")));
 		this.obtained = nbt.getBoolean("obtained");
-		if (obtained && !(skill instanceof IToggleSkill))
+		if (obtained && !(skill instanceof ISkillToggle))
 			this.active = true;
 		else
 			this.active = nbt.getBoolean("active");
@@ -81,5 +92,5 @@ public class SkillSlot implements INBTSerializable<NBTTagCompound> {
 	public static boolean areSkillSlotsEqual(SkillSlot skillA, SkillSlot skillB) {
 		return skillA.skill == skillB.skill;
 	}
-
+	
 }

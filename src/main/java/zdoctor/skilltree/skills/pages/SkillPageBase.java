@@ -18,7 +18,7 @@ public abstract class SkillPageBase {
 		public SkillPageBase addSkill(SkillBase skillIn) {
 			return this;
 		}
-		
+
 		@Override
 		public List<SkillBase> getSkillList() {
 			return Collections.emptyList();
@@ -31,10 +31,10 @@ public abstract class SkillPageBase {
 	private ArrayList<SkillBase> skillList = new ArrayList<>();
 
 	private SkillBase lastAddedSkill;
-	
-//	protected SkillPageBase() {
-//		/this.unlocalizedName = "Empty";
-//	}
+
+	// protected SkillPageBase() {
+	// /this.unlocalizedName = "Empty";
+	// }
 
 	public SkillPageBase(String pageName) {
 		this.unlocalizedName = pageName;
@@ -47,6 +47,12 @@ public abstract class SkillPageBase {
 	}
 
 	public SkillPageBase addSkill(SkillBase skillIn) {
+		for (SkillBase skill1 : skillList) {
+			if (skillIn.column == skill1.column && skillIn.row == skill1.row)
+				throw new IllegalArgumentException("Tried to add skill '" + skillIn.getRegistryName() + "' to page '"
+						+ getRegistryName() + "' in the same spot as '" + skill1.getRegistryName() + "'");
+		}
+
 		if (!skillList.contains(skillIn)) {
 			skillIn.setPage(this);
 			skillList.add(skillIn);

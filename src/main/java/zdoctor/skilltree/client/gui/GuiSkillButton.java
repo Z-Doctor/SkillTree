@@ -7,7 +7,7 @@ import net.minecraft.util.ResourceLocation;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
 import zdoctor.skilltree.api.enums.EnumSkillInteractType;
-import zdoctor.skilltree.api.skills.IToggleSkill;
+import zdoctor.skilltree.api.skills.ISkillToggle;
 import zdoctor.skilltree.network.SkillTreePacketHandler;
 import zdoctor.skilltree.network.play.server.SPacketSkillSlotInteract;
 import zdoctor.skilltree.skills.SkillBase;
@@ -59,7 +59,7 @@ public class GuiSkillButton extends GuiButton {
 	public void mouseReleased(int mouseX, int mouseY) {
 		Minecraft mc = Minecraft.getMinecraft();
 		if (SkillTreeApi.hasSkill(mc.player, this.getSkill())) {
-			if (this.getSkill() instanceof IToggleSkill) {
+			if (this.getSkill() instanceof ISkillToggle) {
 				SPacketSkillSlotInteract message = new SPacketSkillSlotInteract(this.getSkill(),
 						EnumSkillInteractType.TOGGLE);
 				SkillTreePacketHandler.INSTANCE.sendToServer(message);
