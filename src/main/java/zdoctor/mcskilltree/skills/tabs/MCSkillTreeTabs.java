@@ -10,7 +10,7 @@ public class MCSkillTreeTabs {
 
 		@Override
 		public ItemStack getTabIconItem() {
-			return new ItemStack(Items.DIAMOND_SWORD);
+			return SkillTabs.enchantItem(Items.DIAMOND_SWORD);
 		}
 	};
 
