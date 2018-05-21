@@ -1,5 +1,6 @@
 package zdoctor.skilltree;
 
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
@@ -9,7 +10,9 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import zdoctor.skilltree.command.CommandSkillTree;
+import zdoctor.skilltree.network.SkillTreePacketHandler;
 import zdoctor.skilltree.proxy.CommonProxy;
+import zdoctor.skilltree.skills.CapabilitySkillHandler;
 
 @Mod(modid = ModMain.MODID, version = ModMain.VERSION)
 public class ModMain {
@@ -24,6 +27,9 @@ public class ModMain {
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent e) {
+		SkillTreePacketHandler.initPackets();
+		CapabilitySkillHandler.register();
+		MinecraftForge.EVENT_BUS.register(new CapabilitySkillHandler());
 		proxy.preInit(e);
 	}
 

@@ -1,7 +1,9 @@
 package zdoctor.skilltree.skills.pages;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.fml.common.Loader;
@@ -10,7 +12,18 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.skills.SkillBase;
 
 public abstract class SkillPageBase {
-	protected static HashMap<String, SkillPageBase> SkillPage_Registry = new HashMap();
+	protected static final HashMap<String, SkillPageBase> SkillPage_Registry = new HashMap();
+	public static final SkillPageBase EMPTY = new SkillPageBase("Empty") {
+		@Override
+		public SkillPageBase addSkill(SkillBase skillIn) {
+			return this;
+		}
+		
+		@Override
+		public List<SkillBase> getSkillList() {
+			return Collections.emptyList();
+		}
+	};
 
 	private String unlocalizedName;
 	private String registryName;
@@ -18,6 +31,10 @@ public abstract class SkillPageBase {
 	private ArrayList<SkillBase> skillList = new ArrayList<>();
 
 	private SkillBase lastAddedSkill;
+	
+//	protected SkillPageBase() {
+//		/this.unlocalizedName = "Empty";
+//	}
 
 	public SkillPageBase(String pageName) {
 		this.unlocalizedName = pageName;
@@ -56,7 +73,7 @@ public abstract class SkillPageBase {
 		return registryName;
 	}
 
-	public ArrayList<SkillBase> getSkillList() {
+	public List<SkillBase> getSkillList() {
 		return new ArrayList(skillList);
 	}
 

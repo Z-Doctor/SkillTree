@@ -1,9 +1,12 @@
 package zdoctor.skilltree.tabs;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import net.minecraft.client.resources.I18n;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.relauncher.Side;
@@ -36,6 +39,16 @@ public abstract class SkillTabs {
 
 	public SkillTabs(String label, SkillPageBase page) {
 		this(getNextEmptyIndex(), label, page);
+	}
+
+	/**
+	 * Helper function to enchant an item
+	 */
+	public static ItemStack enchantItem(Item item) {
+		ItemStack temp = new ItemStack(item);
+		EnchantmentHelper.addRandomEnchantment(new Random(), temp, 1, false);
+		temp.isItemEnchanted();
+		return temp;
 	}
 
 	public SkillTabs(int id, String label, SkillPageBase page) {

@@ -61,7 +61,7 @@ public class GuiPlayerInfoPage extends GuiSkillPage {
 	public void drawGuiBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
 		super.drawGuiBackgroundLayer(partialTicks, mouseX, mouseY);
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-		this.mc.getTextureManager().bindTexture(SKILL_TREE_BACKGROUND);
+		this.mc.getTextureManager().bindTexture(GuiReference.SKILL_TREE_BACKGROUND);
 		int i = this.guiLeft;
 		int j = this.guiTop;
 		this.drawTexturedModalRect(i + 9, j + 18, 179, 140, 51, 72);
@@ -91,7 +91,7 @@ public class GuiPlayerInfoPage extends GuiSkillPage {
 		GlStateManager.popMatrix();
 	}
 
-	private void drawPlayerAttributeInfo(IAttribute attribute, String translateKey, int offset) {
+	protected void drawPlayerAttributeInfo(IAttribute attribute, String translateKey, int offset) {
 		int i = this.guiLeft;
 		int j = this.guiTop;
 		IAttributeInstance playerAttribute = thePlayer.getEntityAttribute(attribute);
@@ -109,10 +109,10 @@ public class GuiPlayerInfoPage extends GuiSkillPage {
 	public void drawGuiForegroundLayer(int mouseX, int mouseY) {
 		super.drawGuiForegroundLayer(mouseX, mouseY);
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-		this.mc.getTextureManager().bindTexture(SKILL_TREE_BACKGROUND);
+		this.mc.getTextureManager().bindTexture(GuiReference.SKILL_TREE_BACKGROUND);
 	}
 
-	public void renderPlayerHealthAndArmor() {
+	protected void renderPlayerHealthAndArmor() {
 		this.mc.renderEngine.bindTexture(Gui.ICONS);
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 
