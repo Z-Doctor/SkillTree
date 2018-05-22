@@ -28,6 +28,13 @@ public class GuiSkillScreen extends GuiScreen {
 
 	protected final ArrayList<GuiSkillPage> pageList = new ArrayList();
 
+	public int offsetX;
+	public int offsetY;
+
+	public boolean mouseDown;
+	public int lastX;
+	public int lastY;
+
 	@Override
 	public void updateScreen() {
 		super.updateScreen();
@@ -117,19 +124,15 @@ public class GuiSkillScreen extends GuiScreen {
 	}
 
 	protected void renderSkillTreeHoveringText(SkillTabs tab, int mouseX, int mouseY) {
-		// if (isMouseOverTab(tab, mouseX, mouseY)) {
 		this.drawHoveringText(tab.getTranslatedTabLabel(), mouseX, mouseY);
-		// return true;
-		// }
-		// return false;
 	}
 
 	public boolean isMouseOverSkill(SkillBase skill, int mouseX, int mouseY) {
 		if (skill == null)
 			return false;
 
-		int startX = this.guiLeft + 13;
-		int startY = this.guiTop + 21;
+		int startX = this.guiLeft + this.offsetX + 13;
+		int startY = this.guiTop + this.offsetY + 21;
 
 		int xOffset = startX + 19 * skill.getColumn();
 		int yOffset = startY + 18 * skill.getRow();
@@ -234,8 +237,8 @@ public class GuiSkillScreen extends GuiScreen {
 
 		int color = outerLine ? -16777216 : -1;
 
-		int initX = offsetX + 13;
-		int initY = offsetY + 21;
+		int initX = this.guiLeft + offsetX + 13;
+		int initY = this.guiTop + offsetY + 21;
 
 		int parentX = 8 + initX + 19 * skill.getColumn();
 		int parentHalfX = 16 + initX + 19 * skill.getColumn() + 1;
@@ -276,6 +279,19 @@ public class GuiSkillScreen extends GuiScreen {
 		}
 	}
 
+	@Override
+	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+		if (mouseDown && isPointInRegion(9, 18, xSize, ySize, mouseX, mouseY)) {
+			offsetX += mouseX - lastX;
+			offsetY += mouseY - lastY;
+			// offsetX = 0;
+			// offsetY = 0;
+		}
+		lastX = mouseX;
+		lastY = mouseY;
+		super.drawScreen(mouseX, mouseY, partialTicks);
+	}
+
 	// Gui Inputs
 
 	@Override
@@ -286,15 +302,26 @@ public class GuiSkillScreen extends GuiScreen {
 	@Override
 	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
 		super.mouseClicked(mouseX, mouseY, mouseButton);
+		for (GuiButton button : buttonList) {
+			if (button.isMouseOver()) {
+				mouseDown = false;
+				return;
+			}
+		}
+		lastX = mouseX;
+		lastY = mouseY;
+		mouseDown = true;
 	}
 
 	@Override
 	protected void mouseReleased(int mouseX, int mouseY, int state) {
 		super.mouseReleased(mouseX, mouseY, state);
+		mouseDown = false;
 	}
 
 	@Override
 	protected void actionPerformed(GuiButton button) throws IOException {
+
 	}
 
 	@Override

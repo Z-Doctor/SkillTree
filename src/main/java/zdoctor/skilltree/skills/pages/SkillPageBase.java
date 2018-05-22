@@ -32,10 +32,6 @@ public abstract class SkillPageBase {
 
 	private SkillBase lastAddedSkill;
 
-	// protected SkillPageBase() {
-	// /this.unlocalizedName = "Empty";
-	// }
-
 	public SkillPageBase(String pageName) {
 		this.unlocalizedName = pageName;
 		this.registryName = Loader.instance().activeModContainer().getModId() + ":" + pageName;

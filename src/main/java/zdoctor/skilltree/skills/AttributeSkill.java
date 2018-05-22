@@ -5,6 +5,7 @@ import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttribute;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import zdoctor.skilltree.ModMain;
 
 /**
  * For information about Attribute check
@@ -28,18 +29,17 @@ public class AttributeSkill extends Skill {
 		modifierIn.setSaved(false);
 	}
 
-	public void modifyEntity(EntityLivingBase player) {
-		if (!player.getEntityAttribute(getAttribute()).hasModifier(getModifier())) {
-			player.getEntityAttribute(getAttribute()).applyModifier(getModifier());
-			// System.out.println("Added Modifier: " + getModifier());
+	public void modifyEntity(EntityLivingBase entity) {
+		if (!entity.getEntityAttribute(getAttribute()).hasModifier(getModifier())) {
+			entity.getEntityAttribute(getAttribute()).applyModifier(getModifier());
+			ModMain.proxy.log.debug("Apply Modifier '{}' to '{}'", getModifier(), entity);
 		}
 	}
 
 	public void removeEntityModifier(EntityLivingBase entity) {
-		// System.out.println("Modifiyer: " + getModifier());
 		if (entity.getEntityAttribute(getAttribute()).hasModifier(getModifier())) {
 			entity.getEntityAttribute(getAttribute()).removeModifier(getModifier());
-			// System.out.println("Removed Modifier: " + getModifier());
+			ModMain.proxy.log.debug("Removing Modifier '{}' to '{}'", getModifier(), entity);
 		}
 	}
 

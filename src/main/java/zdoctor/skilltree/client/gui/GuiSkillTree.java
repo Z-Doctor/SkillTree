@@ -225,7 +225,10 @@ public class GuiSkillTree extends GuiSkillScreen {
 		GlStateManager.enableBlend();
 		ItemStack itemstack = tab.getIconItemStack();
 		GlStateManager.enableDepth();
+		this.itemRender.zLevel = 300;
 		this.itemRender.renderItemAndEffectIntoGUI(itemstack, spacer, itemstackOffset);
+		this.itemRender.zLevel = 0;
+		GlStateManager.disableDepth();
 		GlStateManager.disableLighting();
 		if (isSelected) {
 			fontRenderer.drawString(tab.getTranslatedTabLabel(), this.guiLeft + 11, this.guiTop + 8, 0x404040, false);

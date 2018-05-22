@@ -1,20 +1,8 @@
 package zdoctor.skilltree.client.gui;
 
-import java.io.IOException;
-import java.util.List;
-
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import zdoctor.skilltree.ModMain;
-import zdoctor.skilltree.api.SkillTreeApi;
-import zdoctor.skilltree.client.SkillToolTip;
 import zdoctor.skilltree.skills.SkillBase;
 import zdoctor.skilltree.skills.pages.SkillPageBase;
 import zdoctor.skilltree.skills.pages.SkillPageBase.BackgroundType;
@@ -38,7 +26,7 @@ public class GuiSkillPage extends GuiSkillScreen {
 		super.initGui();
 		if (page != null)
 			page.getSkillList().forEach(skill -> {
-				addButton(new GuiSkillButton(skill, guiLeft, guiTop));
+				addButton(new GuiSkillButton(this, skill, guiLeft, guiTop));
 			});
 	}
 
@@ -78,32 +66,6 @@ public class GuiSkillPage extends GuiSkillScreen {
 			renderCustomBackround(partialTicks, mouseX, mouseY);
 		}
 
-//		int startX = 13 + guiLeft;
-//		int startY = 21 + guiTop;
-//		int textureX = 72;
-//		int textureY = 140;
-
-		for (SkillBase skill : page.getSkillList()) {
-			drawConnectivity(skill, guiLeft, guiTop, true);
-			drawConnectivity(skill, guiLeft, guiTop, false);
-		}
-//		for (SkillBase skill : page.getSkillList()) {
-//			GlStateManager.enableAlpha();
-//			GlStateManager.color(1, 1, 1, 1);
-//			this.mc.getTextureManager().bindTexture(GuiReference.SKILL_TREE_BACKGROUND);
-//			int posX = startX + 19 * skill.getColumn();
-//			int posY = startY + 18 * skill.getRow();
-//			boolean isActive = SkillTreeApi.isSkillActive(mc.player, skill);
-//			drawScaledCustomSizeModalRect(posX, posY, textureX, textureY + (isActive ? 0 : 26), 26, 26, 16, 16, 256,
-//					256);
-//			GlStateManager.pushMatrix();
-//			GlStateManager.translate(posX, posY, 0);
-//			GlStateManager.scale(0.5, 0.5, 1);
-//			GlStateManager.enableDepth();
-//			itemRender.renderItemAndEffectIntoGUI(skill.getIcon(), 8, 8);
-//			GlStateManager.popMatrix();
-//
-//		}
 	}
 
 	protected void renderCustomBackround(float partialTicks, int mouseX, int mouseY) {

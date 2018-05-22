@@ -24,21 +24,39 @@ public class GuiSkillButton extends GuiButton {
 	public boolean hasRequirements;
 	public boolean hasSkill;
 
-	public GuiSkillButton(SkillBase skill, int startX, int startY) {
-		this(0, skill, startX + 13 + 19 * skill.getColumn(), startY + 21 + 18 * skill.getRow(), 16, 16, "");
+	public GuiSkillScreen parent;
+
+	public boolean mouseDown;
+
+	public int orginalX;
+	public int oringalY;
+
+	public GuiSkillButton(GuiSkillScreen parent, SkillBase skill, int startX, int startY) {
+		this(parent, 0, skill, startX + 13 + 19 * skill.getColumn(), startY + 21 + 18 * skill.getRow(), 16, 16, "");
 	}
 
-	public GuiSkillButton(int buttonId, SkillBase skill, int x, int y, int widthIn, int heightIn, String buttonText) {
+	public GuiSkillButton(GuiSkillScreen parent, int buttonId, SkillBase skill, int x, int y, int widthIn, int heightIn,
+			String buttonText) {
 		super(buttonId, x, y, widthIn, heightIn, buttonText);
+		this.parent = parent;
 		this.skill = skill;
 		this.enabled = true;
+		orginalX = this.x;
+		oringalY = this.y;
 	}
 
 	@Override
 	public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+		this.x = orginalX + parent.offsetX;
+		this.y = oringalY + parent.offsetY;
+
+		this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width
+				&& mouseY < this.y + this.height;
+		// To DO change x
 		if (this.visible) {
-			this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width
-					&& mouseY < this.y + this.height;
+			parent.drawConnectivity(skill, parent.offsetX, parent.offsetY, true);
+			parent.drawConnectivity(skill, parent.offsetX, parent.offsetY, false);
+
 			hasRequirements = SkillTreeApi.hasSkillRequirements(mc.player, skill);
 			hasSkill = SkillTreeApi.hasSkill(mc.player, skill);
 
@@ -63,7 +81,7 @@ public class GuiSkillButton extends GuiButton {
 		GlStateManager.enableAlpha();
 
 		if (!hasSkill && !(hasRequirements && hovered)) {
-			drawRect(this.x, this.y, this.x + width, this.y + height, 0xCC505050);
+			drawRect(posX, posY, posX + width, posY + height, 0xCC505050);
 			mc.getTextureManager().bindTexture(SKILL_TREE_BACKGROUND);
 			int lockType = hasRequirements ? 18 : 0;
 			GlStateManager.color(1, 1, 1, 1);
@@ -96,7 +114,22 @@ public class GuiSkillButton extends GuiButton {
 	}
 
 	@Override
+	public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
+		return super.mousePressed(mc, mouseX, mouseY);
+	}
+
+	@Override
+	protected void mouseDragged(Minecraft mc, int mouseX, int mouseY) {
+
+	}
+
+	@Override
 	public void mouseReleased(int mouseX, int mouseY) {
+		// this.hovered = mouseX >= this. && mouseY >= oringalY && mouseX < orginalX +
+		// this.width
+		// && mouseY < oringalY + this.height;
+		if (!isMouseOver())
+			return;
 		Minecraft mc = Minecraft.getMinecraft();
 		if (SkillTreeApi.hasSkill(mc.player, this.getSkill())) {
 			if (this.getSkill() instanceof ISkillToggle) {
