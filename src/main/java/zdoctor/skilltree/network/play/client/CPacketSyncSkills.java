@@ -14,7 +14,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
 
@@ -33,6 +32,7 @@ public class CPacketSyncSkills implements IMessage {
 	public CPacketSyncSkills(EntityLivingBase entity) {
 		playerId = entity.getEntityId();
 		skillTreeTag = SkillTreeApi.getSkillHandler(entity).serializeNBT();
+		ModMain.proxy.log.debug("Creating Packet: {} Args: {}", this, entity);
 	}
 
 	@Override
@@ -51,15 +51,9 @@ public class CPacketSyncSkills implements IMessage {
 		DataSerializers.COMPOUND_TAG.write(new PacketBuffer(buffer), skillTreeTag);
 	}
 
-	public static class PacketSyncHandler implements IMessageHandler<CPacketSyncSkills, CPacketSyncSkills> {
+	public static class PacketSyncHandler implements IMessageHandler<CPacketSyncSkills, IMessage> {
 		@Override
-		public CPacketSyncSkills onMessage(CPacketSyncSkills message, MessageContext ctx) {
-			if (ctx.side == Side.SERVER) {
-				ModMain.proxy.log.debug("Syncing Skillls - Side: {} Player: {} Data: ID: {}, TAG: {}", ctx.side,
-						ctx.getServerHandler().player, message.playerId, message.skillTreeTag);
-				return new CPacketSyncSkills(ctx.getServerHandler().player);
-			}
-
+		public IMessage onMessage(CPacketSyncSkills message, MessageContext ctx) {
 			Minecraft.getMinecraft().addScheduledTask(new Runnable() {
 				@Override
 				public void run() {

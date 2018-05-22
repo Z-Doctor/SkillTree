@@ -3,9 +3,6 @@ package zdoctor.skilltree.events;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraftforge.fml.common.eventhandler.Cancelable;
 import net.minecraftforge.fml.common.eventhandler.Event;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import zdoctor.skilltree.client.gui.GuiSkillPage;
 import zdoctor.skilltree.skills.SkillBase;
 import zdoctor.skilltree.skills.SkillSlot;
 import zdoctor.skilltree.skills.pages.SkillPageBase;
@@ -39,12 +36,11 @@ public class SkillEvent extends Event {
 	}
 
 	@Cancelable
-	@SideOnly(Side.CLIENT)
 	public static class RecenterPage extends SkillEvent {
 
-		public GuiSkillPage page;
+		public SkillPageBase page;
 
-		public RecenterPage(GuiSkillPage page) {
+		public RecenterPage(SkillPageBase page) {
 			super(EventType.RECENTER);
 			this.page = page;
 		}

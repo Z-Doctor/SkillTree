@@ -15,7 +15,8 @@ public class SkillTreePacketHandler {
 
 	public static void initPackets() {
 		INSTANCE.registerMessage(PacketSyncHandler.class, CPacketSyncSkills.class, getNextID(), Side.CLIENT);
-		INSTANCE.registerMessage(PacketSyncHandler.class, CPacketSyncSkills.class, getNextID(), Side.SERVER);
+		// INSTANCE.registerMessage(PacketSyncHandler.class, CPacketSyncSkills.class,
+		// getNextID(), Side.SERVER);
 		INSTANCE.registerMessage(PacketInteractHandler.class, SPacketSkillSlotInteract.class, getNextID(), Side.SERVER);
 	}
 

@@ -5,7 +5,6 @@ import java.io.IOException;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.client.KeyHandler;
@@ -116,7 +115,7 @@ public class GuiSkillPage extends GuiSkillScreen {
 	@Override
 	protected void keyTyped(char typedChar, int keyCode) throws IOException {
 		if (keyCode == KeyHandler.RECENTER_SKILL_TREE.getKeyCode()) {
-			SkillEvent.RecenterPage event = new SkillEvent.RecenterPage(this);
+			SkillEvent.RecenterPage event = new SkillEvent.RecenterPage(page);
 			MinecraftForge.EVENT_BUS.post(event);
 			if (!event.isCanceled())
 				this.initGui();

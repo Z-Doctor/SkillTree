@@ -52,7 +52,8 @@ public class CapabilitySkillHandler {
 	public void entityJoinedWorld(EntityJoinWorldEvent e) {
 		if (e.getEntity() instanceof EntityLivingBase) {
 			SkillTreeApi.getSkillHandler((EntityLivingBase) e.getEntity()).setOwner((EntityLivingBase) e.getEntity());
-			SkillTreeApi.syncSkills((EntityLivingBase) e.getEntity());
+			if (e.getEntity() instanceof EntityPlayerMP)
+				SkillTreeApi.syncSkills((EntityLivingBase) e.getEntity());
 		}
 	}
 

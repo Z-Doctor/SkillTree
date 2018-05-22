@@ -8,6 +8,8 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.skills.ISkillHandler;
 import zdoctor.skilltree.api.skills.ISkillToggle;
@@ -63,19 +65,25 @@ public class SkillTreeApi {
 		return new SkillSlot(skill, hasSkill(player, skill), isSkillActive(player, skill));
 	}
 
+	@SideOnly(Side.SERVER)
 	public static void syncSkills(EntityLivingBase entity) {
-		if (ModMain.proxy.getWorld() instanceof WorldServer) {
-			CPacketSyncSkills pkt = new CPacketSyncSkills(entity);
-			for (EntityPlayer receiver : ((WorldServer) ModMain.proxy.getWorld()).playerEntities) {
-				SkillTreePacketHandler.INSTANCE.sendTo(pkt, (EntityPlayerMP) receiver);
-			}
-		} else {
-			CPacketSyncSkills pkt = new CPacketSyncSkills(entity);
-			SkillTreePacketHandler.INSTANCE.sendToServer(pkt);
+		if (ModMain.proxy.getWorld() instanceof WorldServer)
+			syncSkills(entity, ((WorldServer) ModMain.proxy.getWorld()).playerEntities);
+	}
+
+	@SideOnly(Side.SERVER)
+	public static void syncSkills(EntityLivingBase entity, List<EntityPlayer> receivers) {
+		if (entity == null) {
+			ModMain.proxy.log.catching(new IllegalArgumentException("Tried to sync null entity"));
+			return;
+		}
+		CPacketSyncSkills pkt = new CPacketSyncSkills(entity);
+		for (EntityPlayer receiver : receivers) {
+			SkillTreePacketHandler.INSTANCE.sendTo(pkt, (EntityPlayerMP) receiver);
 		}
 
 	}
-	
+
 	public static void sellSkill(EntityPlayer player, SkillBase skill) {
 		// TODO Auto-generated method stub
 
@@ -111,5 +119,4 @@ public class SkillTreeApi {
 		}
 	}
 
-	
 }
