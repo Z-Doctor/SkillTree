@@ -3,6 +3,7 @@ package zdoctor.skilltree.client.gui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.util.ResourceLocation;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
@@ -13,6 +14,7 @@ import zdoctor.skilltree.network.SkillTreePacketHandler;
 import zdoctor.skilltree.network.play.server.SPacketSkillSlotInteract;
 import zdoctor.skilltree.skills.SkillBase;
 import zdoctor.skilltree.skills.pages.SkillPageBase;
+import zdoctor.skilltree.tabs.SkillTabs;
 
 public class GuiSkillButton extends GuiButton {
 	public static final ResourceLocation SKILL_TREE_BACKGROUND = new ResourceLocation(
@@ -22,8 +24,8 @@ public class GuiSkillButton extends GuiButton {
 	public int textureY = 140;
 
 	public SkillBase skill;
-	public boolean hasRequirements;
-	public boolean hasSkill;
+	// public boolean hasRequirements;
+	// public boolean hasSkill;
 
 	public GuiSkillScreen parent;
 
@@ -59,8 +61,8 @@ public class GuiSkillButton extends GuiButton {
 		this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width
 				&& mouseY < this.y + this.height;
 
-		this.visible = this.x >= parent.minX && this.y >= parent.minY && this.x + this.width < parent.maxX
-				&& this.y + this.height < parent.maxY;
+		this.visible = this.x >= parent.minBoundryX && this.y >= parent.minBoundryY && this.x + this.width < parent.maxBoundryX
+				&& this.y + this.height < parent.maxBoundryY;
 		boolean childVisible = false;
 
 		GlStateManager.enableDepth();
@@ -72,41 +74,23 @@ public class GuiSkillButton extends GuiButton {
 			parent.drawConnectivity(page, skill, parent.offsetX, parent.offsetY, false);
 
 		}
-		 this.zLevel = 1;
+		this.zLevel = 1;
 		if (this.visible) {
 			GlStateManager.translate(0, 0, this.zLevel);
-			hasRequirements = SkillTreeApi.hasSkillRequirements(mc.player, skill);
-			hasSkill = SkillTreeApi.hasSkill(mc.player, skill);
-
-			GlStateManager.pushMatrix();
 			drawSkillBackground(mc, this.x, this.y);
-			GlStateManager.popMatrix();
 
-			GlStateManager.pushMatrix();
 			drawSkillIcon(mc, this.x, this.y);
-			GlStateManager.popMatrix();
 
-			GlStateManager.pushMatrix();
-			renderSkillOverlay(mc, this.x, this.y);
-			GlStateManager.popMatrix();
+			GlStateManager.disableDepth();
+			GlStateManager.enableAlpha();
+			if (!SkillTreeApi.hasSkill(mc.player, skill))
+				renderSkillLockOverlay(mc, this.x, this.y);
 
 		}
+
 		GlStateManager.disableDepth();
 		GlStateManager.popMatrix();
 
-	}
-
-	private void renderSkillOverlay(Minecraft mc, int posX, int posY) {
-		GlStateManager.disableDepth();
-		GlStateManager.enableAlpha();
-
-		if (!hasSkill && !(hasRequirements && hovered)) {
-			drawRect(posX, posY, posX + width, posY + height, 0xCC505050);
-			mc.getTextureManager().bindTexture(SKILL_TREE_BACKGROUND);
-			int lockType = hasRequirements ? 18 : 0;
-			GlStateManager.color(1, 1, 1, 1);
-			drawScaledCustomSizeModalRect(posX, posY, lockType, 176, 18, 18, 16, 16, 256, 256);
-		}
 	}
 
 	protected void drawSkillBackground(Minecraft mc, int posX, int posY) {
@@ -122,15 +106,34 @@ public class GuiSkillButton extends GuiButton {
 	}
 
 	protected void drawSkillIcon(Minecraft mc, int posX, int posY) {
+		GlStateManager.pushMatrix();
 		GlStateManager.translate(posX, posY, 0);
 		GlStateManager.scale(0.5, 0.5, 1);
 		GlStateManager.enableDepth();
 		mc.getRenderItem().renderItemAndEffectIntoGUI(skill.getIcon(), 8, 8);
 		GlStateManager.disableDepth();
+		GlStateManager.popMatrix();
+	}
+
+	protected void renderSkillLockOverlay(Minecraft mc, int posX, int posY) {
+		boolean hasRequirements = SkillTreeApi.hasSkillRequirements(mc.player, skill);
+		if (hasRequirements && hovered)
+			return;
+
+		drawRect(posX, posY, posX + width, posY + height, 0xCC505050);
+		mc.getTextureManager().bindTexture(GuiReference.SKILL_TREE_BACKGROUND);
+		int lockType = hasRequirements ? 18 : 0;
+		GlStateManager.color(1, 1, 1, 1);
+		drawScaledCustomSizeModalRect(posX, posY, lockType, 176, 18, 18, 16, 16, 256, 256);
 	}
 
 	public SkillBase getSkill() {
 		return skill;
+	}
+	
+	@Override
+	public boolean isMouseOver() {
+		return visible && super.isMouseOver();
 	}
 
 	@Override
@@ -145,9 +148,6 @@ public class GuiSkillButton extends GuiButton {
 
 	@Override
 	public void mouseReleased(int mouseX, int mouseY) {
-		// this.hovered = mouseX >= this. && mouseY >= oringalY && mouseX < orginalX +
-		// this.width
-		// && mouseY < oringalY + this.height;
 		if (!isMouseOver())
 			return;
 		Minecraft mc = Minecraft.getMinecraft();

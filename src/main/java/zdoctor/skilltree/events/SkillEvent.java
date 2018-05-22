@@ -8,12 +8,32 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.client.gui.GuiSkillPage;
 import zdoctor.skilltree.skills.SkillBase;
 import zdoctor.skilltree.skills.SkillSlot;
+import zdoctor.skilltree.skills.pages.SkillPageBase;
 
 public class SkillEvent extends Event {
 
 	public static class ReloadPages extends SkillEvent {
-		public ReloadPages() {
+		public final SkillPageBase page;
+
+		public ReloadPages(SkillPageBase page) {
 			super(EventType.RELOAD);
+			this.page = page;
+		}
+
+		@Cancelable
+		public static class Pre extends ReloadPages {
+			public Pre(SkillPageBase page) {
+				super(page);
+			}
+
+		}
+
+		public static class Post extends ReloadPages {
+
+			public Post(SkillPageBase page) {
+				super(page);
+			}
+
 		}
 
 	}

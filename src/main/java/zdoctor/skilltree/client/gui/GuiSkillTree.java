@@ -78,32 +78,24 @@ public class GuiSkillTree extends GuiSkillScreen {
 		int i = this.guiLeft;
 		int j = this.guiTop;
 		this.drawGuiBackgroundLayer(partialTicks, mouseX, mouseY);
-		GlStateManager.pushMatrix();
 		this.drawPageBackgroundLayer(selectedTabIndex, partialTicks, mouseX, mouseY);
-		GlStateManager.popMatrix();
 		GlStateManager.disableRescaleNormal();
 		RenderHelper.disableStandardItemLighting();
 		GlStateManager.disableLighting();
 		GlStateManager.disableDepth();
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		RenderHelper.enableGUIStandardItemLighting();
-		GlStateManager.pushMatrix();
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		GlStateManager.enableRescaleNormal();
 		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240.0F, 240.0F);
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		GlStateManager.disableLighting();
 		RenderHelper.disableStandardItemLighting();
-		GlStateManager.pushMatrix();
 		this.drawPageScreen(selectedTabIndex, mouseX, mouseY, partialTicks);
-		GlStateManager.popMatrix();
-		GlStateManager.pushMatrix();
-		this.drawPageForeground(selectedTabIndex, mouseX, mouseY);
-		GlStateManager.popMatrix();
 		RenderHelper.disableStandardItemLighting();
 		this.drawGuiForegroundLayer(mouseX, mouseY);
+		this.drawPageForeground(selectedTabIndex, mouseX, mouseY);
 
-		GlStateManager.popMatrix();
 		GlStateManager.enableLighting();
 		GlStateManager.enableDepth();
 		RenderHelper.enableStandardItemLighting();
@@ -140,21 +132,6 @@ public class GuiSkillTree extends GuiSkillScreen {
 
 		}
 
-		for (SkillTabs tab : SkillTabs.SKILL_TABS) {
-			if (tab == null)
-				continue;
-			if (isMouseOverTab(tab, mouseX, mouseY)) {
-				this.renderSkillTreeHoveringText(tab, mouseX, mouseY);
-				break;
-			}
-		}
-
-		for (SkillBase skill : this.getSkillPage(selectedTabIndex).getSkillList()) {
-			if (this.getGuiPage(selectedTabIndex).renderSkillTooltip(this.getSkillPage(selectedTabIndex), skill, mouseX,
-					mouseY)) {
-				break;
-			}
-		}
 	}
 
 	@Override

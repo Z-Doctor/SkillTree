@@ -2,12 +2,16 @@ package zdoctor.skilltree.client.gui;
 
 import java.io.IOException;
 
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.client.KeyHandler;
 import zdoctor.skilltree.events.SkillEvent;
+import zdoctor.skilltree.events.SkillEvent.ReloadPages.Pre;
+import zdoctor.skilltree.skills.SkillBase;
 import zdoctor.skilltree.skills.pages.SkillPageBase;
 import zdoctor.skilltree.skills.pages.SkillPageBase.BackgroundType;
 
@@ -19,27 +23,46 @@ import zdoctor.skilltree.skills.pages.SkillPageBase.BackgroundType;
 @SideOnly(Side.CLIENT)
 public class GuiSkillPage extends GuiSkillScreen {
 
+	int minIndexX;
+	int minIndexY;
+	int maxIndexX;
+	int maxIndexY;
+
 	public SkillPageBase page;
 
 	public GuiSkillPage(SkillPageBase skillPage) {
 		this.page = skillPage;
+		MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	@Override
 	public void initGui() {
 		super.initGui();
 		if (page != null) {
-			page.getSkillList().forEach(skill -> {
-				GuiSkillButton button;
-				addButton(button = new GuiSkillButton(page, this, skill, page.getColumn(skill), page.getRow(skill), guiLeft,
-						guiTop));
-				minOffsetX = Math.min(minOffsetX, button.x);
-			});
+			this.minBoundryX = this.guiLeft + 4;
+			this.minBoundryY = this.guiTop + 9;
+			this.maxBoundryX = this.guiLeft + 247;
+			this.maxBoundryY = this.guiTop + 138;
 
-			this.minX = this.guiLeft + 4;
-			this.minY = this.guiTop + 9;
-			this.maxX = this.guiLeft + 247;
-			this.maxY = this.guiTop + 139;
+			minIndexX = 0;
+			minIndexY = 0;
+			maxIndexX = 0;
+			maxIndexY = 0;
+
+			for (SkillBase skill : page.getSkillList()) {
+				GuiSkillButton button;
+				addButton(button = new GuiSkillButton(page, this, skill, page.getColumn(skill), page.getRow(skill),
+						guiLeft, guiTop));
+				minIndexX = Math.min(minIndexX, page.getColumn(skill));
+				minIndexY = Math.min(minIndexY, page.getRow(skill));
+				maxIndexX = Math.max(maxIndexX, page.getColumn(skill));
+				maxIndexY = Math.max(maxIndexY, page.getRow(skill));
+			}
+
+			maxOffsetXNeg = minIndexX < 0 ? -19 * minIndexX : 0;
+			maxOffsetYNeg = minIndexY < 0 ? -18 * minIndexY : 0;
+			maxOffsetX = maxIndexX > 11 ? -19 * maxIndexX + 209 : 0;
+			maxOffsetY = maxIndexY > 6 ? -18 * maxIndexY + 90 : 0;
 		}
 	}
 
@@ -57,7 +80,12 @@ public class GuiSkillPage extends GuiSkillScreen {
 	 */
 	@Override
 	public void drawGuiForegroundLayer(int mouseX, int mouseY) {
-
+		for (GuiButton button : buttonList) {
+			if (button.isMouseOver() && button instanceof GuiSkillButton) {
+				GuiSkillButton skillButton = (GuiSkillButton) button;
+				drawSkillToolTip(skillButton.page, skillButton.skill, mouseX, mouseY);
+			}
+		}
 	}
 
 	/**
@@ -92,7 +120,13 @@ public class GuiSkillPage extends GuiSkillScreen {
 			MinecraftForge.EVENT_BUS.post(event);
 			if (!event.isCanceled())
 				this.initGui();
-			MinecraftForge.EVENT_BUS.post(new SkillEvent.ReloadPages());
+			Pre event1 = new SkillEvent.ReloadPages.Pre(this.page);
+			MinecraftForge.EVENT_BUS.post(event1);
+			if (!event1.isCanceled()) {
+				this.initGui();
+				MinecraftForge.EVENT_BUS.post(new SkillEvent.ReloadPages.Post(this.page));
+			}
+
 		} else
 			super.keyTyped(typedChar, keyCode);
 	}

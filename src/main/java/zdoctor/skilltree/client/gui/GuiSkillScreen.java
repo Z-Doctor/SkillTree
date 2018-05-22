@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.lwjgl.input.Keyboard;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
@@ -14,6 +15,8 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.ModMain;
+import zdoctor.skilltree.api.SkillTreeApi;
+import zdoctor.skilltree.api.enums.SkillFrameType;
 import zdoctor.skilltree.client.SkillToolTip;
 import zdoctor.skilltree.skills.SkillBase;
 import zdoctor.skilltree.skills.pages.SkillPageBase;
@@ -30,19 +33,20 @@ public class GuiSkillScreen extends GuiScreen {
 
 	public int offsetX;
 	public int offsetY;
-	public int minOffsetX;
-	public int minOffsetY;
+
 	public int maxOffsetX;
+	public int maxOffsetXNeg;
 	public int maxOffsetY;
+	public int maxOffsetYNeg;
 
 	public boolean mouseDown;
 	public int lastX;
 	public int lastY;
 
-	public int minX;
-	public int minY;
-	public int maxX;
-	public int maxY;
+	public int minBoundryX;
+	public int minBoundryY;
+	public int maxBoundryX;
+	public int maxBoundryY;
 
 	@Override
 	public void updateScreen() {
@@ -54,10 +58,11 @@ public class GuiSkillScreen extends GuiScreen {
 	public void initGui() {
 		offsetX = 0;
 		offsetY = 0;
-		minOffsetX = 0;
-		minOffsetY = 0;
+
 		maxOffsetX = 0;
+		maxOffsetXNeg = 0;
 		maxOffsetY = 0;
+		maxOffsetYNeg = 0;
 
 		buttonList.clear();
 		pageList.clear();
@@ -105,6 +110,10 @@ public class GuiSkillScreen extends GuiScreen {
 		pageList.get(pageIndex).drawGuiForegroundLayer(mouseX, mouseY);
 	}
 
+	public void drawGuiBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
+
+	}
+
 	public void drawGuiForegroundLayer(int mouseX, int mouseY) {
 
 	}
@@ -135,27 +144,6 @@ public class GuiSkillScreen extends GuiScreen {
 		return getGuiPage(pageIndex).page;
 	}
 
-	public void drawGuiBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
-
-	}
-
-	protected void renderSkillTreeHoveringText(SkillTabs tab, int mouseX, int mouseY) {
-		this.drawHoveringText(tab.getTranslatedTabLabel(), mouseX, mouseY);
-	}
-
-	public boolean isMouseOverSkill(SkillPageBase page, SkillBase skill, int mouseX, int mouseY) {
-		if (page == null || skill == null)
-			return false;
-
-		int startX = this.guiLeft + this.offsetX + 13;
-		int startY = this.guiTop + this.offsetY + 21;
-
-		int xOffset = startX + 19 * page.getColumn(skill);
-		int yOffset = startY + 18 * page.getRow(skill);
-
-		return mouseX >= xOffset && mouseX <= xOffset + 16 && mouseY >= yOffset && mouseY <= yOffset + 16;
-	}
-
 	protected boolean isPointInRegion(int rectX, int rectY, int rectWidth, int rectHeight, int pointX, int pointY) {
 		int i = this.guiLeft;
 		int j = this.guiTop;
@@ -176,15 +164,7 @@ public class GuiSkillScreen extends GuiScreen {
 		}
 	}
 
-	public boolean renderSkillTooltip(SkillPageBase page, SkillBase skill, int mouseX, int mouseY) {
-		if (!isMouseOverSkill(page, skill, mouseX, mouseY))
-			return false;
-
-		this.drawSkillSlot(skill, mouseX, mouseY);
-		return true;
-	}
-
-	protected void drawSkillSlot(SkillBase skill, int mouseX, int mouseY) {
+	protected void drawSkillToolTip(SkillPageBase page, SkillBase skill, int mouseX, int mouseY) {
 		GlStateManager.disableRescaleNormal();
 		RenderHelper.disableStandardItemLighting();
 		GlStateManager.disableLighting();
@@ -260,15 +240,15 @@ public class GuiSkillScreen extends GuiScreen {
 		int parentHalfX = 16 + initX + 19 * page.getColumn(skill) + 1;
 		int parentY = 8 + initY + 18 * page.getRow(skill);
 
-		parentX = Math.max(this.minX, Math.min(this.maxX, parentX));
-		parentHalfX = Math.max(this.minX, Math.min(this.maxX, parentHalfX));
-		parentY = Math.max(this.minY, Math.min(this.maxY, parentY));
+		parentX = Math.max(this.minBoundryX, Math.min(this.maxBoundryX, parentX));
+		parentHalfX = Math.max(this.minBoundryX, Math.min(this.maxBoundryX, parentHalfX));
+		parentY = Math.max(this.minBoundryY, Math.min(this.maxBoundryY, parentY));
 
-		int parentHalfX1 = Math.max(this.minX, Math.min(this.maxX, parentHalfX + 1));
-		int parentHalfX2 = Math.max(this.minX, Math.min(this.maxX, parentHalfX - 1));
+		int parentHalfX1 = Math.max(this.minBoundryX, Math.min(this.maxBoundryX, parentHalfX + 1));
+		int parentHalfX2 = Math.max(this.minBoundryX, Math.min(this.maxBoundryX, parentHalfX - 1));
 
-		int parentY1 = Math.max(this.minY, Math.min(this.maxY, parentY + 1));
-		int parentY2 = Math.max(this.minY, Math.min(this.maxY, parentY - 1));
+		int parentY1 = Math.max(this.minBoundryY, Math.min(this.maxBoundryY, parentY + 1));
+		int parentY2 = Math.max(this.minBoundryY, Math.min(this.maxBoundryY, parentY - 1));
 
 		if (outerLine) {
 			drawHorizontalLine(parentHalfX1, parentX, parentY2, color);
@@ -282,14 +262,17 @@ public class GuiSkillScreen extends GuiScreen {
 			int childHalfX = 16 + initX + 19 * page.getColumn(child);
 			int childY = 8 + initY + 18 * page.getRow(child);
 
-			childX = Math.max(this.minX, Math.min(this.maxX, childX));
-			childHalfX = Math.max(this.minX, Math.min(this.maxX, childHalfX));
-			childY = Math.max(this.minY, Math.min(this.maxY, childY));
+			childX = Math.max(this.minBoundryX, Math.min(this.maxBoundryX, childX));
+			childHalfX = Math.max(this.minBoundryX, Math.min(this.maxBoundryX, childHalfX));
+			childY = Math.max(this.minBoundryY, Math.min(this.maxBoundryY, childY));
 
 			if (outerLine) {
-				drawHorizontalLine(childX, parentHalfX2, Math.max(this.minY, Math.min(this.maxY, childY - 1)), color);
-				drawHorizontalLine(childX, parentHalfX1, Math.max(this.minY, Math.min(this.maxY, childY - 1)), color);
-				drawHorizontalLine(childX, parentHalfX, Math.max(this.minY, Math.min(this.maxY, childY + 1)), color);
+				drawHorizontalLine(childX, parentHalfX2,
+						Math.max(this.minBoundryY, Math.min(this.maxBoundryY, childY - 1)), color);
+				drawHorizontalLine(childX, parentHalfX1,
+						Math.max(this.minBoundryY, Math.min(this.maxBoundryY, childY - 1)), color);
+				drawHorizontalLine(childX, parentHalfX,
+						Math.max(this.minBoundryY, Math.min(this.maxBoundryY, childY + 1)), color);
 
 				int lineY = page.getColumn(child) > page.getColumn(skill) ? 2 : -2;
 
@@ -299,7 +282,7 @@ public class GuiSkillScreen extends GuiScreen {
 					lineY *= page.getRow(child) < page.getRow(skill) ? 1 : -1;
 				}
 
-				int parentY3 = Math.max(this.minY, Math.min(this.maxY, parentY - lineY));
+				int parentY3 = Math.max(this.minBoundryY, Math.min(this.maxBoundryY, parentY - lineY));
 
 				drawVerticalLine(parentHalfX2, childY + lineY, parentY3, color);
 				drawVerticalLine(parentHalfX1, childY + lineY, parentY3, color);
@@ -321,9 +304,9 @@ public class GuiSkillScreen extends GuiScreen {
 		if (mouseDown && isPointInRegion(9, 18, xSize, ySize, mouseX, mouseY)) {
 			offsetX += mouseX - lastX;
 			offsetY += mouseY - lastY;
-			offsetX = Math.min(minOffsetX, offsetX);
-			// offsetX = 0;
-			// offsetY = 0;
+
+			offsetX = offsetX > maxOffsetXNeg ? maxOffsetXNeg : offsetX < maxOffsetX ? maxOffsetX : offsetX;
+			offsetY = offsetY > maxOffsetYNeg ? maxOffsetYNeg : offsetY < maxOffsetY ? maxOffsetY : offsetY;
 		}
 		lastX = mouseX;
 		lastY = mouseY;

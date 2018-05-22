@@ -163,7 +163,7 @@ public abstract class SkillPageBase {
 	}
 
 	@SubscribeEvent
-	public void reloadPage(SkillEvent.ReloadPages e) {
+	public void reloadPage(SkillEvent.ReloadPages.Pre e) {
 		SKILL_ENTRIES.clear();
 		loadPage();
 	}

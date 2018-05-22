@@ -14,6 +14,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.enums.SkillFrameType;
 import zdoctor.skilltree.api.skills.ISkillRequirment;
 import zdoctor.skilltree.api.skills.ISkillTickable;
@@ -63,7 +64,7 @@ public abstract class SkillBase {
 		Collections.addAll(this.requirements, requirements);
 		descReq = new DescriptionRequirment(this);
 		if (Skill_Registry.containsKey(registryName)) {
-			throw new IllegalArgumentException("Attempt to register Skill '" + registryName + "' twice");
+			ModMain.proxy.log.catching(new IllegalArgumentException("Attempt to register Skill '" + registryName + "' twice"));
 		}
 		Skill_Registry.put(registryName, this);
 		this.id = nextId++;
@@ -74,11 +75,15 @@ public abstract class SkillBase {
 	public SkillBase setParent(SkillBase parent) {
 		if (parent == null)
 			return this;
-		if (parent == this)
-			throw new IllegalArgumentException("Tried to register skill '" + getRegistryName() + "' parent as itself!");
-		this.parent = parent;
-		requirements.add(new PreviousSkillRequirement(parent));
-		parent.addChildren(this);
+		if (parent == this) {
+			ModMain.proxy.log.catching(new IllegalArgumentException("Tried to register skill '" + getRegistryName() + "' parent as itself!"));
+		}
+		// TODO have a way to change the parent
+		if (this.parent == null) {
+			this.parent = parent;
+			requirements.add(new PreviousSkillRequirement(parent));
+			parent.addChildren(this);
+		}
 		return this;
 	}
 
@@ -121,11 +126,11 @@ public abstract class SkillBase {
 
 	public SkillBase addRequirement(ISkillRequirment requirment) {
 		if (requirements.contains(requirment))
-			throw new IllegalIcuArgumentException("Tried to add '" + requirment + "' twice");
+			ModMain.proxy.log.catching(new IllegalIcuArgumentException("Tried to add '" + requirment + "' twice"));
 		for (ISkillRequirment r : requirements) {
 			if (requirment.getClass().isInstance(r))
-				throw new IllegalIcuArgumentException("Tried to add conflicting requirment class '"
-						+ requirment.getClass() + "' already registered '" + r.getClass() + "'");
+				ModMain.proxy.log.catching(new IllegalIcuArgumentException("Tried to add conflicting requirment class '"
+						+ requirment.getClass() + "' already registered '" + r.getClass() + "'"));
 		}
 		requirements.add(requirment);
 		return this;
