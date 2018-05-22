@@ -30,6 +30,10 @@ public class GuiSkillScreen extends GuiScreen {
 
 	public int offsetX;
 	public int offsetY;
+	public int minOffsetX;
+	public int minOffsetY;
+	public int maxOffsetX;
+	public int maxOffsetY;
 
 	public boolean mouseDown;
 	public int lastX;
@@ -48,6 +52,13 @@ public class GuiSkillScreen extends GuiScreen {
 
 	@Override
 	public void initGui() {
+		offsetX = 0;
+		offsetY = 0;
+		minOffsetX = 0;
+		minOffsetY = 0;
+		maxOffsetX = 0;
+		maxOffsetY = 0;
+
 		buttonList.clear();
 		pageList.clear();
 		this.guiLeft = (this.width - this.xSize) / 2;
@@ -132,15 +143,15 @@ public class GuiSkillScreen extends GuiScreen {
 		this.drawHoveringText(tab.getTranslatedTabLabel(), mouseX, mouseY);
 	}
 
-	public boolean isMouseOverSkill(SkillBase skill, int mouseX, int mouseY) {
-		if (skill == null)
+	public boolean isMouseOverSkill(SkillPageBase page, SkillBase skill, int mouseX, int mouseY) {
+		if (page == null || skill == null)
 			return false;
 
 		int startX = this.guiLeft + this.offsetX + 13;
 		int startY = this.guiTop + this.offsetY + 21;
 
-		int xOffset = startX + 19 * skill.getColumn();
-		int yOffset = startY + 18 * skill.getRow();
+		int xOffset = startX + 19 * page.getColumn(skill);
+		int yOffset = startY + 18 * page.getRow(skill);
 
 		return mouseX >= xOffset && mouseX <= xOffset + 16 && mouseY >= yOffset && mouseY <= yOffset + 16;
 	}
@@ -165,8 +176,8 @@ public class GuiSkillScreen extends GuiScreen {
 		}
 	}
 
-	public boolean renderSkillTooltip(SkillBase skill, int mouseX, int mouseY) {
-		if (!isMouseOverSkill(skill, mouseX, mouseY))
+	public boolean renderSkillTooltip(SkillPageBase page, SkillBase skill, int mouseX, int mouseY) {
+		if (!isMouseOverSkill(page, skill, mouseX, mouseY))
 			return false;
 
 		this.drawSkillSlot(skill, mouseX, mouseY);
@@ -236,7 +247,7 @@ public class GuiSkillScreen extends GuiScreen {
 		GlStateManager.enableRescaleNormal();
 	}
 
-	public void drawConnectivity(SkillBase skill, int offsetX, int offsetY, boolean outerLine) {
+	public void drawConnectivity(SkillPageBase page, SkillBase skill, int offsetX, int offsetY, boolean outerLine) {
 		if (skill.getChildren().isEmpty())
 			return;
 
@@ -245,9 +256,9 @@ public class GuiSkillScreen extends GuiScreen {
 		int initX = this.guiLeft + offsetX + 13;
 		int initY = this.guiTop + offsetY + 21;
 
-		int parentX = 8 + initX + 19 * skill.getColumn();
-		int parentHalfX = 16 + initX + 19 * skill.getColumn() + 1;
-		int parentY = 8 + initY + 18 * skill.getRow();
+		int parentX = 8 + initX + 19 * page.getColumn(skill);
+		int parentHalfX = 16 + initX + 19 * page.getColumn(skill) + 1;
+		int parentY = 8 + initY + 18 * page.getRow(skill);
 
 		parentX = Math.max(this.minX, Math.min(this.maxX, parentX));
 		parentHalfX = Math.max(this.minX, Math.min(this.maxX, parentHalfX));
@@ -267,9 +278,9 @@ public class GuiSkillScreen extends GuiScreen {
 			drawHorizontalLine(parentHalfX, parentX, parentY, color);
 
 		for (SkillBase child : skill.getChildren()) {
-			int childX = 8 + initX + 19 * child.getColumn();
-			int childHalfX = 16 + initX + 19 * child.getColumn();
-			int childY = 8 + initY + 18 * child.getRow();
+			int childX = 8 + initX + 19 * page.getColumn(child);
+			int childHalfX = 16 + initX + 19 * page.getColumn(child);
+			int childY = 8 + initY + 18 * page.getRow(child);
 
 			childX = Math.max(this.minX, Math.min(this.maxX, childX));
 			childHalfX = Math.max(this.minX, Math.min(this.maxX, childHalfX));
@@ -280,15 +291,15 @@ public class GuiSkillScreen extends GuiScreen {
 				drawHorizontalLine(childX, parentHalfX1, Math.max(this.minY, Math.min(this.maxY, childY - 1)), color);
 				drawHorizontalLine(childX, parentHalfX, Math.max(this.minY, Math.min(this.maxY, childY + 1)), color);
 
-				int lineY = child.getColumn() > skill.getColumn() ? 2 : -2;
+				int lineY = page.getColumn(child) > page.getColumn(skill) ? 2 : -2;
 
-				if (child.getColumn() > skill.getColumn()) {
-					lineY *= child.getRow() < skill.getRow() ? -1 : 1;
-				} else if (child.getColumn() < skill.getColumn()) {
-					lineY *= child.getRow() < skill.getRow() ? 1 : -1;
+				if (page.getColumn(child) > page.getColumn(skill)) {
+					lineY *= page.getRow(child) < page.getRow(skill) ? -1 : 1;
+				} else if (page.getColumn(child) < page.getColumn(skill)) {
+					lineY *= page.getRow(child) < page.getRow(skill) ? 1 : -1;
 				}
-				
-				int parentY3 =  Math.max(this.minY, Math.min(this.maxY, parentY - lineY));
+
+				int parentY3 = Math.max(this.minY, Math.min(this.maxY, parentY - lineY));
 
 				drawVerticalLine(parentHalfX2, childY + lineY, parentY3, color);
 				drawVerticalLine(parentHalfX1, childY + lineY, parentY3, color);
@@ -310,6 +321,7 @@ public class GuiSkillScreen extends GuiScreen {
 		if (mouseDown && isPointInRegion(9, 18, xSize, ySize, mouseX, mouseY)) {
 			offsetX += mouseX - lastX;
 			offsetY += mouseY - lastY;
+			offsetX = Math.min(minOffsetX, offsetX);
 			// offsetX = 0;
 			// offsetY = 0;
 		}

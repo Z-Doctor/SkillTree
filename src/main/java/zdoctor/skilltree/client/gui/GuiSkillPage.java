@@ -1,9 +1,13 @@
 package zdoctor.skilltree.client.gui;
 
+import java.io.IOException;
+
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import zdoctor.skilltree.skills.SkillBase;
+import zdoctor.skilltree.client.KeyHandler;
+import zdoctor.skilltree.events.SkillEvent;
 import zdoctor.skilltree.skills.pages.SkillPageBase;
 import zdoctor.skilltree.skills.pages.SkillPageBase.BackgroundType;
 
@@ -26,7 +30,10 @@ public class GuiSkillPage extends GuiSkillScreen {
 		super.initGui();
 		if (page != null) {
 			page.getSkillList().forEach(skill -> {
-				addButton(new GuiSkillButton(this, skill, guiLeft, guiTop));
+				GuiSkillButton button;
+				addButton(button = new GuiSkillButton(page, this, skill, page.getColumn(skill), page.getRow(skill), guiLeft,
+						guiTop));
+				minOffsetX = Math.min(minOffsetX, button.x);
 			});
 
 			this.minX = this.guiLeft + 4;
@@ -76,6 +83,18 @@ public class GuiSkillPage extends GuiSkillScreen {
 
 	protected void renderCustomBackround(float partialTicks, int mouseX, int mouseY) {
 
+	}
+
+	@Override
+	protected void keyTyped(char typedChar, int keyCode) throws IOException {
+		if (keyCode == KeyHandler.RECENTER_SKILL_TREE.getKeyCode()) {
+			SkillEvent.RecenterPage event = new SkillEvent.RecenterPage(this);
+			MinecraftForge.EVENT_BUS.post(event);
+			if (!event.isCanceled())
+				this.initGui();
+			MinecraftForge.EVENT_BUS.post(new SkillEvent.ReloadPages());
+		} else
+			super.keyTyped(typedChar, keyCode);
 	}
 
 }

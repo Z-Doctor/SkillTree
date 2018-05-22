@@ -3,10 +3,33 @@ package zdoctor.skilltree.events;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraftforge.fml.common.eventhandler.Cancelable;
 import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import zdoctor.skilltree.client.gui.GuiSkillPage;
 import zdoctor.skilltree.skills.SkillBase;
 import zdoctor.skilltree.skills.SkillSlot;
 
 public class SkillEvent extends Event {
+
+	public static class ReloadPages extends SkillEvent {
+		public ReloadPages() {
+			super(EventType.RELOAD);
+		}
+
+	}
+
+	@Cancelable
+	@SideOnly(Side.CLIENT)
+	public static class RecenterPage extends SkillEvent {
+
+		public GuiSkillPage page;
+
+		public RecenterPage(GuiSkillPage page) {
+			super(EventType.RECENTER);
+			this.page = page;
+		}
+
+	}
 
 	public EventType type;
 
@@ -46,6 +69,8 @@ public class SkillEvent extends Event {
 
 	public static enum EventType {
 		TICK,
-		ACTIVE_TICK
+		ACTIVE_TICK,
+		RELOAD,
+		RECENTER
 	}
 }

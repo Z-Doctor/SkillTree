@@ -12,6 +12,7 @@ import zdoctor.skilltree.api.skills.ISkillToggle;
 import zdoctor.skilltree.network.SkillTreePacketHandler;
 import zdoctor.skilltree.network.play.server.SPacketSkillSlotInteract;
 import zdoctor.skilltree.skills.SkillBase;
+import zdoctor.skilltree.skills.pages.SkillPageBase;
 
 public class GuiSkillButton extends GuiButton {
 	public static final ResourceLocation SKILL_TREE_BACKGROUND = new ResourceLocation(
@@ -31,13 +32,17 @@ public class GuiSkillButton extends GuiButton {
 	public int orginalX;
 	public int oringalY;
 
-	public GuiSkillButton(GuiSkillScreen parent, SkillBase skill, int startX, int startY) {
-		this(parent, 0, skill, startX + 13 + 19 * skill.getColumn(), startY + 21 + 18 * skill.getRow(), 16, 16, "");
+	public SkillPageBase page;
+
+	public GuiSkillButton(SkillPageBase page, GuiSkillScreen parent, SkillBase skill, int column, int row, int startX,
+			int startY) {
+		this(page, parent, 0, skill, startX + 13 + 19 * column, startY + 21 + 18 * row, 16, 16, "");
 	}
 
-	public GuiSkillButton(GuiSkillScreen parent, int buttonId, SkillBase skill, int x, int y, int widthIn, int heightIn,
-			String buttonText) {
+	public GuiSkillButton(SkillPageBase page, GuiSkillScreen parent, int buttonId, SkillBase skill, int x, int y,
+			int widthIn, int heightIn, String buttonText) {
 		super(buttonId, x, y, widthIn, heightIn, buttonText);
+		this.page = page;
 		this.parent = parent;
 		this.skill = skill;
 		this.enabled = true;
@@ -47,6 +52,7 @@ public class GuiSkillButton extends GuiButton {
 
 	@Override
 	public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+		GlStateManager.pushMatrix();
 		this.x = orginalX + parent.offsetX;
 		this.y = oringalY + parent.offsetY;
 
@@ -55,21 +61,20 @@ public class GuiSkillButton extends GuiButton {
 
 		this.visible = this.x >= parent.minX && this.y >= parent.minY && this.x + this.width < parent.maxX
 				&& this.y + this.height < parent.maxY;
-		// this.visible = this.visible && this.x + this.width >= parent.guiLeft +
-		// parent.width
-		// && this.y + this.height >= parent.guiTop + parent.height && this.x +
-		// this.width < parent.guiLeft
-		// && this.y + this.height < parent.guiTop;
-
 		boolean childVisible = false;
 
-		// if(this.visible) {
-		parent.drawConnectivity(skill, parent.offsetX, parent.offsetY, true);
-		parent.drawConnectivity(skill, parent.offsetX, parent.offsetY, false);
-		// }
+		GlStateManager.enableDepth();
+		if (!skill.getChildren().isEmpty()) {
+			this.zLevel = 0;
 
+			GlStateManager.translate(0, 0, this.zLevel);
+			parent.drawConnectivity(page, skill, parent.offsetX, parent.offsetY, true);
+			parent.drawConnectivity(page, skill, parent.offsetX, parent.offsetY, false);
+
+		}
+		 this.zLevel = 1;
 		if (this.visible) {
-
+			GlStateManager.translate(0, 0, this.zLevel);
 			hasRequirements = SkillTreeApi.hasSkillRequirements(mc.player, skill);
 			hasSkill = SkillTreeApi.hasSkill(mc.player, skill);
 
@@ -86,6 +91,8 @@ public class GuiSkillButton extends GuiButton {
 			GlStateManager.popMatrix();
 
 		}
+		GlStateManager.disableDepth();
+		GlStateManager.popMatrix();
 
 	}
 

@@ -16,14 +16,12 @@ public class AttributeSkill extends Skill {
 	protected final AttributeModifier modifier;
 	protected final IAttribute attribute;
 
-	public AttributeSkill(String name, int column, int row, Item icon, IAttribute attributeIn,
-			AttributeModifier modifierIn) {
-		this(name, column, row, new ItemStack(icon), attributeIn, modifierIn);
+	public AttributeSkill(String name, Item icon, IAttribute attributeIn, AttributeModifier modifierIn) {
+		this(name, new ItemStack(icon), attributeIn, modifierIn);
 	}
 
-	public AttributeSkill(String name, int column, int row, ItemStack icon, IAttribute attributeIn,
-			AttributeModifier modifierIn) {
-		super(name, column, row, icon);
+	public AttributeSkill(String name, ItemStack icon, IAttribute attributeIn, AttributeModifier modifierIn) {
+		super(name, icon);
 		this.attribute = attributeIn;
 		this.modifier = modifierIn;
 		modifierIn.setSaved(false);

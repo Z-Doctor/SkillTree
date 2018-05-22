@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import zdoctor.skilltree.api.SkillTreeApi;
@@ -14,29 +13,28 @@ import zdoctor.skilltree.client.SkillToolTip;
 
 public class Skill extends SkillBase {
 
-	public Skill(String name, int column, int row, Item iconIn) {
-		this(name, column, row, new ItemStack(iconIn), new ISkillRequirment[0]);
+	public Skill(String name, Item iconIn) {
+		this(name, new ItemStack(iconIn), new ISkillRequirment[0]);
 	}
 
-	public Skill(String name, int column, int row, SkillFrameType type, Item iconIn) {
-		this(name, column, row, type, new ItemStack(iconIn), new ISkillRequirment[0]);
+	public Skill(String name, SkillFrameType type, Item iconIn) {
+		this(name, type, new ItemStack(iconIn), new ISkillRequirment[0]);
 	}
 
-	public Skill(String name, int column, int row, ItemStack iconIn) {
-		this(name, column, row, iconIn, new ISkillRequirment[0]);
+	public Skill(String name, ItemStack iconIn) {
+		this(name, iconIn, new ISkillRequirment[0]);
 	}
 
-	public Skill(String name, int column, int row, SkillFrameType type, ItemStack iconIn) {
-		this(name, column, row, type, iconIn, new ISkillRequirment[0]);
+	public Skill(String name, SkillFrameType type, ItemStack iconIn) {
+		this(name, type, iconIn, new ISkillRequirment[0]);
 	}
 
-	public Skill(String name, int column, int row, ItemStack iconIn, ISkillRequirment... requirements) {
-		super(name, column, row, iconIn, requirements);
+	public Skill(String name, ItemStack iconIn, ISkillRequirment... requirements) {
+		super(name, iconIn, requirements);
 	}
 
-	public Skill(String name, int column, int row, SkillFrameType type, ItemStack iconIn,
-			ISkillRequirment... requirements) {
-		super(name, column, row, type, iconIn, requirements);
+	public Skill(String name, SkillFrameType type, ItemStack iconIn, ISkillRequirment... requirements) {
+		super(name, type, iconIn, requirements);
 	}
 
 	@Override

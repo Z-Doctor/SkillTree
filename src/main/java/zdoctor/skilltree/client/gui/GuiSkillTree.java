@@ -150,7 +150,8 @@ public class GuiSkillTree extends GuiSkillScreen {
 		}
 
 		for (SkillBase skill : this.getSkillPage(selectedTabIndex).getSkillList()) {
-			if (this.getGuiPage(selectedTabIndex).renderSkillTooltip(skill, mouseX, mouseY)) {
+			if (this.getGuiPage(selectedTabIndex).renderSkillTooltip(this.getSkillPage(selectedTabIndex), skill, mouseX,
+					mouseY)) {
 				break;
 			}
 		}

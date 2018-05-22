@@ -4,18 +4,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Vector;
 
 import net.minecraft.client.resources.I18n;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import zdoctor.skilltree.events.SkillEvent;
 import zdoctor.skilltree.skills.SkillBase;
 
 public abstract class SkillPageBase {
 	protected static final HashMap<String, SkillPageBase> SkillPage_Registry = new HashMap();
 	public static final SkillPageBase EMPTY = new SkillPageBase("Empty") {
 		@Override
-		public SkillPageBase addSkill(SkillBase skillIn) {
+		public SkillPageBase addSkill(SkillBase skillIn, int column, int row) {
 			return this;
 		}
 
@@ -23,12 +27,24 @@ public abstract class SkillPageBase {
 		public List<SkillBase> getSkillList() {
 			return Collections.emptyList();
 		}
+
+		@Override
+		public void registerSkills() {
+
+		}
+
+		@Override
+		public void loadPage() {
+
+		}
 	};
 
 	private String unlocalizedName;
 	private String registryName;
 
-	private ArrayList<SkillBase> skillList = new ArrayList<>();
+	protected final HashMap<SkillBase, Vector<Integer>> SKILL_ENTRIES = new HashMap();
+
+	// private ArrayList<SkillBase> skillList = new ArrayList<>();
 
 	private SkillBase lastAddedSkill;
 
@@ -40,18 +56,36 @@ public abstract class SkillPageBase {
 		}
 		SkillPage_Registry.put(registryName, this);
 		System.out.println("Register Page: " + registryName);
+
+		registerSkills();
+		loadPage();
+
+		MinecraftForge.EVENT_BUS.register(this);
 	}
 
-	public SkillPageBase addSkill(SkillBase skillIn) {
-		for (SkillBase skill1 : skillList) {
-			if (skillIn.column == skill1.column && skillIn.row == skill1.row)
+	/**
+	 * Create your skills here
+	 */
+	public abstract void registerSkills();
+
+	/**
+	 * Add skills during this method. Will be called so skills can be reloaded
+	 */
+	public abstract void loadPage();
+
+	public SkillPageBase addSkill(SkillBase skillIn, int column, int row) {
+		Vector<Integer> pos = new Vector<>(2);
+		pos.add(column);
+		pos.add(row);
+		for (SkillBase skill1 : SKILL_ENTRIES.keySet()) {
+			Vector<Integer> pos1 = SKILL_ENTRIES.get(skill1);
+			if (pos.equals(pos1))
 				throw new IllegalArgumentException("Tried to add skill '" + skillIn.getRegistryName() + "' to page '"
 						+ getRegistryName() + "' in the same spot as '" + skill1.getRegistryName() + "'");
 		}
 
-		if (!skillList.contains(skillIn)) {
-			skillIn.setPage(this);
-			skillList.add(skillIn);
+		if (SKILL_ENTRIES.get(skillIn) == null) {
+			SKILL_ENTRIES.put(skillIn, pos);
 			lastAddedSkill = skillIn;
 		} else
 			throw new IllegalArgumentException(
@@ -76,7 +110,7 @@ public abstract class SkillPageBase {
 	}
 
 	public List<SkillBase> getSkillList() {
-		return new ArrayList(skillList);
+		return new ArrayList(SKILL_ENTRIES.keySet());
 	}
 
 	public static SkillPageBase getpageFromKey(String key) {
@@ -85,6 +119,16 @@ public abstract class SkillPageBase {
 
 	public BackgroundType getBackgroundType() {
 		return BackgroundType.DEFAULT;
+	}
+
+	@SideOnly(Side.CLIENT)
+	public int getColumn(SkillBase skill) {
+		return SKILL_ENTRIES.get(skill).get(0);
+	}
+
+	@SideOnly(Side.CLIENT)
+	public int getRow(SkillBase skill) {
+		return SKILL_ENTRIES.get(skill).get(1);
 	}
 
 	public static enum BackgroundType {
@@ -116,6 +160,12 @@ public abstract class SkillPageBase {
 		public int getRow() {
 			return column > 3 ? 1 : 0;
 		}
+	}
+
+	@SubscribeEvent
+	public void reloadPage(SkillEvent.ReloadPages e) {
+		SKILL_ENTRIES.clear();
+		loadPage();
 	}
 
 }

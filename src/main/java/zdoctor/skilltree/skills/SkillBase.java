@@ -36,16 +36,13 @@ public abstract class SkillBase {
 	private String skillName;
 	private ResourceLocation registryName;
 
-	public final int column;
-	public final int row;
-
 	private SkillFrameType frameType;
 
 	private ArrayList<SkillBase> children = new ArrayList<>();
 	private ArrayList<ISkillRequirment> requirements = new ArrayList<>();
 	private SkillBase parent;
 
-	private SkillPageBase page;
+	// private SkillPageBase page;
 	private final ItemStack icon;
 
 	private int id;
@@ -53,16 +50,13 @@ public abstract class SkillBase {
 	private DescriptionRequirment descReq;
 	private NameRequirment nameReq;
 
-	public SkillBase(String name, int column, int row, ItemStack iconIn, ISkillRequirment... requirements) {
-		this(name, column, row, SkillFrameType.NORMAL, iconIn, requirements);
+	public SkillBase(String name, ItemStack iconIn, ISkillRequirment... requirements) {
+		this(name, SkillFrameType.NORMAL, iconIn, requirements);
 	}
 
-	public SkillBase(String name, int column, int row, SkillFrameType type, ItemStack iconIn,
-			ISkillRequirment... requirements) {
+	public SkillBase(String name, SkillFrameType type, ItemStack iconIn, ISkillRequirment... requirements) {
 		this.skillName = name;
 		this.registryName = new ResourceLocation(Loader.instance().activeModContainer().getModId() + ":" + skillName);
-		this.column = Math.min(Math.max(0, column), 12);
-		this.row = Math.min(Math.max(0, row), 5);
 		this.frameType = type;
 		this.icon = iconIn;
 		nameReq = new NameRequirment(this);
@@ -80,6 +74,8 @@ public abstract class SkillBase {
 	public SkillBase setParent(SkillBase parent) {
 		if (parent == null)
 			return this;
+		if (parent == this)
+			throw new IllegalArgumentException("Tried to register skill '" + getRegistryName() + "' parent as itself!");
 		this.parent = parent;
 		requirements.add(new PreviousSkillRequirement(parent));
 		parent.addChildren(this);
@@ -169,26 +165,16 @@ public abstract class SkillBase {
 		return icon;
 	}
 
-	public void setPage(SkillPageBase page) {
-		this.page = page;
-	}
+	// public void setPage(SkillPageBase page) {
+	// this.page = page;
+	// }
 
-	public SkillPageBase getPage() {
-		return page;
-	}
+	// public SkillPageBase getPage() {
+	// return page;
+	// }
 
 	public boolean hasParent() {
 		return getParent() != null;
-	}
-
-	@SideOnly(Side.CLIENT)
-	public int getColumn() {
-		return column;
-	}
-
-	@SideOnly(Side.CLIENT)
-	public int getRow() {
-		return row;
 	}
 
 	public int getId() {
