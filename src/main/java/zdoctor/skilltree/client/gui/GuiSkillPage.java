@@ -24,10 +24,16 @@ public class GuiSkillPage extends GuiSkillScreen {
 	@Override
 	public void initGui() {
 		super.initGui();
-		if (page != null)
+		if (page != null) {
 			page.getSkillList().forEach(skill -> {
 				addButton(new GuiSkillButton(this, skill, guiLeft, guiTop));
 			});
+
+			this.minX = this.guiLeft + 4;
+			this.minY = this.guiTop + 9;
+			this.maxX = this.guiLeft + 247;
+			this.maxY = this.guiTop + 139;
+		}
 	}
 
 	/**

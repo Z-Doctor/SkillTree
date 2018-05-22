@@ -35,6 +35,11 @@ public class GuiSkillScreen extends GuiScreen {
 	public int lastX;
 	public int lastY;
 
+	public int minX;
+	public int minY;
+	public int maxX;
+	public int maxY;
+
 	@Override
 	public void updateScreen() {
 		super.updateScreen();
@@ -244,10 +249,20 @@ public class GuiSkillScreen extends GuiScreen {
 		int parentHalfX = 16 + initX + 19 * skill.getColumn() + 1;
 		int parentY = 8 + initY + 18 * skill.getRow();
 
+		parentX = Math.max(this.minX, Math.min(this.maxX, parentX));
+		parentHalfX = Math.max(this.minX, Math.min(this.maxX, parentHalfX));
+		parentY = Math.max(this.minY, Math.min(this.maxY, parentY));
+
+		int parentHalfX1 = Math.max(this.minX, Math.min(this.maxX, parentHalfX + 1));
+		int parentHalfX2 = Math.max(this.minX, Math.min(this.maxX, parentHalfX - 1));
+
+		int parentY1 = Math.max(this.minY, Math.min(this.maxY, parentY + 1));
+		int parentY2 = Math.max(this.minY, Math.min(this.maxY, parentY - 1));
+
 		if (outerLine) {
-			drawHorizontalLine(parentHalfX + 1, parentX, parentY - 1, color);
-			drawHorizontalLine(parentHalfX + 1, parentX, parentY + 1, color);
-			drawHorizontalLine(parentHalfX + 1, parentX, parentY, color);
+			drawHorizontalLine(parentHalfX1, parentX, parentY2, color);
+			drawHorizontalLine(parentHalfX1, parentX, parentY1, color);
+			drawHorizontalLine(parentHalfX1, parentX, parentY, color);
 		} else
 			drawHorizontalLine(parentHalfX, parentX, parentY, color);
 
@@ -256,10 +271,14 @@ public class GuiSkillScreen extends GuiScreen {
 			int childHalfX = 16 + initX + 19 * child.getColumn();
 			int childY = 8 + initY + 18 * child.getRow();
 
+			childX = Math.max(this.minX, Math.min(this.maxX, childX));
+			childHalfX = Math.max(this.minX, Math.min(this.maxX, childHalfX));
+			childY = Math.max(this.minY, Math.min(this.maxY, childY));
+
 			if (outerLine) {
-				drawHorizontalLine(childX, parentHalfX - 1, childY - 1, color);
-				drawHorizontalLine(childX, parentHalfX + 1, childY - 1, color);
-				drawHorizontalLine(childX, parentHalfX, childY + 1, color);
+				drawHorizontalLine(childX, parentHalfX2, Math.max(this.minY, Math.min(this.maxY, childY - 1)), color);
+				drawHorizontalLine(childX, parentHalfX1, Math.max(this.minY, Math.min(this.maxY, childY - 1)), color);
+				drawHorizontalLine(childX, parentHalfX, Math.max(this.minY, Math.min(this.maxY, childY + 1)), color);
 
 				int lineY = child.getColumn() > skill.getColumn() ? 2 : -2;
 
@@ -268,15 +287,22 @@ public class GuiSkillScreen extends GuiScreen {
 				} else if (child.getColumn() < skill.getColumn()) {
 					lineY *= child.getRow() < skill.getRow() ? 1 : -1;
 				}
+				
+				int parentY3 =  Math.max(this.minY, Math.min(this.maxY, parentY - lineY));
 
-				drawVerticalLine(parentHalfX - 1, childY + lineY, parentY - lineY, color);
-				drawVerticalLine(parentHalfX + 1, childY + lineY, parentY - lineY, color);
+				drawVerticalLine(parentHalfX2, childY + lineY, parentY3, color);
+				drawVerticalLine(parentHalfX1, childY + lineY, parentY3, color);
 
 			} else {
 				drawHorizontalLine(parentHalfX, childX, childY, color);
 				drawVerticalLine(parentHalfX, parentY, childY, color);
 			}
 		}
+	}
+
+	public boolean isPointWithinBounds(int pointX, int pointY) {
+
+		return false;
 	}
 
 	@Override

@@ -52,10 +52,23 @@ public class GuiSkillButton extends GuiButton {
 
 		this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width
 				&& mouseY < this.y + this.height;
-		// To DO change x
+
+		this.visible = this.x >= parent.minX && this.y >= parent.minY && this.x + this.width < parent.maxX
+				&& this.y + this.height < parent.maxY;
+		// this.visible = this.visible && this.x + this.width >= parent.guiLeft +
+		// parent.width
+		// && this.y + this.height >= parent.guiTop + parent.height && this.x +
+		// this.width < parent.guiLeft
+		// && this.y + this.height < parent.guiTop;
+
+		boolean childVisible = false;
+
+		// if(this.visible) {
+		parent.drawConnectivity(skill, parent.offsetX, parent.offsetY, true);
+		parent.drawConnectivity(skill, parent.offsetX, parent.offsetY, false);
+		// }
+
 		if (this.visible) {
-			parent.drawConnectivity(skill, parent.offsetX, parent.offsetY, true);
-			parent.drawConnectivity(skill, parent.offsetX, parent.offsetY, false);
 
 			hasRequirements = SkillTreeApi.hasSkillRequirements(mc.player, skill);
 			hasSkill = SkillTreeApi.hasSkill(mc.player, skill);
