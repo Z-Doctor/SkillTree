@@ -8,6 +8,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.ModMain;
@@ -20,7 +21,7 @@ import zdoctor.skilltree.skills.SkillHandler;
 import zdoctor.skilltree.skills.SkillSlot;
 
 public class SkillTreeApi {
-	public static final String DEPENDENCY = "required-after:skilltree@[1.1.0.0,)";
+	public static final String DEPENDENCY = "required-after:skilltree@[1.1.0.1,)";
 
 	@CapabilityInject(ISkillHandler.class)
 	public static Capability<ISkillHandler> SKILL_CAPABILITY = null;
@@ -65,14 +66,16 @@ public class SkillTreeApi {
 		return new SkillSlot(skill, hasSkill(player, skill), isSkillActive(player, skill));
 	}
 
-	@SideOnly(Side.SERVER)
 	public static void syncSkills(EntityLivingBase entity) {
+		if (FMLCommonHandler.instance().getEffectiveSide() != Side.SERVER)
+			return;
 		if (ModMain.proxy.getWorld() instanceof WorldServer)
 			syncSkills(entity, ((WorldServer) ModMain.proxy.getWorld()).playerEntities);
 	}
 
-	@SideOnly(Side.SERVER)
 	public static void syncSkills(EntityLivingBase entity, List<EntityPlayer> receivers) {
+		if (FMLCommonHandler.instance().getEffectiveSide() != Side.SERVER)
+			return;
 		if (entity == null) {
 			ModMain.proxy.log.catching(new IllegalArgumentException("Tried to sync null entity"));
 			return;

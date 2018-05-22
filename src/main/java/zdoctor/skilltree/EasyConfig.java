@@ -133,7 +133,7 @@ public class EasyConfig {
 				value = minValue;
 			if (value > maxValue)
 				value = maxValue;
-			setValue(value);
+			super.setValue(value);
 		}
 
 		@Override
