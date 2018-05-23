@@ -114,12 +114,10 @@ public class GuiSkillButton extends GuiButton {
 		if (skill instanceof ISkillStackable) {
 			GlStateManager.pushMatrix();
 			String tier = String.valueOf(SkillTreeApi.getSkillTier(mc.player, skill));
-			GlStateManager.translate(16 - mc.fontRenderer.getStringWidth(tier), 16 - mc.fontRenderer.FONT_HEIGHT, 0);
+			GlStateManager.translate(this.x, this.y, 0);
 			GlStateManager.scale(0.5, 0.5, 0);
-			GlStateManager.translate(posX - mc.fontRenderer.getStringWidth(tier) / 2,
-					posY + mc.fontRenderer.FONT_HEIGHT, 0);
-			drawString(mc.fontRenderer, tier, posX + mc.fontRenderer.getStringWidth(tier), posY, -1);
-			GlStateManager.disableDepth();
+			drawString(mc.fontRenderer, tier, 18 + 10 - mc.fontRenderer.getStringWidth(tier),
+					18 + mc.fontRenderer.FONT_HEIGHT / 2, -1);
 			GlStateManager.popMatrix();
 		}
 
