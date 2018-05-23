@@ -137,9 +137,7 @@ public class GuiSkillPage extends GuiSkillScreen {
 
 	@Override
 	protected void mouseReleased(int mouseX, int mouseY, int state) {
-		super.mouseReleased(mouseX, mouseY, state);
-		if (this.selectedButton != null && state == 1 && this.selectedButton.isMouseOver()
-				&& this.selectedButton instanceof GuiSkillButton) {
+		if (this.selectedButton != null && state == 1 && this.selectedButton instanceof GuiSkillButton) {
 			GuiSkillButton skillButton = (GuiSkillButton) this.selectedButton;
 			if (skillButton.getSkill() instanceof ISkillToggle
 					&& SkillTreeApi.hasSkill(mc.player, skillButton.getSkill())) {
@@ -147,8 +145,9 @@ public class GuiSkillPage extends GuiSkillScreen {
 						EnumSkillInteractType.TOGGLE);
 				SkillTreePacketHandler.INSTANCE.sendToServer(message);
 			}
+			this.selectedButton = null;
 		}
-		this.selectedButton = null;
+		super.mouseReleased(mouseX, mouseY, state);
 
 	}
 

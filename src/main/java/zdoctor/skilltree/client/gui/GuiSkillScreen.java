@@ -318,16 +318,32 @@ public class GuiSkillScreen extends GuiScreen {
 
 	@Override
 	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-		super.mouseClicked(mouseX, mouseY, mouseButton);
-		for (GuiButton button : buttonList) {
-			if (button.isMouseOver()) {
-				mouseDown = false;
-				return;
-			}
-		}
 		lastX = mouseX;
 		lastY = mouseY;
 		mouseDown = true;
+
+		for (int i = 0; i < this.buttonList.size(); ++i) {
+			GuiButton guibutton = this.buttonList.get(i);
+
+			if (guibutton.isMouseOver()) {
+				mouseDown = false;
+			}
+
+			if (guibutton.mousePressed(this.mc, mouseX, mouseY)) {
+				net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent.Pre event = new net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent.Pre(
+						this, guibutton, this.buttonList);
+				if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event))
+					break;
+				guibutton = event.getButton();
+				this.selectedButton = guibutton;
+				guibutton.playPressSound(this.mc.getSoundHandler());
+				this.actionPerformed(guibutton);
+				if (this.equals(this.mc.currentScreen))
+					net.minecraftforge.common.MinecraftForge.EVENT_BUS
+							.post(new net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent.Post(this,
+									event.getButton(), this.buttonList));
+			}
+		}
 	}
 
 	@Override
