@@ -1,5 +1,5 @@
 # Overview
-Creating a skill tree is a fairly straightforward process. This explanation assumes you know how to setup your mod and have set up your proxies.
+Creating a skill tree is a fairly straightforward process. This explanation assumes you know how to setup your mod and have set up your proxies. This adds skill support to all LivingEntities.
 
 # Creating a skill tab
 The skill tab is what the player sees and clicks on to view the page. Its creation was modeled after and similar to creating a Creative Tab. [You can find the Skill tab class here.](../master/src/main/java/zdoctor/skill tree/tabs/SkillTabs.java) During the FMLPreInitializationEvent, create a new instance of SkillTabs passing a String as the label and class that extends SkillPage. This skill page will be where you add and position your skills. That's all you need to create a skill tab. You can save it as a reference, but currently, it is not needed. [An example can be seen here.](../Example/src/main/java/zdoctor/mcskilltree/skills/tabs/MCSkillTreeTabs.java#L9) You also need to define the icon (item stack like creative tabs).
