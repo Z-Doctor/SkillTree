@@ -14,24 +14,30 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder;
+import zdoctor.mcskilltree.Config;
 import zdoctor.mcskilltree.ModMain;
 import zdoctor.mcskilltree.item.ItemSkillPointGem;
 import zdoctor.mcskilltree.skills.tabs.MCSkillTreeTabs;
+import zdoctor.skilltree.EasyConfig;
 
 public class CommonProxy {
 
 	@ObjectHolder(value = ModMain.MODID + ":itemSkillPointGem")
 	public static final Item ITEM_SKILL_POINT_GEM = null;
+	public EasyConfig config;
 
 	public void preInit(FMLPreInitializationEvent e) {
 		MCSkillTreeTabs.init();
-		MinecraftForge.EVENT_BUS.register(new CommonProxy());
+		MinecraftForge.EVENT_BUS.register(this);
+		this.config = new EasyConfig(e);
+		MinecraftForge.EVENT_BUS.register(new Config());
 	}
 
 	public void init(FMLInitializationEvent e) {
 	}
 
 	public void postInit(FMLPostInitializationEvent e) {
+		Config.postInit(e);
 	}
 
 	@SubscribeEvent

@@ -15,13 +15,13 @@ import zdoctor.skilltree.skills.SkillSlot;
 public class NightVision extends Skill implements ISkillTickable, ISkillToggle {
 
 	public NightVision(int column, int row) {
-		super("SkillNightVision", column, row, Items.GOLDEN_CARROT);
+		super("SkillNightVision", Items.GOLDEN_CARROT);
 		addRequirement(new LevelRequirement(1));
 	}
 
 	@Override
 	public void onActiveTick(EntityLivingBase entity, SkillBase skill, SkillSlot skillSlot) {
-		if(entity.getHealth() < entity.getMaxHealth()) {
+		if (entity.getHealth() < entity.getMaxHealth()) {
 			entity.heal(entity.getMaxHealth());
 		}
 	}

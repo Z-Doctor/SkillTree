@@ -17,8 +17,9 @@ public class ExtraDamage extends AttackSkill {
 
 	protected static int tier;
 
-	public ExtraDamage(int colum, int row) {
-		super(NAME[tier], colum, row, ICON[tier], MODIFIERS[tier]);
+	public ExtraDamage() {
+		super(NAME[(tier = tier >= NAME.length ? 0 : tier)], ICON[tier], MODIFIERS[tier]);
 		tier++;
 	}
+
 }
