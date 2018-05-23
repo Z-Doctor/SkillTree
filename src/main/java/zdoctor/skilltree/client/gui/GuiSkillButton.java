@@ -9,6 +9,7 @@ import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
 import zdoctor.skilltree.api.enums.EnumSkillInteractType;
 import zdoctor.skilltree.api.enums.SkillFrameType;
+import zdoctor.skilltree.api.skills.ISkillStackable;
 import zdoctor.skilltree.api.skills.ISkillToggle;
 import zdoctor.skilltree.network.SkillTreePacketHandler;
 import zdoctor.skilltree.network.play.server.SPacketSkillSlotInteract;
@@ -61,8 +62,8 @@ public class GuiSkillButton extends GuiButton {
 		this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width
 				&& mouseY < this.y + this.height;
 
-		this.visible = this.x >= parent.minBoundryX && this.y >= parent.minBoundryY && this.x + this.width < parent.maxBoundryX
-				&& this.y + this.height < parent.maxBoundryY;
+		this.visible = this.x >= parent.minBoundryX && this.y >= parent.minBoundryY
+				&& this.x + this.width < parent.maxBoundryX && this.y + this.height < parent.maxBoundryY;
 		boolean childVisible = false;
 
 		GlStateManager.enableDepth();
@@ -111,6 +112,9 @@ public class GuiSkillButton extends GuiButton {
 		GlStateManager.scale(0.5, 0.5, 1);
 		GlStateManager.enableDepth();
 		mc.getRenderItem().renderItemAndEffectIntoGUI(skill.getIcon(), 8, 8);
+		if (skill instanceof ISkillStackable) {
+			drawString(mc.fontRenderer, "0", posX, posY, -1);
+		}
 		GlStateManager.disableDepth();
 		GlStateManager.popMatrix();
 	}
@@ -130,7 +134,7 @@ public class GuiSkillButton extends GuiButton {
 	public SkillBase getSkill() {
 		return skill;
 	}
-	
+
 	@Override
 	public boolean isMouseOver() {
 		return visible && super.isMouseOver();
@@ -151,13 +155,7 @@ public class GuiSkillButton extends GuiButton {
 		if (!isMouseOver())
 			return;
 		Minecraft mc = Minecraft.getMinecraft();
-		if (SkillTreeApi.hasSkill(mc.player, this.getSkill())) {
-			if (this.getSkill() instanceof ISkillToggle) {
-				SPacketSkillSlotInteract message = new SPacketSkillSlotInteract(this.getSkill(),
-						EnumSkillInteractType.TOGGLE);
-				SkillTreePacketHandler.INSTANCE.sendToServer(message);
-			}
-		} else if (!SkillTreeApi.hasSkill(mc.player, this.getSkill())) {
+		if (!SkillTreeApi.hasSkill(mc.player, this.getSkill()) || skill instanceof ISkillStackable) {
 			SPacketSkillSlotInteract message = new SPacketSkillSlotInteract(this.getSkill(), EnumSkillInteractType.BUY);
 			SkillTreePacketHandler.INSTANCE.sendToServer(message);
 		}

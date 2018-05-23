@@ -7,9 +7,14 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import zdoctor.skilltree.api.SkillTreeApi;
+import zdoctor.skilltree.api.enums.EnumSkillInteractType;
+import zdoctor.skilltree.api.skills.ISkillToggle;
 import zdoctor.skilltree.client.KeyHandler;
 import zdoctor.skilltree.events.SkillEvent;
 import zdoctor.skilltree.events.SkillEvent.ReloadPages.Pre;
+import zdoctor.skilltree.network.SkillTreePacketHandler;
+import zdoctor.skilltree.network.play.server.SPacketSkillSlotInteract;
 import zdoctor.skilltree.skills.SkillBase;
 import zdoctor.skilltree.skills.pages.SkillPageBase;
 import zdoctor.skilltree.skills.pages.SkillPageBase.BackgroundType;
@@ -128,6 +133,23 @@ public class GuiSkillPage extends GuiSkillScreen {
 
 		} else
 			super.keyTyped(typedChar, keyCode);
+	}
+
+	@Override
+	protected void mouseReleased(int mouseX, int mouseY, int state) {
+		super.mouseReleased(mouseX, mouseY, state);
+		if (this.selectedButton != null && state == 1 && this.selectedButton.isMouseOver()
+				&& this.selectedButton instanceof GuiSkillButton) {
+			GuiSkillButton skillButton = (GuiSkillButton) this.selectedButton;
+			if (skillButton.getSkill() instanceof ISkillToggle
+					&& SkillTreeApi.hasSkill(mc.player, skillButton.getSkill())) {
+				SPacketSkillSlotInteract message = new SPacketSkillSlotInteract(skillButton.getSkill(),
+						EnumSkillInteractType.TOGGLE);
+				SkillTreePacketHandler.INSTANCE.sendToServer(message);
+			}
+		}
+		this.selectedButton = null;
+
 	}
 
 }

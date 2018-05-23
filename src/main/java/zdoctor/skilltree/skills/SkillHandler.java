@@ -13,6 +13,7 @@ import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.skills.ISkillHandler;
+import zdoctor.skilltree.api.skills.ISkillStackable;
 import zdoctor.skilltree.api.skills.ISkillTickable;
 import zdoctor.skilltree.events.SkillDeseralizeEvent;
 import zdoctor.skilltree.events.SkillEvent;
@@ -167,9 +168,14 @@ public class SkillHandler implements ISkillHandler {
 	@Override
 	public void buySkill(SkillBase skill) {
 		if (canBuySkill(skill)) {
-			setSkillObtained(skill, true);
-			setSkillActive(skill, true);
-			skill.getRequirments(false).forEach(requirement -> requirement.onFufillment(getOwner()));
+			if (hasSkill(skill) && skill instanceof ISkillStackable) {
+				((ISkillStackable) skill).onSkillRePurchase(getOwner());
+			} else if (!hasSkill(skill)) {
+				setSkillObtained(skill, true);
+				setSkillActive(skill, true);
+				skill.getRequirments(false).forEach(requirement -> requirement.onFufillment(getOwner()));
+				skill.onSkillPurchase(getOwner());
+			}
 		}
 	}
 

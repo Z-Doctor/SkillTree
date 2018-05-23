@@ -2,6 +2,7 @@ package zdoctor.skilltree.skills;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -14,8 +15,10 @@ import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.relauncher.Side;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
 import zdoctor.skilltree.api.skills.ISkillHandler;
@@ -52,7 +55,7 @@ public class CapabilitySkillHandler {
 	public void entityJoinedWorld(EntityJoinWorldEvent e) {
 		if (e.getEntity() instanceof EntityLivingBase) {
 			SkillTreeApi.getSkillHandler((EntityLivingBase) e.getEntity()).setOwner((EntityLivingBase) e.getEntity());
-			if (e.getEntity() instanceof EntityPlayerMP)
+			if (e.getEntity() instanceof EntityPlayer)
 				SkillTreeApi.syncSkills((EntityLivingBase) e.getEntity());
 		}
 	}

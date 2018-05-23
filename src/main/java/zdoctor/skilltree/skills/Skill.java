@@ -41,6 +41,8 @@ public class Skill extends SkillBase {
 	public List<SkillToolTip> getToolTip(EntityLivingBase player) {
 		List<SkillToolTip> toolTip = new ArrayList<>();
 		toolTip.add(new SkillToolTip(player, getNameRequirement()));
+		if (getParentRequirement() != null)
+			toolTip.add(new SkillToolTip(player, getParentRequirement()));
 		getRequirments(SkillTreeApi.hasSkill(player, this))
 				.forEach(requirement -> toolTip.add(new SkillToolTip(player, requirement)));
 		toolTip.add(new SkillToolTip(player, getDescriptionRequirement()));
@@ -67,6 +69,11 @@ public class Skill extends SkillBase {
 				return false;
 		}
 		return true;
+	}
+
+	@Override
+	public void onSkillPurchase(EntityLivingBase entity) {
+		// TODO Toast
 	}
 
 }

@@ -1,5 +1,6 @@
 package zdoctor.skilltree.proxy;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -28,5 +29,10 @@ public class ServerProxy extends CommonProxy {
 	@Override
 	public World getWorld() {
 		return FMLServerHandler.instance().getServer().getEntityWorld();
+	}
+
+	@Override
+	public EntityPlayer getPlayer() {
+		return null;
 	}
 }

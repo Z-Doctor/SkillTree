@@ -12,8 +12,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.enums.SkillFrameType;
 import zdoctor.skilltree.api.skills.ISkillRequirment;
@@ -23,7 +21,6 @@ import zdoctor.skilltree.api.skills.requirements.NameRequirment;
 import zdoctor.skilltree.api.skills.requirements.PreviousSkillRequirement;
 import zdoctor.skilltree.client.SkillToolTip;
 import zdoctor.skilltree.proxy.CommonProxy;
-import zdoctor.skilltree.skills.pages.SkillPageBase;
 
 /**
  * Skills should extend this class.
@@ -43,13 +40,14 @@ public abstract class SkillBase {
 	private ArrayList<ISkillRequirment> requirements = new ArrayList<>();
 	private SkillBase parent;
 
-	// private SkillPageBase page;
 	private final ItemStack icon;
 
 	private int id;
 
 	private DescriptionRequirment descReq;
 	private NameRequirment nameReq;
+
+	private PreviousSkillRequirement parentRequirement;
 
 	public SkillBase(String name, ItemStack iconIn, ISkillRequirment... requirements) {
 		this(name, SkillFrameType.NORMAL, iconIn, requirements);
@@ -64,7 +62,8 @@ public abstract class SkillBase {
 		Collections.addAll(this.requirements, requirements);
 		descReq = new DescriptionRequirment(this);
 		if (Skill_Registry.containsKey(registryName)) {
-			ModMain.proxy.log.catching(new IllegalArgumentException("Attempt to register Skill '" + registryName + "' twice"));
+			ModMain.proxy.log
+					.catching(new IllegalArgumentException("Attempt to register Skill '" + registryName + "' twice"));
 		}
 		Skill_Registry.put(registryName, this);
 		this.id = nextId++;
@@ -76,12 +75,13 @@ public abstract class SkillBase {
 		if (parent == null)
 			return this;
 		if (parent == this) {
-			ModMain.proxy.log.catching(new IllegalArgumentException("Tried to register skill '" + getRegistryName() + "' parent as itself!"));
+			ModMain.proxy.log.catching(new IllegalArgumentException(
+					"Tried to register skill '" + getRegistryName() + "' parent as itself!"));
 		}
 		// TODO have a way to change the parent
 		if (this.parent == null) {
 			this.parent = parent;
-			requirements.add(new PreviousSkillRequirement(parent));
+			parentRequirement = new PreviousSkillRequirement(parent);
 			parent.addChildren(this);
 		}
 		return this;
@@ -97,6 +97,10 @@ public abstract class SkillBase {
 
 	public DescriptionRequirment getDescriptionRequirement() {
 		return descReq;
+	}
+	
+	public PreviousSkillRequirement getParentRequirement() {
+		return parentRequirement;
 	}
 
 	public SkillFrameType getFrameType() {
@@ -152,12 +156,10 @@ public abstract class SkillBase {
 		return registryName;
 	}
 
-	public ArrayList<ISkillRequirment> getRequirments(boolean hasSkill) {
+	public List<ISkillRequirment> getRequirments(boolean hasSkill) {
 		ArrayList reqList = new ArrayList<>();
-		// reqList.add(nameReq);
 		if (!hasSkill)
 			reqList.addAll(requirements);
-		// reqList.add(descReq);
 		return reqList;
 	}
 
@@ -170,14 +172,6 @@ public abstract class SkillBase {
 		return icon;
 	}
 
-	// public void setPage(SkillPageBase page) {
-	// this.page = page;
-	// }
-
-	// public SkillPageBase getPage() {
-	// return page;
-	// }
-
 	public boolean hasParent() {
 		return getParent() != null;
 	}
@@ -186,6 +180,10 @@ public abstract class SkillBase {
 		return id;
 	}
 
+	/**
+	 * Used when drawing skill info when hovered. You can manipulate the order the
+	 * info is given
+	 */
 	public abstract List<SkillToolTip> getToolTip(EntityLivingBase entity);
 
 	public abstract void onSkillActivated(EntityLivingBase entity);
@@ -193,6 +191,8 @@ public abstract class SkillBase {
 	public abstract void onSkillDeactivated(EntityLivingBase entity);
 
 	public abstract boolean hasRequirments(EntityLivingBase entity);
+	
+	public abstract void onSkillPurchase(EntityLivingBase entity);
 
 	public static SkillBase getSkillByKey(ResourceLocation key) {
 		return Skill_Registry.get(key);

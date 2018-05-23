@@ -1,17 +1,12 @@
 package zdoctor.skilltree.api;
 
-import java.util.List;
-
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.skills.ISkillHandler;
 import zdoctor.skilltree.api.skills.ISkillToggle;
 import zdoctor.skilltree.network.SkillTreePacketHandler;
@@ -67,25 +62,42 @@ public class SkillTreeApi {
 	}
 
 	public static void syncSkills(EntityLivingBase entity) {
-		if (FMLCommonHandler.instance().getEffectiveSide() != Side.SERVER)
-			return;
-		if (ModMain.proxy.getWorld() instanceof WorldServer)
-			syncSkills(entity, ((WorldServer) ModMain.proxy.getWorld()).playerEntities);
+		CPacketSyncSkills packet = new CPacketSyncSkills(entity);
+		if (FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER) {
+
+			// if (ModMain.proxy.getWorld() instanceof WorldServer) {
+			// // Server Instance
+			//
+			// SkillTreePacketHandler.INSTANCE.sendToAll(packet);
+			// } else {
+			// // Single Player
+			// CPacketSyncSkills packet = new CPacketSyncSkills(entity, false);
+			SkillTreePacketHandler.INSTANCE.sendToAll(packet);
+			// }
+		} else {
+			// Client Side Request
+			if (entity instanceof EntityPlayer) {
+				// Only players should ask for a request client side
+				SkillTreePacketHandler.INSTANCE.sendToServer(packet);
+			}
+		}
 	}
 
-	public static void syncSkills(EntityLivingBase entity, List<EntityPlayer> receivers) {
-		if (FMLCommonHandler.instance().getEffectiveSide() != Side.SERVER)
-			return;
-		if (entity == null) {
-			ModMain.proxy.log.catching(new IllegalArgumentException("Tried to sync null entity"));
-			return;
-		}
-		CPacketSyncSkills pkt = new CPacketSyncSkills(entity);
-		for (EntityPlayer receiver : receivers) {
-			SkillTreePacketHandler.INSTANCE.sendTo(pkt, (EntityPlayerMP) receiver);
-		}
-
-	}
+	// public static void syncSkills(EntityLivingBase entity, List<EntityPlayer>
+	// receivers) {
+	// if (FMLCommonHandler.instance().getEffectiveSide() != Side.SERVER)
+	// return;
+	// if (entity == null) {
+	// ModMain.proxy.log.catching(new IllegalArgumentException("Tried to sync null
+	// entity"));
+	// return;
+	// }
+	// CPacketSyncSkills pkt = new CPacketSyncSkills(entity);
+	// for (EntityPlayer receiver : receivers) {
+	// SkillTreePacketHandler.INSTANCE.sendTo(pkt, (EntityPlayerMP) receiver);
+	// }
+	//
+	// }
 
 	public static void sellSkill(EntityPlayer player, SkillBase skill) {
 		// TODO Auto-generated method stub
@@ -112,7 +124,7 @@ public class SkillTreeApi {
 		SkillTreeApi.syncSkills(entityplayer);
 	}
 
-	public static void reloadHandler(EntityPlayer player) {
+	public static void reloadHandler(EntityLivingBase player) {
 		getSkillHandler(player).reloadHandler();
 	}
 

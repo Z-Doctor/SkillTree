@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.apache.logging.log4j.Logger;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -21,7 +22,7 @@ public abstract class CommonProxy {
 	public EasyConfig config;
 
 	public BooleanProperty keepSkillsOnDeath;
-
+	
 	public void preInit(FMLPreInitializationEvent e) {
 		config = new EasyConfig(e);
 		keepSkillsOnDeath = new EasyConfig.BooleanProperty(ModMain.proxy.config, "skilltree.gameplay",
@@ -41,5 +42,6 @@ public abstract class CommonProxy {
 	}
 
 	public abstract World getWorld();
+	public abstract EntityPlayer getPlayer();
 
 }
