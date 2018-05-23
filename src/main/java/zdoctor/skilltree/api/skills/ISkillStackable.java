@@ -6,9 +6,9 @@ import net.minecraft.entity.EntityLivingBase;
 import zdoctor.skilltree.api.SkillTreeApi;
 
 public interface ISkillStackable {
-	public default boolean hasRequirments(EntityLivingBase player) {
+	public default boolean hasRequirments(EntityLivingBase entity) {
 		for (ISkillRequirment requirement : getRequirments(false)) {
-			if (!requirement.test(player))
+			if (!requirement.test(entity))
 				return false;
 		}
 		return true;

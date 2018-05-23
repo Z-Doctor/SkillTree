@@ -15,12 +15,12 @@ public class PreviousSkillRequirement implements ISkillRequirment {
 	}
 
 	@Override
-	public boolean test(EntityLivingBase player) {
-		return SkillTreeApi.hasSkill(player, skill);
+	public boolean test(EntityLivingBase entity) {
+		return SkillTreeApi.hasSkill(entity, skill);
 	}
 
 	@Override
-	public void onFufillment(EntityLivingBase player) {
+	public void onFufillment(EntityLivingBase entity) {
 	}
 
 	@Override

@@ -39,7 +39,7 @@ public class NameRequirment implements ISkillRequirment {
 	}
 
 	@Override
-	public void onFufillment(EntityLivingBase player) {
+	public void onFufillment(EntityLivingBase entity) {
 
 	}
 
@@ -49,8 +49,8 @@ public class NameRequirment implements ISkillRequirment {
 	}
 
 	@Override
-	public int getTextColor(EntityLivingBase player) {
-		return SkillTreeApi.hasSkill(player, skill) ? colorObtained : colorNotObtained;
+	public int getTextColor(EntityLivingBase entity) {
+		return SkillTreeApi.hasSkill(entity, skill) ? colorObtained : colorNotObtained;
 	}
 
 }

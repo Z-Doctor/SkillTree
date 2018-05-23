@@ -15,14 +15,14 @@ public class SkillPointRequirement implements ISkillRequirment {
 	}
 
 	@Override
-	public boolean test(EntityLivingBase player) {
-		ISkillHandler skillHandler = SkillTreeApi.getSkillHandler(player);
+	public boolean test(EntityLivingBase entity) {
+		ISkillHandler skillHandler = SkillTreeApi.getSkillHandler(entity);
 		return skillHandler.getSkillPoints() >= requiredPoints;
 	}
 
 	@Override
-	public void onFufillment(EntityLivingBase player) {
-		ISkillHandler skillHandler = SkillTreeApi.getSkillHandler(player);
+	public void onFufillment(EntityLivingBase entity) {
+		ISkillHandler skillHandler = SkillTreeApi.getSkillHandler(entity);
 		skillHandler.addPoints(-requiredPoints);
 
 	}

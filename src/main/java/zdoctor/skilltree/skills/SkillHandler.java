@@ -145,10 +145,10 @@ public class SkillHandler implements ISkillHandler {
 	}
 
 	@Override
-	public void setOwner(EntityLivingBase player) {
-		if (player != null)
+	public void setOwner(EntityLivingBase entity) {
+		if (entity != null)
 			MinecraftForge.EVENT_BUS.unregister(this);
-		this.owner = player;
+		this.owner = entity;
 		reloadHandler();
 
 		if (owner != null)

@@ -38,34 +38,34 @@ public class Skill extends SkillBase {
 	}
 
 	@Override
-	public List<SkillToolTip> getToolTip(EntityLivingBase player) {
+	public List<SkillToolTip> getToolTip(EntityLivingBase entity) {
 		List<SkillToolTip> toolTip = new ArrayList<>();
-		toolTip.add(new SkillToolTip(player, getNameRequirement()));
+		toolTip.add(new SkillToolTip(entity, getNameRequirement()));
 		if (getParentRequirement() != null)
-			toolTip.add(new SkillToolTip(player, getParentRequirement()));
-		getRequirments(SkillTreeApi.hasSkill(player, this))
-				.forEach(requirement -> toolTip.add(new SkillToolTip(player, requirement)));
-		toolTip.add(new SkillToolTip(player, getDescriptionRequirement()));
+			toolTip.add(new SkillToolTip(entity, getParentRequirement()));
+		getRequirments(SkillTreeApi.hasSkill(entity, this))
+				.forEach(requirement -> toolTip.add(new SkillToolTip(entity, requirement)));
+		toolTip.add(new SkillToolTip(entity, getDescriptionRequirement()));
 		return toolTip;
 	}
 
 	@Override
-	public void onSkillActivated(EntityLivingBase player) {
+	public void onSkillActivated(EntityLivingBase entity) {
 
 	}
 
 	@Override
-	public void onSkillDeactivated(EntityLivingBase player) {
+	public void onSkillDeactivated(EntityLivingBase entity) {
 
 	}
 
 	@Override
-	public boolean hasRequirments(EntityLivingBase player) {
-		if (hasParent() && !SkillTreeApi.hasSkill(player, getParent()))
+	public boolean hasRequirments(EntityLivingBase entity) {
+		if (hasParent() && !SkillTreeApi.hasSkill(entity, getParent()))
 			return false;
 
 		for (ISkillRequirment requirement : getRequirments(false)) {
-			if (!requirement.test(player))
+			if (!requirement.test(entity))
 				return false;
 		}
 		return true;

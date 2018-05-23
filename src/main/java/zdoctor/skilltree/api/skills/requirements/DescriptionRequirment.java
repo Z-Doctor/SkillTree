@@ -35,7 +35,7 @@ public class DescriptionRequirment implements ISkillRequirment {
 	}
 
 	@Override
-	public void onFufillment(EntityLivingBase player) {
+	public void onFufillment(EntityLivingBase entity) {
 
 	}
 
@@ -45,7 +45,7 @@ public class DescriptionRequirment implements ISkillRequirment {
 	}
 
 	@Override
-	public int getTextColor(EntityLivingBase player) {
+	public int getTextColor(EntityLivingBase entity) {
 		return color;
 	}
 

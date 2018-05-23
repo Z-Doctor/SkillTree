@@ -25,9 +25,9 @@ public class LevelRequirement implements ISkillRequirment {
 	}
 
 	@Override
-	public void onFufillment(EntityLivingBase player) {
-		if (player instanceof EntityPlayer)
-			((EntityPlayer) player).addExperienceLevel(-levelRequirment);
+	public void onFufillment(EntityLivingBase entity) {
+		if (entity instanceof EntityPlayer)
+			((EntityPlayer) entity).addExperienceLevel(-levelRequirment);
 	}
 
 	@Override

@@ -22,32 +22,32 @@ public class SkillTreeApi {
 	@CapabilityInject(ISkillHandler.class)
 	public static Capability<ISkillHandler> SKILL_CAPABILITY = null;
 
-	public static ISkillHandler getSkillHandler(EntityLivingBase player) {
-		ISkillHandler handler = player.getCapability(SKILL_CAPABILITY, null);
+	public static ISkillHandler getSkillHandler(EntityLivingBase entity) {
+		ISkillHandler handler = entity.getCapability(SKILL_CAPABILITY, null);
 		return handler;
 	}
 
-	public static boolean hasSkill(EntityLivingBase player, SkillBase skill) {
-		ISkillHandler skillHandler = getSkillHandler(player);
+	public static boolean hasSkill(EntityLivingBase entity, SkillBase skill) {
+		ISkillHandler skillHandler = getSkillHandler(entity);
 		return skillHandler.hasSkill(skill);
 	}
 
-	public static boolean hasSkillRequirements(EntityLivingBase player, SkillBase skill) {
-		return getSkillSlot(player, skill).getSkill().hasRequirments(player);
+	public static boolean hasSkillRequirements(EntityLivingBase entity, SkillBase skill) {
+		return getSkillSlot(entity, skill).getSkill().hasRequirments(entity);
 	}
 
-	public static boolean isSkillActive(EntityLivingBase player, SkillBase skill) {
-		ISkillHandler skillHandler = getSkillHandler(player);
+	public static boolean isSkillActive(EntityLivingBase entity, SkillBase skill) {
+		ISkillHandler skillHandler = getSkillHandler(entity);
 		return skillHandler.isSkillActive(skill);
 	}
 
-	public static boolean canBuySkill(EntityLivingBase player, SkillBase skill) {
-		ISkillHandler skillHandler = getSkillHandler(player);
+	public static boolean canBuySkill(EntityLivingBase entity, SkillBase skill) {
+		ISkillHandler skillHandler = getSkillHandler(entity);
 		return skillHandler.canBuySkill(skill);
 	}
 
-	public static void buySkill(EntityLivingBase player, SkillBase skill) {
-		ISkillHandler skillHandler = getSkillHandler(player);
+	public static void buySkill(EntityLivingBase entity, SkillBase skill) {
+		ISkillHandler skillHandler = getSkillHandler(entity);
 		skillHandler.buySkill(skill);
 	}
 
@@ -62,8 +62,8 @@ public class SkillTreeApi {
 	 * @param skill
 	 * @return
 	 */
-	public static SkillSlot getSkillSlot(EntityLivingBase player, SkillBase skill) {
-		return new SkillSlot(skill, hasSkill(player, skill), isSkillActive(player, skill), getSkillTier(player, skill));
+	public static SkillSlot getSkillSlot(EntityLivingBase entity, SkillBase skill) {
+		return new SkillSlot(skill, hasSkill(entity, skill), isSkillActive(entity, skill), getSkillTier(entity, skill));
 	}
 
 	public static void syncSkills(EntityLivingBase entity) {
@@ -100,38 +100,38 @@ public class SkillTreeApi {
 	//
 	// }
 
-	public static void sellSkill(EntityPlayer player, SkillBase skill) {
+	public static void sellSkill(EntityLivingBase entity, SkillBase skill) {
 		// TODO Auto-generated method stub
 
 	}
 
-	public static void refundSkill(EntityPlayer player, SkillBase skill) {
+	public static void refundSkill(EntityLivingBase entity, SkillBase skill) {
 		// TODO Auto-generated method stub
 
 	}
 
-	public static int getPlayerSkillPoints(EntityPlayer player) {
-		return getSkillHandler(player).getSkillPoints();
+	public static int getPlayerSkillPoints(EntityLivingBase entity) {
+		return getSkillHandler(entity).getSkillPoints();
 	}
 
-	public static void addSkillPoints(EntityPlayer player, int points) {
-		getSkillHandler(player).addPoints(points);
+	public static void addSkillPoints(EntityLivingBase entity, int points) {
+		getSkillHandler(entity).addPoints(points);
 	}
 
-	public static void resetSkillHandler(EntityPlayer entityplayer) {
+	public static void resetSkillHandler(EntityLivingBase entityplayer) {
 		SkillHandler skillhandler = new SkillHandler();
 		skillhandler.setOwner(entityplayer);
 		SkillTreeApi.getSkillHandler(entityplayer).deserializeNBT(skillhandler.serializeNBT());
 		SkillTreeApi.syncSkills(entityplayer);
 	}
 
-	public static void reloadHandler(EntityLivingBase player) {
-		getSkillHandler(player).reloadHandler();
+	public static void reloadHandler(EntityLivingBase entity) {
+		getSkillHandler(entity).reloadHandler();
 	}
 
-	public static void toggleSkill(EntityPlayerMP player, SkillBase skill) {
+	public static void toggleSkill(EntityLivingBase entity, SkillBase skill) {
 		if (skill instanceof ISkillToggle) {
-			getSkillHandler(player).setSkillActive(skill, !isSkillActive(player, skill));
+			getSkillHandler(entity).setSkillActive(skill, !isSkillActive(entity, skill));
 		}
 	}
 
