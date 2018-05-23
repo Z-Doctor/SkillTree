@@ -3,6 +3,7 @@ package zdoctor.skilltree.skills;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.INBTSerializable;
+import zdoctor.skilltree.api.skills.ISkillStackable;
 import zdoctor.skilltree.api.skills.ISkillToggle;
 
 public class SkillSlot implements INBTSerializable<NBTTagCompound> {
@@ -10,18 +11,17 @@ public class SkillSlot implements INBTSerializable<NBTTagCompound> {
 	private SkillBase skill;
 	private NBTTagCompound skillTagCompound;
 	private boolean active;
+	private int skillTier;
 
 	public SkillSlot(SkillBase skill) {
-		this(skill, false, false);
+		this(skill, false, false, 0);
 	}
 
-	public SkillSlot(SkillBase skill, boolean obtained, boolean active) {
+	public SkillSlot(SkillBase skill, boolean obtained, boolean active, int skillTier) {
 		this.skill = skill;
 		this.obtained = obtained;
 		this.active = active;
-
-		// if (skill instanceof ISkillWatcher)
-		// MinecraftForge.EVENT_BUS.register(this);
+		this.skillTier = skillTier;
 	}
 
 	public boolean isObtained() {
@@ -56,6 +56,18 @@ public class SkillSlot implements INBTSerializable<NBTTagCompound> {
 		return skill;
 	}
 
+	public void addkillTier() {
+		skillTier++;
+	}
+
+	public void setSkillTier(int skillTier) {
+		this.skillTier = skillTier;
+	}
+
+	public int getSkillTier() {
+		return skillTier;
+	}
+
 	@Override
 	public NBTTagCompound serializeNBT() {
 		NBTTagCompound ret = new NBTTagCompound();
@@ -71,17 +83,22 @@ public class SkillSlot implements INBTSerializable<NBTTagCompound> {
 			this.active = true;
 		else
 			this.active = nbt.getBoolean("active");
+		if (obtained && !(skill instanceof ISkillStackable))
+			this.skillTier = 1;
+		else
+			this.skillTier = nbt.getInteger("skillTier");
 	}
 
 	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
 		nbt.setString("id", skill.getRegistryName().toString());
 		nbt.setBoolean("obtained", isObtained());
 		nbt.setBoolean("active", isActive());
+		nbt.setInteger("skillTier", getSkillTier());
 		return nbt;
 	}
 
 	public static boolean areSkillSlotsEqual(SkillSlot skillA, SkillSlot skillB) {
 		return skillA.skill == skillB.skill;
 	}
-	
+
 }

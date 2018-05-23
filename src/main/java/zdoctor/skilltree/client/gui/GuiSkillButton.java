@@ -109,11 +109,20 @@ public class GuiSkillButton extends GuiButton {
 		GlStateManager.scale(0.5, 0.5, 1);
 		GlStateManager.enableDepth();
 		mc.getRenderItem().renderItemAndEffectIntoGUI(skill.getIcon(), 8, 8);
-		if (skill instanceof ISkillStackable) {
-			drawString(mc.fontRenderer, "0", posX, posY, -1);
-		}
 		GlStateManager.disableDepth();
 		GlStateManager.popMatrix();
+		if (skill instanceof ISkillStackable) {
+			GlStateManager.pushMatrix();
+			String tier = String.valueOf(SkillTreeApi.getSkillTier(mc.player, skill));
+			GlStateManager.translate(16 - mc.fontRenderer.getStringWidth(tier), 16 - mc.fontRenderer.FONT_HEIGHT, 0);
+			GlStateManager.scale(0.5, 0.5, 0);
+			GlStateManager.translate(posX - mc.fontRenderer.getStringWidth(tier) / 2,
+					posY + mc.fontRenderer.FONT_HEIGHT, 0);
+			drawString(mc.fontRenderer, tier, posX + mc.fontRenderer.getStringWidth(tier), posY, -1);
+			GlStateManager.disableDepth();
+			GlStateManager.popMatrix();
+		}
+
 	}
 
 	protected void renderSkillLockOverlay(Minecraft mc, int posX, int posY) {

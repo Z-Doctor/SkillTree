@@ -79,5 +79,7 @@ public interface ISkillHandler extends INBTSerializable<NBTTagCompound> {
 	public void reloadHandler();
 
 	public EntityLivingBase getOwner();
-	
+
+	public int getSkillTier(SkillBase skill);
+
 }

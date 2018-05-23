@@ -51,6 +51,10 @@ public class SkillTreeApi {
 		skillHandler.buySkill(skill);
 	}
 
+	public static int getSkillTier(EntityLivingBase entity, SkillBase skill) {
+		return getSkillHandler(entity).getSkillTier(skill);
+	}
+
 	/**
 	 * Returns a copy of the skill slot. Changes made to it wont reflect
 	 * 
@@ -59,7 +63,7 @@ public class SkillTreeApi {
 	 * @return
 	 */
 	public static SkillSlot getSkillSlot(EntityLivingBase player, SkillBase skill) {
-		return new SkillSlot(skill, hasSkill(player, skill), isSkillActive(player, skill));
+		return new SkillSlot(skill, hasSkill(player, skill), isSkillActive(player, skill), getSkillTier(player, skill));
 	}
 
 	public static void syncSkills(EntityLivingBase entity) {
@@ -70,16 +74,7 @@ public class SkillTreeApi {
 		}
 		CPacketSyncSkills packet = new CPacketSyncSkills(entity);
 		if (FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER) {
-
-			// if (ModMain.proxy.getWorld() instanceof WorldServer) {
-			// // Server Instance
-			//
-			// SkillTreePacketHandler.INSTANCE.sendToAll(packet);
-			// } else {
-			// // Single Player
-			// CPacketSyncSkills packet = new CPacketSyncSkills(entity, false);
 			SkillTreePacketHandler.INSTANCE.sendToAll(packet);
-			// }
 		} else {
 			// Client Side Request
 			if (entity instanceof EntityPlayer) {

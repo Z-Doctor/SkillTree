@@ -170,11 +170,13 @@ public class SkillHandler implements ISkillHandler {
 		if (canBuySkill(skill)) {
 			if (hasSkill(skill) && skill instanceof ISkillStackable) {
 				((ISkillStackable) skill).onSkillRePurchase(getOwner());
+				getSkillSlot(skill).addkillTier();
 			} else if (!hasSkill(skill)) {
 				setSkillObtained(skill, true);
 				setSkillActive(skill, true);
 				skill.getRequirments(false).forEach(requirement -> requirement.onFufillment(getOwner()));
 				skill.onSkillPurchase(getOwner());
+				getSkillSlot(skill).setSkillTier(1);
 			}
 		}
 	}
@@ -206,6 +208,14 @@ public class SkillHandler implements ISkillHandler {
 					((ISkillTickable) skill).onActiveTick(owner, skillSlot.getSkill(), skillSlot);
 			}
 		});
+	}
+
+	@Override
+	public int getSkillTier(SkillBase skill) {
+		if (!(skill instanceof ISkillStackable))
+			return hasSkill(skill) ? 1 : 0;
+		SkillSlot skillSlot = skillsCodex.get(skill);
+		return hasSkill(skill) ? skillSlot.getSkillTier() : 0;
 	}
 
 }
