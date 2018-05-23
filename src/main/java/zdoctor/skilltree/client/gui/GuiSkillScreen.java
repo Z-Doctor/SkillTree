@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.lwjgl.input.Keyboard;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
@@ -15,12 +14,9 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.ModMain;
-import zdoctor.skilltree.api.SkillTreeApi;
-import zdoctor.skilltree.api.enums.SkillFrameType;
 import zdoctor.skilltree.client.SkillToolTip;
 import zdoctor.skilltree.skills.SkillBase;
 import zdoctor.skilltree.skills.pages.SkillPageBase;
-import zdoctor.skilltree.tabs.SkillTabs;
 
 @SideOnly(Side.CLIENT)
 public class GuiSkillScreen extends GuiScreen {

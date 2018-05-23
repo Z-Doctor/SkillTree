@@ -3,19 +3,16 @@ package zdoctor.skilltree.client.gui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.util.ResourceLocation;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
 import zdoctor.skilltree.api.enums.EnumSkillInteractType;
 import zdoctor.skilltree.api.enums.SkillFrameType;
 import zdoctor.skilltree.api.skills.ISkillStackable;
-import zdoctor.skilltree.api.skills.ISkillToggle;
 import zdoctor.skilltree.network.SkillTreePacketHandler;
 import zdoctor.skilltree.network.play.server.SPacketSkillSlotInteract;
 import zdoctor.skilltree.skills.SkillBase;
 import zdoctor.skilltree.skills.pages.SkillPageBase;
-import zdoctor.skilltree.tabs.SkillTabs;
 
 public class GuiSkillButton extends GuiButton {
 	public static final ResourceLocation SKILL_TREE_BACKGROUND = new ResourceLocation(

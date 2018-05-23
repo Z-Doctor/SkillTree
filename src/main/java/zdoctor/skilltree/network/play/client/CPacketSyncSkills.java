@@ -6,7 +6,6 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.datasync.DataSerializers;
@@ -26,13 +25,11 @@ public class CPacketSyncSkills implements IMessage {
 
 	private int playerId;
 	private NBTTagCompound skillTreeTag;
-//	private boolean isServerWorld;
 
 	public CPacketSyncSkills() {
 	}
 
 	public CPacketSyncSkills(EntityLivingBase entity) {
-//		this.isServerWorld = isServerWorld;
 		playerId = entity.getEntityId();
 		skillTreeTag = SkillTreeApi.getSkillHandler(entity).serializeNBT();
 		ModMain.proxy.log.debug("Creating Packet: {} Args: {}", this, entity);
@@ -40,7 +37,6 @@ public class CPacketSyncSkills implements IMessage {
 
 	@Override
 	public void fromBytes(ByteBuf buffer) {
-//		isServerWorld = buffer.readBoolean();
 		playerId = buffer.readInt();
 		try {
 			skillTreeTag = DataSerializers.COMPOUND_TAG.read(new PacketBuffer(buffer));
@@ -51,7 +47,6 @@ public class CPacketSyncSkills implements IMessage {
 
 	@Override
 	public void toBytes(ByteBuf buffer) {
-//		buffer.writeBoolean(isServerWorld);
 		buffer.writeInt(playerId);
 		DataSerializers.COMPOUND_TAG.write(new PacketBuffer(buffer), skillTreeTag);
 	}

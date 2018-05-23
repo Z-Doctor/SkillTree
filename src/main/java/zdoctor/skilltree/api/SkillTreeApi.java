@@ -7,6 +7,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
+import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.skills.ISkillHandler;
 import zdoctor.skilltree.api.skills.ISkillToggle;
 import zdoctor.skilltree.network.SkillTreePacketHandler;
@@ -62,6 +63,11 @@ public class SkillTreeApi {
 	}
 
 	public static void syncSkills(EntityLivingBase entity) {
+		if (entity == null) {
+			ModMain.proxy.log
+					.catching(new IllegalArgumentException("Tried to sync non living entity. Entity: " + entity));
+			return;
+		}
 		CPacketSyncSkills packet = new CPacketSyncSkills(entity);
 		if (FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER) {
 

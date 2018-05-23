@@ -13,7 +13,6 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.client.GuiPageRegistry;
-import zdoctor.skilltree.skills.SkillBase;
 import zdoctor.skilltree.skills.pages.SkillPageBase;
 import zdoctor.skilltree.tabs.SkillTabs;
 

@@ -4,7 +4,6 @@ import java.util.function.Predicate;
 
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 
 public interface ISkillRequirment extends Predicate<EntityLivingBase> {
 	/**

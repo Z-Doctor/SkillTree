@@ -1,18 +1,9 @@
 package zdoctor.skilltree.skills;
 
-import java.security.acl.Owner;
-import java.util.ArrayList;
-
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.INBTSerializable;
-import net.minecraftforge.fml.common.eventhandler.Event.Result;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import zdoctor.skilltree.api.skills.ISkillToggle;
-import zdoctor.skilltree.api.skills.ISkillTickable;
-import zdoctor.skilltree.events.SkillEvent;
 
 public class SkillSlot implements INBTSerializable<NBTTagCompound> {
 	private boolean obtained;

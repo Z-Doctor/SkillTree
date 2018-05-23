@@ -3,7 +3,6 @@ package zdoctor.skilltree.api.skills;
 import java.util.ArrayList;
 
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.INBTSerializable;
 import zdoctor.skilltree.skills.SkillBase;
