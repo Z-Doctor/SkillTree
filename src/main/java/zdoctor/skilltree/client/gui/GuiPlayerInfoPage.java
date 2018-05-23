@@ -71,20 +71,25 @@ public class GuiPlayerInfoPage extends GuiSkillPage {
 		this.oldMouseY = mouseY;
 
 		int points = SkillTreeApi.getPlayerSkillPoints(thePlayer);
-
+		String points1 = I18n.format("skilltree.points.info", points);
 		GlStateManager.pushMatrix();
-		GlStateManager.scale(0.9F, 0.9F, 0.9F);
-		fontRenderer.drawString(I18n.format("skilltree.points.info", points), i + 80, j + 30, 0, false);
 
-		drawPlayerAttributeInfo(SharedMonsterAttributes.MAX_HEALTH, "skilltree.maxhealth.info", 40);
-		drawPlayerAttributeInfo(SharedMonsterAttributes.ATTACK_DAMAGE, "skilltree.attackdamage.info", 50);
-		drawPlayerAttributeInfo(SharedMonsterAttributes.ATTACK_SPEED, "skilltree.attackspeed.info", 60);
-		drawPlayerAttributeInfo(SharedMonsterAttributes.ARMOR, "skilltree.armor.info", 70);
-		drawPlayerAttributeInfo(SharedMonsterAttributes.ARMOR_TOUGHNESS, "skilltree.armortoughness.info", 80);
-		drawPlayerAttributeInfo(SharedMonsterAttributes.MOVEMENT_SPEED, "skilltree.movespeed.info", 90);
+		GlStateManager.translate(i + 60, j + 21, 100);
+		GlStateManager.scale(0.8F, 0.8F, 0.8F);
+
+		int row = 0;
+		int offset = fontRenderer.FONT_HEIGHT;
+		fontRenderer.drawString(points1, 0, offset * row++, 0x2D2D2D, false);
+		drawPlayerAttributeInfo(SharedMonsterAttributes.MAX_HEALTH, "skilltree.maxhealth.info", offset * row++);
+		drawPlayerAttributeInfo(SharedMonsterAttributes.ATTACK_DAMAGE, "skilltree.attackdamage.info", offset * row++);
+		drawPlayerAttributeInfo(SharedMonsterAttributes.ATTACK_SPEED, "skilltree.attackspeed.info", offset * row++);
+		drawPlayerAttributeInfo(SharedMonsterAttributes.ARMOR, "skilltree.armor.info", offset * row++);
+		drawPlayerAttributeInfo(SharedMonsterAttributes.ARMOR_TOUGHNESS, "skilltree.armortoughness.info",
+				offset * row++);
+		drawPlayerAttributeInfo(SharedMonsterAttributes.MOVEMENT_SPEED, "skilltree.movespeed.info", offset * row++);
 		drawPlayerAttributeInfo(SharedMonsterAttributes.KNOCKBACK_RESISTANCE, "skilltree.knockbackresistance.info",
-				100);
-		drawPlayerAttributeInfo(SharedMonsterAttributes.LUCK, "skilltree.luck.info", 110);
+				offset * row++);
+		drawPlayerAttributeInfo(SharedMonsterAttributes.LUCK, "skilltree.luck.info", offset * row++);
 
 		GlStateManager.popMatrix();
 	}
@@ -100,14 +105,15 @@ public class GuiPlayerInfoPage extends GuiSkillPage {
 		String base = decimalFormat.format(playerAttribute.getBaseValue());
 		String skillDelta = decimalFormat.format(playerAttribute.getAttributeValue() - playerAttribute.getBaseValue());
 		String sign = playerAttribute.getAttributeValue() - playerAttribute.getBaseValue() < 0 ? "" : "+";
-		fontRenderer.drawString(I18n.format(translateKey, base, sign, skillDelta), i + 80, j + offset, 0, false);
+		String translatedKey = I18n.format(translateKey, base, sign, skillDelta);
+		fontRenderer.drawString(translatedKey, 0, offset, 0x2D2D2D, false);
 	}
 
 	@Override
 	public void drawGuiForegroundLayer(int mouseX, int mouseY) {
 		super.drawGuiForegroundLayer(mouseX, mouseY);
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-		this.mc.getTextureManager().bindTexture(GuiReference.SKILL_TREE_BACKGROUND);
+		// GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+		// this.mc.getTextureManager().bindTexture(GuiReference.SKILL_TREE_BACKGROUND);
 	}
 
 	protected void renderPlayerHealthAndArmor() {
