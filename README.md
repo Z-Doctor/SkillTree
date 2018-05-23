@@ -17,7 +17,7 @@ A requirement is one of the most important parts of skills. They are what determ
 You have successfully created a skill page and some skills. Now we will talk about some useful API and other functionality.
 
 # Skill Points
-This mod does not award the player skill points, but offers a basic skill point system and methods to add points to the entity. Additional custom skill points are planned later on.
+This mod does not award the player skill points, but offers a built-in wallet system for points and methods to add points to the entity. To add points to the player or entity, simply pass the entity you want to give points to to the SkillTreeApi method addSkillPoints(EntityLivingBase entity, int points). These will be added and sync across the server and clients.
 
 # Advanced Tabs
 You can override your Skill Tab if you want greater over how the tab works, or change the background texture. By default, a new tab is placed in the next available slot. You can manually place it, however. If you try to place it where another tab would be, all the other tabs will shift over for you. You cannot guarantee your spot, the last man can come first. 
