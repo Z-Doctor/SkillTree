@@ -61,10 +61,7 @@ public class Skill extends SkillBase {
 
 	@Override
 	public boolean hasRequirments(EntityLivingBase entity) {
-		if (hasParent() && !SkillTreeApi.hasSkill(entity, getParent()))
-			return false;
-
-		for (ISkillRequirment requirement : getRequirments(entity, false)) {
+		for (ISkillRequirment requirement : getRequirments(entity, SkillTreeApi.hasSkill(entity, this))) {
 			if (!requirement.test(entity))
 				return false;
 		}

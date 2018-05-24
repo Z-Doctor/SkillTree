@@ -68,8 +68,9 @@ public class CapabilitySkillHandler {
 			return;
 		}
 
-		ISkillHandler capOrginal = e.getOriginal().getCapability(SKILL_CAPABILITY, null);
-		e.getEntityPlayer().getCapability(SKILL_CAPABILITY, null).deserializeNBT(capOrginal.serializeNBT());
+		ISkillHandler capOrginal = SkillTreeApi.getSkillHandler(e.getOriginal());
+		SkillTreeApi.getSkillHandler(e.getEntityPlayer()).deserializeNBT(capOrginal.serializeNBT());
+		SkillTreeApi.syncSkills(e.getEntityPlayer());
 	}
 
 	@SubscribeEvent

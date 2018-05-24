@@ -162,7 +162,7 @@ public class SkillHandler implements ISkillHandler {
 
 	@Override
 	public boolean canBuySkill(SkillBase skill) {
-		return skill.hasParent() ? hasSkill(skill.getParent()) : true && skill.hasRequirments(getOwner());
+		return skill.hasParent() ? hasSkill(skill.getParent()) : skill.hasRequirments(getOwner());
 	}
 
 	@Override
