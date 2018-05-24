@@ -13,33 +13,31 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
 
 /**
- * Sends the player skill data from server to client.
+ * A packet to update an entities skills on the client side
  *
  */
 public class CPacketSyncSkills implements IMessage {
 
-	private int playerId;
+	private int entityId;
 	private NBTTagCompound skillTreeTag;
-	private boolean emptyPacket;
 
 	public CPacketSyncSkills() {
-		this.emptyPacket = true;
+		// TODO Auto-generated constructor stub
 	}
 
 	public CPacketSyncSkills(EntityLivingBase entity) {
-		playerId = entity.getEntityId();
+		entityId = entity.getEntityId();
 		skillTreeTag = SkillTreeApi.getSkillHandler(entity).serializeNBT();
-		ModMain.proxy.log.debug("Creating Packet: {} Args: {}", this, entity);
+		// ModMain.proxy.log.info("Creating Packet: {} Args: {}", this, entity);
 	}
 
 	@Override
 	public void fromBytes(ByteBuf buffer) {
-		playerId = buffer.readInt();
+		entityId = buffer.readInt();
 		try {
 			skillTreeTag = DataSerializers.COMPOUND_TAG.read(new PacketBuffer(buffer));
 		} catch (IOException e) {
@@ -49,36 +47,22 @@ public class CPacketSyncSkills implements IMessage {
 
 	@Override
 	public void toBytes(ByteBuf buffer) {
-		buffer.writeInt(playerId);
+		buffer.writeInt(entityId);
 		DataSerializers.COMPOUND_TAG.write(new PacketBuffer(buffer), skillTreeTag);
 	}
 
 	public static class PacketSyncHandler implements IMessageHandler<CPacketSyncSkills, IMessage> {
 		@Override
 		public IMessage onMessage(CPacketSyncSkills message, MessageContext ctx) {
-			if (ctx.side == Side.SERVER) {
-				Entity entity = ModMain.proxy.getWorld().getEntityByID(message.playerId);
-				if (entity instanceof EntityLivingBase) {
-					SkillTreeApi.syncSkills((EntityLivingBase) entity);
-				} else if (!message.emptyPacket) {
-					ModMain.proxy.log.catching(
-							new IllegalArgumentException("Tried to sync non living entity. Entity: " + entity));
-				}
-				return null;
-			}
-
 			Minecraft.getMinecraft().addScheduledTask(new Runnable() {
 				@Override
 				public void run() {
 					World world = ModMain.proxy.getWorld();
 					if (world == null)
 						return;
-					Entity entity = world.getEntityByID(message.playerId);
+					Entity entity = world.getEntityByID(message.entityId);
 					if (entity != null && entity instanceof EntityLivingBase) {
-						ModMain.proxy.log.debug("Syncing Skillls - Side: {} Entity: {} Data: ID: {}, TAG: {}", ctx.side,
-								entity.getDisplayName(), message.playerId, message.skillTreeTag);
 						SkillTreeApi.getSkillHandler((EntityLivingBase) entity).deserializeNBT(message.skillTreeTag);
-						SkillTreeApi.reloadHandler((EntityLivingBase) entity);
 					}
 				}
 			});

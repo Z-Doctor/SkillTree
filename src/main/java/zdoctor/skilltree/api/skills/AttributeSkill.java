@@ -1,10 +1,10 @@
-package zdoctor.skilltree.skills;
+package zdoctor.skilltree.api.skills;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.attributes.IAttribute;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import zdoctor.skilltree.api.skills.ISkillAtribute;
+import zdoctor.skilltree.skills.SkillBase;
 
 /**
  * For information about Attribute check

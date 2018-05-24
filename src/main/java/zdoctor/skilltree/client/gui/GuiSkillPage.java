@@ -9,7 +9,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.api.SkillTreeApi;
 import zdoctor.skilltree.api.enums.EnumSkillInteractType;
-import zdoctor.skilltree.api.skills.ISkillToggle;
+import zdoctor.skilltree.api.skills.interfaces.ISkillToggle;
 import zdoctor.skilltree.client.KeyHandler;
 import zdoctor.skilltree.events.SkillEvent;
 import zdoctor.skilltree.events.SkillEvent.ReloadPages.Pre;
@@ -139,11 +139,9 @@ public class GuiSkillPage extends GuiSkillScreen {
 	protected void mouseReleased(int mouseX, int mouseY, int state) {
 		if (this.selectedButton != null && state == 1 && this.selectedButton instanceof GuiSkillButton) {
 			GuiSkillButton skillButton = (GuiSkillButton) this.selectedButton;
-			if (skillButton.getSkill() instanceof ISkillToggle
-					&& SkillTreeApi.hasSkill(mc.player, skillButton.getSkill())) {
-				SPacketSkillSlotInteract message = new SPacketSkillSlotInteract(skillButton.getSkill(),
-						EnumSkillInteractType.TOGGLE);
-				SkillTreePacketHandler.INSTANCE.sendToServer(message);
+			SkillBase skill = skillButton.getSkill();
+			if (skill instanceof ISkillToggle && SkillTreeApi.hasSkill(mc.player, skill)) {
+				SkillTreeApi.toggleSkill(mc.player, skill);
 			}
 			this.selectedButton = null;
 		}

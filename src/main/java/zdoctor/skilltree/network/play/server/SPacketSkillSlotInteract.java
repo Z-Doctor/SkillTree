@@ -52,7 +52,6 @@ public class SPacketSkillSlotInteract implements IMessage {
 					ctx.getServerHandler().player, message.skill.getRegistryName());
 			switch (message.type) {
 			case BUY:
-
 				SkillTreeApi.buySkill(ctx.getServerHandler().player, message.skill);
 				break;
 			case SELL:
@@ -69,6 +68,7 @@ public class SPacketSkillSlotInteract implements IMessage {
 			}
 
 			if (ctx.side == Side.SERVER && event.getResult() != Event.Result.DENY) {
+				// Not meant for non players
 				return new CPacketSyncSkills(ctx.getServerHandler().player);
 			}
 			return null;

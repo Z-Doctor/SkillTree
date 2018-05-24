@@ -12,9 +12,9 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import zdoctor.skilltree.ModMain;
-import zdoctor.skilltree.api.skills.ISkillHandler;
-import zdoctor.skilltree.api.skills.ISkillStackable;
-import zdoctor.skilltree.api.skills.ISkillTickable;
+import zdoctor.skilltree.api.skills.interfaces.ISkillHandler;
+import zdoctor.skilltree.api.skills.interfaces.ISkillStackable;
+import zdoctor.skilltree.api.skills.interfaces.ISkillTickable;
 import zdoctor.skilltree.events.SkillDeseralizeEvent;
 import zdoctor.skilltree.events.SkillEvent;
 import zdoctor.skilltree.events.SkillEvent.ActiveTick;
@@ -27,6 +27,8 @@ public class SkillHandler implements ISkillHandler {
 	protected HashMap<SkillBase, SkillSlot> skillsCodex = new HashMap();
 	private EntityLivingBase owner;
 	private int skillPoints;
+
+	private boolean isDirty;
 
 	public SkillHandler() {
 		for (SkillTabs tab : SkillTabs.SKILL_TABS) {
@@ -73,8 +75,17 @@ public class SkillHandler implements ISkillHandler {
 			this.skillsCodex.put(skillSlot.getSkill(), skillSlot);
 		}
 		skillPoints = nbt.getInteger("SkillPoints");
+
 		if (getOwner() != null)
 			reloadHandler();
+		markDirty();
+	}
+
+	@Override
+	public void addPoints(int points) {
+		skillPoints += points;
+		skillPoints = Math.max(skillPoints, 0);
+		markDirty();
 	}
 
 	@Override
@@ -96,6 +107,18 @@ public class SkillHandler implements ISkillHandler {
 	}
 
 	@Override
+	public void addSkillTier(SkillBase skill) {
+		addSkillTier(skill, 1);
+	}
+
+	@Override
+	public void addSkillTier(SkillBase skill, int amount) {
+		SkillSlot skillSlot = skillsCodex.get(skill);
+		skillSlot.addSkillTier(amount);
+		onSkillChange(skillSlot);
+	}
+
+	@Override
 	public void onSkillChange(SkillSlot skillSlot) {
 		if (skillSlot.getSkill().getParent() != null) {
 			if (!hasSkill(skillSlot.getSkill().getParent())) {
@@ -112,6 +135,11 @@ public class SkillHandler implements ISkillHandler {
 			skillSlot.getSkill().onSkillActivated(getOwner());
 		else
 			skillSlot.getSkill().onSkillDeactivated(getOwner());
+		markDirty();
+	}
+
+	public void markDirty() {
+		isDirty = true;
 	}
 
 	@Override
@@ -122,6 +150,16 @@ public class SkillHandler implements ISkillHandler {
 			else
 				skillSlot.getSkill().onSkillDeactivated(getOwner());
 		});
+	}
+
+	@Override
+	public boolean isDirty() {
+		return isDirty;
+	}
+
+	@Override
+	public void clean() {
+		isDirty = false;
 	}
 
 	@Override
@@ -146,13 +184,14 @@ public class SkillHandler implements ISkillHandler {
 
 	@Override
 	public void setOwner(EntityLivingBase entity) {
-		if (entity != null)
+		if (entity == null && owner != null)
 			MinecraftForge.EVENT_BUS.unregister(this);
 		this.owner = entity;
-		reloadHandler();
 
-		if (owner != null)
+		if (owner != null) {
 			MinecraftForge.EVENT_BUS.register(this);
+			reloadHandler();
+		}
 	}
 
 	@Override
@@ -170,7 +209,7 @@ public class SkillHandler implements ISkillHandler {
 		if (canBuySkill(skill)) {
 			if (hasSkill(skill) && skill instanceof ISkillStackable) {
 				skill.getRequirments(getOwner(), true).forEach(requirement -> requirement.onFufillment(getOwner()));
-				getSkillSlot(skill).addSkillTier();
+				addSkillTier(skill);
 				((ISkillStackable) skill).onSkillRePurchase(getOwner());
 			} else if (!hasSkill(skill)) {
 				setSkillObtained(skill, true);
@@ -185,12 +224,6 @@ public class SkillHandler implements ISkillHandler {
 	@Override
 	public int getSkillPoints() {
 		return skillPoints;
-	}
-
-	@Override
-	public void addPoints(int points) {
-		skillPoints += points;
-		skillPoints = Math.max(skillPoints, 0);
 	}
 
 	@Override

@@ -5,7 +5,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
-import zdoctor.skilltree.api.skills.ISkillHandler;
+import zdoctor.skilltree.api.skills.interfaces.ISkillHandler;
 
 public class SkillCapabilityProvider implements ICapabilitySerializable<NBTTagCompound> {
 	@CapabilityInject(ISkillHandler.class)

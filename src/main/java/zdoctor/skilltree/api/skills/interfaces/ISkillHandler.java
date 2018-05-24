@@ -1,4 +1,4 @@
-package zdoctor.skilltree.api.skills;
+package zdoctor.skilltree.api.skills.interfaces;
 
 import java.util.ArrayList;
 
@@ -81,5 +81,15 @@ public interface ISkillHandler extends INBTSerializable<NBTTagCompound> {
 	public EntityLivingBase getOwner();
 
 	public int getSkillTier(SkillBase skill);
+
+	public boolean isDirty();
+
+	public void clean();
+
+	public void addSkillTier(SkillBase skill);
+
+	public void addSkillTier(SkillBase skill, int amount);
+
+	public void markDirty();
 
 }

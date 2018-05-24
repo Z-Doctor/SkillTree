@@ -8,7 +8,7 @@ import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
 import zdoctor.skilltree.api.enums.EnumSkillInteractType;
 import zdoctor.skilltree.api.enums.SkillFrameType;
-import zdoctor.skilltree.api.skills.ISkillStackable;
+import zdoctor.skilltree.api.skills.interfaces.ISkillStackable;
 import zdoctor.skilltree.network.SkillTreePacketHandler;
 import zdoctor.skilltree.network.play.server.SPacketSkillSlotInteract;
 import zdoctor.skilltree.skills.SkillBase;
@@ -160,8 +160,9 @@ public class GuiSkillButton extends GuiButton {
 			return;
 		Minecraft mc = Minecraft.getMinecraft();
 		if (!SkillTreeApi.hasSkill(mc.player, this.getSkill()) || skill instanceof ISkillStackable) {
-			SPacketSkillSlotInteract message = new SPacketSkillSlotInteract(this.getSkill(), EnumSkillInteractType.BUY);
-			SkillTreePacketHandler.INSTANCE.sendToServer(message);
+			if(SkillTreeApi.canBuySkill(mc.player, getSkill())) {
+				SkillTreeApi.buySkill(mc.player, getSkill());
+			}
 		}
 	}
 

@@ -10,6 +10,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.relauncher.Side;
 import zdoctor.skilltree.EasyConfig;
 import zdoctor.skilltree.EasyConfig.BooleanProperty;
 import zdoctor.skilltree.ModMain;
@@ -43,5 +44,9 @@ public abstract class CommonProxy {
 
 	public abstract World getWorld();
 	public abstract EntityPlayer getPlayer();
+	
+	public Side getEffectiveSide( ) {
+		return getWorld().isRemote ? Side.CLIENT : Side.SERVER;
+	}
 
 }

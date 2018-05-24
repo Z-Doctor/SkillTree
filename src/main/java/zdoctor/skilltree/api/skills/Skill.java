@@ -1,4 +1,4 @@
-package zdoctor.skilltree.skills;
+package zdoctor.skilltree.api.skills;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,8 +8,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import zdoctor.skilltree.api.SkillTreeApi;
 import zdoctor.skilltree.api.enums.SkillFrameType;
-import zdoctor.skilltree.api.skills.ISkillRequirment;
+import zdoctor.skilltree.api.skills.interfaces.ISkillRequirment;
 import zdoctor.skilltree.client.SkillToolTip;
+import zdoctor.skilltree.skills.SkillBase;
 
 public class Skill extends SkillBase {
 

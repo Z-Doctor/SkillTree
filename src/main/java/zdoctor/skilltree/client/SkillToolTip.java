@@ -2,7 +2,7 @@ package zdoctor.skilltree.client;
 
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.EntityLivingBase;
-import zdoctor.skilltree.api.skills.ISkillRequirment;
+import zdoctor.skilltree.api.skills.interfaces.ISkillRequirment;
 
 public class SkillToolTip {
 

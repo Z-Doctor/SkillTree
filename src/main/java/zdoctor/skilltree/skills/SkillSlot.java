@@ -3,8 +3,8 @@ package zdoctor.skilltree.skills;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.INBTSerializable;
-import zdoctor.skilltree.api.skills.ISkillStackable;
-import zdoctor.skilltree.api.skills.ISkillToggle;
+import zdoctor.skilltree.api.skills.interfaces.ISkillStackable;
+import zdoctor.skilltree.api.skills.interfaces.ISkillToggle;
 
 public class SkillSlot implements INBTSerializable<NBTTagCompound> {
 	private boolean obtained;
@@ -57,7 +57,11 @@ public class SkillSlot implements INBTSerializable<NBTTagCompound> {
 	}
 
 	public void addSkillTier() {
-		skillTier++;
+		addSkillTier(1);
+	}
+
+	public void addSkillTier(int amount) {
+		skillTier += amount;
 	}
 
 	public void setSkillTier(int skillTier) {

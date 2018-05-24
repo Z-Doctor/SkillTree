@@ -1,29 +1,39 @@
 package zdoctor.skilltree.api;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import zdoctor.skilltree.ModMain;
-import zdoctor.skilltree.api.skills.ISkillHandler;
-import zdoctor.skilltree.api.skills.ISkillToggle;
+import zdoctor.skilltree.api.enums.EnumSkillInteractType;
+import zdoctor.skilltree.api.skills.interfaces.ISkillHandler;
+import zdoctor.skilltree.api.skills.interfaces.ISkillToggle;
 import zdoctor.skilltree.network.SkillTreePacketHandler;
 import zdoctor.skilltree.network.play.client.CPacketSyncSkills;
+import zdoctor.skilltree.network.play.server.SPacketSkillSlotInteract;
+import zdoctor.skilltree.network.play.server.SPacketSyncRequest;
 import zdoctor.skilltree.skills.SkillBase;
 import zdoctor.skilltree.skills.SkillHandler;
 import zdoctor.skilltree.skills.SkillSlot;
 
 public class SkillTreeApi {
-	public static final String DEPENDENCY = "required-after:skilltree@[1.2.0.1,)";
+	public static final String DEPENDENCY = "required-after:skilltree@[" + ModMain.VERSION + ",)";
 
 	@CapabilityInject(ISkillHandler.class)
 	public static Capability<ISkillHandler> SKILL_CAPABILITY = null;
 
 	public static ISkillHandler getSkillHandler(EntityLivingBase entity) {
 		ISkillHandler handler = entity.getCapability(SKILL_CAPABILITY, null);
+		if (handler.getOwner() == null) {
+			// System.out.println("setting owner: " + entity);
+			handler.setOwner(entity);
+		}
 		return handler;
 	}
 
@@ -46,11 +56,6 @@ public class SkillTreeApi {
 		return skillHandler.canBuySkill(skill);
 	}
 
-	public static void buySkill(EntityLivingBase entity, SkillBase skill) {
-		ISkillHandler skillHandler = getSkillHandler(entity);
-		skillHandler.buySkill(skill);
-	}
-
 	public static int getSkillTier(EntityLivingBase entity, SkillBase skill) {
 		return getSkillHandler(entity).getSkillTier(skill);
 	}
@@ -66,39 +71,48 @@ public class SkillTreeApi {
 		return new SkillSlot(skill, hasSkill(entity, skill), isSkillActive(entity, skill), getSkillTier(entity, skill));
 	}
 
-	public static void syncSkills(EntityLivingBase entity) {
-		if (entity == null) {
-			ModMain.proxy.log
-					.catching(new IllegalArgumentException("Tried to sync non living entity. Entity: " + entity));
-			return;
-		}
-		CPacketSyncSkills packet = new CPacketSyncSkills(entity);
-		if (FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER) {
-			SkillTreePacketHandler.INSTANCE.sendToAll(packet);
+	public static int getPlayerSkillPoints(EntityLivingBase entity) {
+		return getSkillHandler(entity).getSkillPoints();
+	}
+
+	public static void addSkillPoints(EntityLivingBase entity, int points) {
+		getSkillHandler(entity).addPoints(points);
+		SkillTreeApi.syncSkills(entity);
+	}
+
+	public static void resetSkillHandler(EntityLivingBase entity) {
+		SkillHandler skillhandler = new SkillHandler();
+		skillhandler.setOwner(entity);
+		SkillTreeApi.getSkillHandler(entity).deserializeNBT(skillhandler.serializeNBT());
+		SkillTreeApi.syncSkills(entity);
+	}
+
+	// Skill Interations
+
+	public static void buySkill(EntityLivingBase entity, SkillBase skill) {
+		ISkillHandler skillHandler = getSkillHandler(entity);
+		if (ModMain.proxy.getEffectiveSide() == Side.CLIENT) {
+			SPacketSkillSlotInteract message = new SPacketSkillSlotInteract(skill, EnumSkillInteractType.BUY);
+			SkillTreePacketHandler.INSTANCE.sendToServer(message);
+			skillHandler.buySkill(skill);
 		} else {
-			// Client Side Request
-			if (entity instanceof EntityPlayer) {
-				// Only players should ask for a request client side
-				SkillTreePacketHandler.INSTANCE.sendToServer(packet);
-			}
+			skillHandler.buySkill(skill);
 		}
 	}
 
-	// public static void syncSkills(EntityLivingBase entity, List<EntityPlayer>
-	// receivers) {
-	// if (FMLCommonHandler.instance().getEffectiveSide() != Side.SERVER)
-	// return;
-	// if (entity == null) {
-	// ModMain.proxy.log.catching(new IllegalArgumentException("Tried to sync null
-	// entity"));
-	// return;
-	// }
-	// CPacketSyncSkills pkt = new CPacketSyncSkills(entity);
-	// for (EntityPlayer receiver : receivers) {
-	// SkillTreePacketHandler.INSTANCE.sendTo(pkt, (EntityPlayerMP) receiver);
-	// }
-	//
-	// }
+	public static void toggleSkill(EntityLivingBase entity, SkillBase skill) {
+		if (skill instanceof ISkillToggle) {
+			ISkillHandler skillHandler = getSkillHandler(entity);
+			if (ModMain.proxy.getEffectiveSide() == Side.CLIENT) {
+				SPacketSkillSlotInteract message = new SPacketSkillSlotInteract(skill, EnumSkillInteractType.TOGGLE);
+				SkillTreePacketHandler.INSTANCE.sendToServer(message);
+				skillHandler.setSkillActive(skill, !isSkillActive(entity, skill));
+			} else {
+				skillHandler.setSkillActive(skill, !isSkillActive(entity, skill));
+			}
+		}
+
+	}
 
 	public static void sellSkill(EntityLivingBase entity, SkillBase skill) {
 		// TODO Auto-generated method stub
@@ -110,28 +124,40 @@ public class SkillTreeApi {
 
 	}
 
-	public static int getPlayerSkillPoints(EntityLivingBase entity) {
-		return getSkillHandler(entity).getSkillPoints();
+	public static void syncSkills(EntityLivingBase entity) {
+		if (entity == null) {
+			ModMain.proxy.log.catching(new IllegalArgumentException("Tried to sync null entity. Entity: " + entity));
+			return;
+		}
+
+		if (!(entity instanceof EntityLivingBase)) {
+			ModMain.proxy.log
+					.catching(new IllegalArgumentException("Tried to sync non-lvining entity. Entity: " + entity));
+			return;
+		}
+		
+		System.out.println("Sync skill");
+
+		if (ModMain.proxy.getEffectiveSide() == Side.SERVER) {
+			List<EntityPlayer> receivers = new ArrayList<>(
+					((WorldServer) ModMain.proxy.getWorld()).getEntityTracker().getTrackingPlayers(entity));
+			SkillTreeApi.syncSkills(entity, receivers);
+		} else {
+			SPacketSyncRequest packet = new SPacketSyncRequest(entity);
+			SkillTreePacketHandler.INSTANCE.sendToServer(packet);
+		}
 	}
 
-	public static void addSkillPoints(EntityLivingBase entity, int points) {
-		getSkillHandler(entity).addPoints(points);
-	}
-
-	public static void resetSkillHandler(EntityLivingBase entityplayer) {
-		SkillHandler skillhandler = new SkillHandler();
-		skillhandler.setOwner(entityplayer);
-		SkillTreeApi.getSkillHandler(entityplayer).deserializeNBT(skillhandler.serializeNBT());
-		SkillTreeApi.syncSkills(entityplayer);
-	}
-
-	public static void reloadHandler(EntityLivingBase entity) {
-		getSkillHandler(entity).reloadHandler();
-	}
-
-	public static void toggleSkill(EntityLivingBase entity, SkillBase skill) {
-		if (skill instanceof ISkillToggle) {
-			getSkillHandler(entity).setSkillActive(skill, !isSkillActive(entity, skill));
+	/**
+	 * Used to either send an entity updates from the server to players
+	 */
+	public static void syncSkills(EntityLivingBase entity, List<EntityPlayer> receivers) {
+		if (ModMain.proxy.getEffectiveSide() == Side.SERVER) {
+			CPacketSyncSkills packet = new CPacketSyncSkills(entity);
+			for (EntityPlayer receiver : receivers) {
+				if (receiver instanceof EntityPlayerMP)
+					SkillTreePacketHandler.INSTANCE.sendTo(packet, (EntityPlayerMP) receiver);
+			}
 		}
 	}
 

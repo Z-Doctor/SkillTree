@@ -13,9 +13,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.translation.I18n;
 import zdoctor.skilltree.api.SkillTreeApi;
-import zdoctor.skilltree.api.skills.ISkillHandler;
+import zdoctor.skilltree.api.skills.interfaces.ISkillHandler;
 import zdoctor.skilltree.skills.SkillBase;
-import zdoctor.skilltree.skills.SkillHandler;
 import zdoctor.skilltree.skills.SkillSlot;
 
 public class CommandSkillTree extends CommandBase {
@@ -75,29 +74,27 @@ public class CommandSkillTree extends CommandBase {
 			throw new WrongUsageException("commands.skilltree.usage", new Object[0]);
 		} else {
 			String action = args[0].toLowerCase();
-			EntityPlayer entityplayer = args.length > 1 ? getPlayer(server, sender, args[1])
+			EntityPlayer entity = args.length > 1 ? getPlayer(server, sender, args[1])
 					: getCommandSenderAsPlayer(sender);
 
 			switch (action) {
 			case "reset":
-				SkillTreeApi.resetSkillHandler(entityplayer);
-				notifyCommandListener(sender, this, "commands.skilltree.success.reset", entityplayer.getName());
+				SkillTreeApi.resetSkillHandler(entity);
+				notifyCommandListener(sender, this, "commands.skilltree.success.reset", entity.getName());
 				break;
 			case "addpoints":
 				String pointString = args.length > 2 ? args[2] : args.length > 1 ? args[1] : " ";
 				try {
 					int pointsToAdd = Integer.parseInt(pointString);
-					SkillTreeApi.addSkillPoints(entityplayer, pointsToAdd);
-					SkillTreeApi.syncSkills(entityplayer);
+					SkillTreeApi.addSkillPoints(entity, pointsToAdd);
 					if (pointsToAdd >= 0)
 						notifyCommandListener(sender, this, "commands.skilltree.success.addPoints", pointsToAdd,
-								entityplayer.getName());
+								entity.getName());
 					else
 						notifyCommandListener(sender, this, "commands.skilltree.success.removePoints", pointsToAdd,
-								entityplayer.getName());
+								entity.getName());
 				} catch (NumberFormatException e) {
-					throw new CommandException("commands.skilltree.failure.addPoints", pointString,
-							entityplayer.getName());
+					throw new CommandException("commands.skilltree.failure.addPoints", pointString, entity.getName());
 				}
 				break;
 			case "give":
@@ -105,51 +102,50 @@ public class CommandSkillTree extends CommandBase {
 				String skillName = args.length > 2 ? args[2] : args.length > 1 ? args[1] : "Invalid";
 				SkillBase skill = SkillBase.getSkillByKey(new ResourceLocation(skillName));
 				if (skillName.equalsIgnoreCase("all")) {
-					ISkillHandler skillHandler = SkillTreeApi.getSkillHandler(entityplayer);
+					ISkillHandler skillHandler = SkillTreeApi.getSkillHandler(entity);
 					skillHandler.getSkillSlots().forEach(skillSlot -> {
 						skillSlot.setObtained();
 						skillSlot.setActive();
 					});
-					SkillTreeApi.reloadHandler(entityplayer);
-					SkillTreeApi.syncSkills(entityplayer);
-					notifyCommandListener(sender, this, "commands.skilltree.success.give.all", entityplayer.getName(),
-							entityplayer.getName());
+					// SkillTreeApi.reloadHandler(entity);
+					SkillTreeApi.syncSkills(entity);
+					notifyCommandListener(sender, this, "commands.skilltree.success.give.all", entity.getName(),
+							entity.getName());
 					break;
 				}
 
 				if (skill == null)
-					throw new CommandException("commands.skilltree.failure.give", entityplayer.getName(), skillName);
-				if (SkillTreeApi.hasSkill(entityplayer, skill))
-					throw new CommandException("commands.skilltree.failure.give.owned", entityplayer.getName(),
-							skillName);
+					throw new CommandException("commands.skilltree.failure.give", entity.getName(), skillName);
+				if (SkillTreeApi.hasSkill(entity, skill))
+					throw new CommandException("commands.skilltree.failure.give.owned", entity.getName(), skillName);
 
 				ArrayList<SkillSlot> neededSkills = new ArrayList<>();
-				SkillSlot currentSkillNode = SkillTreeApi.getSkillSlot(entityplayer, skill);
+				SkillSlot currentSkillNode = SkillTreeApi.getSkillSlot(entity, skill);
 				neededSkills.add(currentSkillNode);
 				while (currentSkillNode.getSkill().getParent() != null) {
-					currentSkillNode = SkillTreeApi.getSkillSlot(entityplayer, currentSkillNode.getSkill().getParent());
+					currentSkillNode = SkillTreeApi.getSkillSlot(entity, currentSkillNode.getSkill().getParent());
 					if (currentSkillNode.isObtained())
 						break;
 					neededSkills.add(currentSkillNode);
 				}
 
-				ISkillHandler skillHandler = SkillTreeApi.getSkillHandler(entityplayer);
+				ISkillHandler skillHandler = SkillTreeApi.getSkillHandler(entity);
 				for (int i = neededSkills.size() - 1; i >= 0; i--) {
 					skillHandler.getSkillSlot(neededSkills.get(i).getSkill()).setObtained();
 					skillHandler.getSkillSlot(neededSkills.get(i).getSkill()).setActive();
 				}
 
-				SkillTreeApi.reloadHandler(entityplayer);
-				SkillTreeApi.syncSkills(entityplayer);
+				// SkillTreeApi.reloadHandler(entity);
+				SkillTreeApi.syncSkills(entity);
 				for (int i = neededSkills.size() - 1; i >= 0; i--) {
-					if (SkillTreeApi.hasSkill(entityplayer, neededSkills.get(i).getSkill()))
+					if (SkillTreeApi.hasSkill(entity, neededSkills.get(i).getSkill()))
 						notifyCommandListener(sender, this, "commands.skilltree.success.give",
 								I18n.translateToLocal(neededSkills.get(i).getSkill().getUnlocaizedName()),
-								entityplayer.getName(), entityplayer.getName());
+								entity.getName(), entity.getName());
 					else
-						notifyCommandListener(sender, this, "commands.skilltree.failure.give", entityplayer.getName(),
+						notifyCommandListener(sender, this, "commands.skilltree.failure.give", entity.getName(),
 								I18n.translateToLocal(neededSkills.get(i).getSkill().getUnlocaizedName()),
-								entityplayer.getName());
+								entity.getName());
 				}
 
 				break;
@@ -157,24 +153,25 @@ public class CommandSkillTree extends CommandBase {
 				String skillName1 = args.length > 2 ? args[2] : args.length > 1 ? args[1] : "Invalid";
 				SkillBase skill1 = SkillBase.getSkillByKey(new ResourceLocation(skillName1));
 				if (skillName1.equalsIgnoreCase("all")) {
-					SkillTreeApi.getSkillHandler(entityplayer).deserializeNBT(new SkillHandler().serializeNBT());
-					SkillTreeApi.syncSkills(entityplayer);
-					notifyCommandListener(sender, this, "commands.skilltree.success.reset", entityplayer.getName());
+					SkillTreeApi.resetSkillHandler(entity);
+					notifyCommandListener(sender, this, "commands.skilltree.success.reset", entity.getName());
 					break;
 				}
 
 				if (skill1 == null)
-					throw new CommandException("commands.skilltree.failure.remove", entityplayer.getName(), skillName1);
-				if (!SkillTreeApi.hasSkill(entityplayer, skill1))
-					notifyCommandListener(sender, this, "commands.skilltree.failure.remove.unowned",
-							entityplayer.getName(), skillName1);
-				SkillTreeApi.getSkillHandler(entityplayer).setSkillObtained(skill1, false);
-				if (!SkillTreeApi.hasSkill(entityplayer, skill1))
+					throw new CommandException("commands.skilltree.failure.remove", entity.getName(), skillName1);
+				if (!SkillTreeApi.hasSkill(entity, skill1))
+					notifyCommandListener(sender, this, "commands.skilltree.failure.remove.unowned", entity.getName(),
+							skillName1);
+				SkillTreeApi.getSkillHandler(entity).setSkillObtained(skill1, false);
+				SkillTreeApi.syncSkills(entity);
+				if (!SkillTreeApi.hasSkill(entity, skill1))
 					notifyCommandListener(sender, this, "commands.skilltree.success.remove",
-							I18n.translateToLocal(skillName1), entityplayer.getName());
+							I18n.translateToLocal(skillName1), entity.getName());
+
 				else
 					throw new CommandException("commands.skilltree.failure.remove", I18n.translateToLocal(skillName1),
-							entityplayer.getName());
+							entity.getName());
 				break;
 			default:
 				throw new CommandException("commands.skilltree.failure.action", action);

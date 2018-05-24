@@ -1,7 +1,7 @@
 package zdoctor.skilltree.api.skills.requirements;
 
 import net.minecraft.entity.EntityLivingBase;
-import zdoctor.skilltree.api.skills.ISkillRequirment;
+import zdoctor.skilltree.api.skills.interfaces.ISkillRequirment;
 import zdoctor.skilltree.skills.SkillBase;
 
 /**

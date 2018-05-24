@@ -3,7 +3,7 @@ package zdoctor.skilltree.api.skills.requirements;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import zdoctor.skilltree.ModMain;
-import zdoctor.skilltree.api.skills.ISkillRequirment;
+import zdoctor.skilltree.api.skills.interfaces.ISkillRequirment;
 
 public class LevelRequirement implements ISkillRequirment {
 

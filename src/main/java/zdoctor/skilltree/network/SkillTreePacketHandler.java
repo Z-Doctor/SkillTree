@@ -8,6 +8,8 @@ import zdoctor.skilltree.network.play.client.CPacketSyncSkills;
 import zdoctor.skilltree.network.play.client.CPacketSyncSkills.PacketSyncHandler;
 import zdoctor.skilltree.network.play.server.SPacketSkillSlotInteract;
 import zdoctor.skilltree.network.play.server.SPacketSkillSlotInteract.PacketInteractHandler;
+import zdoctor.skilltree.network.play.server.SPacketSyncRequest;
+import zdoctor.skilltree.network.play.server.SPacketSyncRequest.PacketSyncRequestHandler;
 
 public class SkillTreePacketHandler {
 	public static final SimpleNetworkWrapper INSTANCE = NetworkRegistry.INSTANCE.newSimpleChannel(ModMain.MODID);
@@ -15,7 +17,7 @@ public class SkillTreePacketHandler {
 
 	public static void initPackets() {
 		INSTANCE.registerMessage(PacketSyncHandler.class, CPacketSyncSkills.class, getNextID(), Side.CLIENT);
-		INSTANCE.registerMessage(PacketSyncHandler.class, CPacketSyncSkills.class, getNextID(), Side.SERVER);
+		INSTANCE.registerMessage(PacketSyncRequestHandler.class, SPacketSyncRequest.class, getNextID(), Side.SERVER);
 		INSTANCE.registerMessage(PacketInteractHandler.class, SPacketSkillSlotInteract.class, getNextID(), Side.SERVER);
 	}
 

@@ -1,4 +1,4 @@
-package zdoctor.skilltree.api.skills;
+package zdoctor.skilltree.api.skills.interfaces;
 
 import net.minecraft.entity.EntityLivingBase;
 import zdoctor.skilltree.skills.SkillBase;

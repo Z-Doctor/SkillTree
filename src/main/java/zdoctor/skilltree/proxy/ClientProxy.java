@@ -45,4 +45,5 @@ public class ClientProxy extends CommonProxy {
 	public EntityPlayer getPlayer() {
 		return Minecraft.getMinecraft().player;
 	}
+
 }

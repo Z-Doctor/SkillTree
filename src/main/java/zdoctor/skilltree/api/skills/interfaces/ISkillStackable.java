@@ -1,4 +1,4 @@
-package zdoctor.skilltree.api.skills;
+package zdoctor.skilltree.api.skills.interfaces;
 
 import java.util.List;
 
