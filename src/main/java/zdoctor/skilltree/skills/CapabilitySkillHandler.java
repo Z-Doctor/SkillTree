@@ -44,7 +44,7 @@ public class CapabilitySkillHandler {
 
 	@SubscribeEvent
 	public void initCapabilities(AttachCapabilitiesEvent<Entity> e) {
-		if (!(e.getObject() instanceof EntityLivingBase))
+		if (e.getObject() == null || !(e.getObject() instanceof EntityLivingBase))
 			return;
 		e.addCapability(new ResourceLocation(ModMain.MODID, "SkillCapability"), new SkillCapabilityProvider());
 	}

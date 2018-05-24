@@ -17,7 +17,7 @@ import zdoctor.skilltree.skills.SkillHandler;
 import zdoctor.skilltree.skills.SkillSlot;
 
 public class SkillTreeApi {
-	public static final String DEPENDENCY = "required-after:skilltree@[1.1.0.2,)";
+	public static final String DEPENDENCY = "required-after:skilltree@[1.2.0.1,)";
 
 	@CapabilityInject(ISkillHandler.class)
 	public static Capability<ISkillHandler> SKILL_CAPABILITY = null;

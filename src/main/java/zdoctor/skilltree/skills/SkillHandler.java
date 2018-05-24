@@ -169,12 +169,13 @@ public class SkillHandler implements ISkillHandler {
 	public void buySkill(SkillBase skill) {
 		if (canBuySkill(skill)) {
 			if (hasSkill(skill) && skill instanceof ISkillStackable) {
+				skill.getRequirments(getOwner(), true).forEach(requirement -> requirement.onFufillment(getOwner()));
+				getSkillSlot(skill).addSkillTier();
 				((ISkillStackable) skill).onSkillRePurchase(getOwner());
-				getSkillSlot(skill).addkillTier();
 			} else if (!hasSkill(skill)) {
 				setSkillObtained(skill, true);
 				setSkillActive(skill, true);
-				skill.getRequirments(false).forEach(requirement -> requirement.onFufillment(getOwner()));
+				skill.getRequirments(getOwner(), false).forEach(requirement -> requirement.onFufillment(getOwner()));
 				skill.onSkillPurchase(getOwner());
 				getSkillSlot(skill).setSkillTier(1);
 			}

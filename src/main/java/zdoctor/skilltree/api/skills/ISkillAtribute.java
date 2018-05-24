@@ -1,27 +1,32 @@
 package zdoctor.skilltree.api.skills;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttribute;
 import zdoctor.skilltree.ModMain;
-import zdoctor.skilltree.skills.AttributeSkill;
+import zdoctor.skilltree.skills.SkillBase;
 
 public interface ISkillAtribute {
-	public default void modifyEntity(EntityLivingBase entity) {
-		if (!entity.getEntityAttribute(getAttribute()).hasModifier(getModifier())) {
-			entity.getEntityAttribute(getAttribute()).applyModifier(getModifier());
-			ModMain.proxy.log.debug("Apply Modifier '{}' to '{}'", getModifier(), entity);
+	public default void modifyEntity(EntityLivingBase entity, SkillBase skill) {
+		AttributeModifier modifier = getModifier(entity, skill);
+		if (modifier != null && !entity.getEntityAttribute(getAttribute(entity, skill)).hasModifier(modifier)) {
+			entity.getEntityAttribute(getAttribute(entity, skill)).applyModifier(modifier);
+			ModMain.proxy.log.debug("Apply Modifier '{}' to '{}'", modifier, entity);
 		}
 	}
 
-	public default void removeEntityModifier(EntityLivingBase entity) {
-		if (entity.getEntityAttribute(getAttribute()).hasModifier(getModifier())) {
-			entity.getEntityAttribute(getAttribute()).removeModifier(getModifier());
-			ModMain.proxy.log.debug("Removing Modifier '{}' to '{}'", getModifier(), entity);
+	public default void removeEntityModifier(EntityLivingBase entity, SkillBase skill) {
+		AttributeModifier modifier = getModifier(entity, skill);
+		if (modifier != null && entity.getEntityAttribute(getAttribute(entity, skill)).hasModifier(modifier)) {
+			entity.getEntityAttribute(getAttribute(entity, skill)).removeModifier(modifier);
+			ModMain.proxy.log.debug("Removing Modifier '{}' to '{}'", modifier, entity);
 		}
 	}
 
-	public AttributeModifier getModifier();
+	@Nullable
+	public AttributeModifier getModifier(EntityLivingBase entity, SkillBase skill);
 
-	public IAttribute getAttribute();
+	public IAttribute getAttribute(EntityLivingBase entity, SkillBase skill);
 }

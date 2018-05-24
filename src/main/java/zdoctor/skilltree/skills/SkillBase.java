@@ -156,7 +156,7 @@ public abstract class SkillBase {
 		return registryName;
 	}
 
-	public List<ISkillRequirment> getRequirments(boolean hasSkill) {
+	public List<ISkillRequirment> getRequirments(EntityLivingBase entity, boolean hasSkill) {
 		ArrayList reqList = new ArrayList<>();
 		if (!hasSkill)
 			reqList.addAll(requirements);

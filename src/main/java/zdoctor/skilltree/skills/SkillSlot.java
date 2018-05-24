@@ -56,7 +56,7 @@ public class SkillSlot implements INBTSerializable<NBTTagCompound> {
 		return skill;
 	}
 
-	public void addkillTier() {
+	public void addSkillTier() {
 		skillTier++;
 	}
 

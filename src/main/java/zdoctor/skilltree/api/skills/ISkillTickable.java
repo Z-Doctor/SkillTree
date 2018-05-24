@@ -10,4 +10,5 @@ import zdoctor.skilltree.skills.SkillSlot;
  */
 public interface ISkillTickable {
 	public void onActiveTick(EntityLivingBase entity, SkillBase skill, SkillSlot skillSlot);
+
 }

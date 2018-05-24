@@ -12,7 +12,6 @@ import zdoctor.skilltree.api.skills.ISkillAtribute;
  *
  */
 public abstract class AttributeSkill extends Skill implements ISkillAtribute {
-	// protected final SkillAttributeModifier modifier;
 	protected final IAttribute attribute;
 
 	public AttributeSkill(String name, Item icon, IAttribute attributeIn) {
@@ -22,23 +21,22 @@ public abstract class AttributeSkill extends Skill implements ISkillAtribute {
 	public AttributeSkill(String name, ItemStack icon, IAttribute attributeIn) {
 		super(name, icon);
 		this.attribute = attributeIn;
-		// modifierIn.setSaved(false);
 	}
 
 	@Override
-	public IAttribute getAttribute() {
+	public IAttribute getAttribute(EntityLivingBase entity, SkillBase skill) {
 		return attribute;
 	}
 
 	@Override
 	public void onSkillActivated(EntityLivingBase entity) {
-		if (entity.getEntityAttribute(getAttribute()) != null)
-			modifyEntity(entity);
+		if (entity.getEntityAttribute(getAttribute(entity, this)) != null)
+			modifyEntity(entity, this);
 	}
 
 	@Override
 	public void onSkillDeactivated(EntityLivingBase entity) {
-		if (entity.getEntityAttribute(getAttribute()) != null)
-			removeEntityModifier(entity);
+		if (entity.getEntityAttribute(getAttribute(entity, this)) != null)
+			removeEntityModifier(entity, this);
 	}
 }

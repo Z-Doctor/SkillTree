@@ -25,8 +25,10 @@ public class CPacketSyncSkills implements IMessage {
 
 	private int playerId;
 	private NBTTagCompound skillTreeTag;
+	private boolean emptyPacket;
 
 	public CPacketSyncSkills() {
+		this.emptyPacket = true;
 	}
 
 	public CPacketSyncSkills(EntityLivingBase entity) {
@@ -58,7 +60,7 @@ public class CPacketSyncSkills implements IMessage {
 				Entity entity = ModMain.proxy.getWorld().getEntityByID(message.playerId);
 				if (entity instanceof EntityLivingBase) {
 					SkillTreeApi.syncSkills((EntityLivingBase) entity);
-				} else {
+				} else if (!message.emptyPacket) {
 					ModMain.proxy.log.catching(
 							new IllegalArgumentException("Tried to sync non living entity. Entity: " + entity));
 				}

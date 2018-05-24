@@ -43,7 +43,7 @@ public class Skill extends SkillBase {
 		toolTip.add(new SkillToolTip(entity, getNameRequirement()));
 		if (getParentRequirement() != null)
 			toolTip.add(new SkillToolTip(entity, getParentRequirement()));
-		getRequirments(SkillTreeApi.hasSkill(entity, this))
+		getRequirments(entity, SkillTreeApi.hasSkill(entity, this))
 				.forEach(requirement -> toolTip.add(new SkillToolTip(entity, requirement)));
 		toolTip.add(new SkillToolTip(entity, getDescriptionRequirement()));
 		return toolTip;
@@ -64,7 +64,7 @@ public class Skill extends SkillBase {
 		if (hasParent() && !SkillTreeApi.hasSkill(entity, getParent()))
 			return false;
 
-		for (ISkillRequirment requirement : getRequirments(false)) {
+		for (ISkillRequirment requirement : getRequirments(entity, false)) {
 			if (!requirement.test(entity))
 				return false;
 		}
