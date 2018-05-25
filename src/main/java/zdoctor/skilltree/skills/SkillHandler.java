@@ -11,7 +11,6 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
-import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
@@ -78,9 +77,7 @@ public class SkillHandler implements ISkillHandler {
 			this.skillsCodex.put(skillSlot.getSkill(), skillSlot);
 		}
 		skillPoints = nbt.getInteger("SkillPoints");
-
-		if (getOwner() != null)
-			reloadHandler();
+		markDirty();
 	}
 
 	@Override
@@ -189,11 +186,9 @@ public class SkillHandler implements ISkillHandler {
 		if (entity == null && owner != null)
 			MinecraftForge.EVENT_BUS.unregister(this);
 		this.owner = entity;
-
 		if (owner != null) {
-			reloadHandler();
 			MinecraftForge.EVENT_BUS.register(this);
-			markDirty();
+			reloadHandler();
 		}
 	}
 
@@ -250,14 +245,13 @@ public class SkillHandler implements ISkillHandler {
 	private void tick(SkillTick e) {
 		if (!getOwner().world.isRemote) {
 			if (isDirty()) {
-				// System.out.println("Server Dirty: " + this);
+				System.out.println("Server Dirty: " + this);
 				SkillTreeApi.syncSkills(getOwner());
 				clean();
 			}
 		} else {
 			if (isDirty()) {
-				// System.out.println("Client Dirty: " + this);
-				reloadHandler();
+				System.out.println("Client Dirty: " + this);
 				clean();
 			}
 		}
@@ -272,7 +266,7 @@ public class SkillHandler implements ISkillHandler {
 		});
 
 		if (owner.isDead) {
-			System.out.println("Owner dead, unregistering: " + getOwner());
+			// System.out.println("Owner dead, unregistering: " + getOwner());
 			setOwner(null);
 		}
 

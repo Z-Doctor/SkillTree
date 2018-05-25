@@ -11,6 +11,7 @@ import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
 import zdoctor.skilltree.api.enums.EnumSkillInteractType;
 import zdoctor.skilltree.events.SkillInteractEvent;
+import zdoctor.skilltree.network.SkillTreePacketHandler;
 import zdoctor.skilltree.network.play.client.CPacketSyncSkills;
 import zdoctor.skilltree.skills.SkillBase;
 
@@ -39,38 +40,46 @@ public class SPacketSkillSlotInteract implements IMessage {
 		skill = SkillBase.getSkillById(buffer.readInt());
 	}
 
-	public static class PacketInteractHandler implements IMessageHandler<SPacketSkillSlotInteract, CPacketSyncSkills> {
+	public static class PacketInteractHandler implements IMessageHandler<SPacketSkillSlotInteract, IMessage> {
 		@Override
-		public CPacketSyncSkills onMessage(SPacketSkillSlotInteract message, MessageContext ctx) {
-			SkillInteractEvent event = new SkillInteractEvent(ctx.getServerHandler().player, message.skill,
-					message.type, ctx.side);
-			MinecraftForge.EVENT_BUS.post(event);
-			if (event.isCanceled())
-				return null;
+		public IMessage onMessage(SPacketSkillSlotInteract message, MessageContext ctx) {
+			ctx.getServerHandler().player.getServerWorld().addScheduledTask(new Runnable() {
+				@Override
+				public void run() {
+					SkillInteractEvent event = new SkillInteractEvent(ctx.getServerHandler().player, message.skill,
+							message.type, ctx.side);
+					MinecraftForge.EVENT_BUS.post(event);
+					if (event.isCanceled())
+						return;
 
-			ModMain.proxy.log.debug("Skill Interact - Type: {} Player: {} Skill: {}", message.type,
-					ctx.getServerHandler().player, message.skill.getRegistryName());
-			switch (message.type) {
-			case BUY:
-				SkillTreeApi.buySkill(ctx.getServerHandler().player, message.skill);
-				break;
-			case SELL:
-				SkillTreeApi.sellSkill(ctx.getServerHandler().player, message.skill);
-				break;
-			case REFUND:
-				SkillTreeApi.refundSkill(ctx.getServerHandler().player, message.skill);
-				break;
-			case TOGGLE:
-				SkillTreeApi.toggleSkill(ctx.getServerHandler().player, message.skill);
-				break;
-			default:
-				break;
-			}
+					ModMain.proxy.log.debug("Skill Interact - Type: {} Player: {} Skill: {}", message.type,
+							ctx.getServerHandler().player, message.skill.getRegistryName());
+					switch (message.type) {
+					case BUY:
+						SkillTreeApi.buySkill(ctx.getServerHandler().player, message.skill);
+						break;
+					case SELL:
+						SkillTreeApi.sellSkill(ctx.getServerHandler().player, message.skill);
+						break;
+					case REFUND:
+						SkillTreeApi.refundSkill(ctx.getServerHandler().player, message.skill);
+						break;
+					case TOGGLE:
+						SkillTreeApi.toggleSkill(ctx.getServerHandler().player, message.skill);
+						break;
+					default:
+						break;
+					}
 
-			if (ctx.side == Side.SERVER && event.getResult() != Event.Result.DENY) {
-				// Not meant for non players
-				return new CPacketSyncSkills(ctx.getServerHandler().player);
-			}
+					if (ctx.side == Side.SERVER && event.getResult() != Event.Result.DENY) {
+						// Not meant for non players
+						CPacketSyncSkills packet = new CPacketSyncSkills(ctx.getServerHandler().player);
+						SkillTreePacketHandler.INSTANCE.sendTo(packet, ctx.getServerHandler().player);
+					}
+
+				}
+			});
+
 			return null;
 		}
 	}

@@ -30,12 +30,14 @@ public abstract class AttributeSkill extends Skill implements ISkillAtribute {
 
 	@Override
 	public void onSkillActivated(EntityLivingBase entity) {
+		System.out.println("Skill Activated: " + (entity.world.isRemote ? "Client" : "Server"));
 		if (entity.getEntityAttribute(getAttribute(entity, this)) != null)
 			modifyEntity(entity, this);
 	}
 
 	@Override
 	public void onSkillDeactivated(EntityLivingBase entity) {
+		System.out.println("Skill Deactivated: " + (entity.world.isRemote ? "Client" : "Server"));
 		if (entity.getEntityAttribute(getAttribute(entity, this)) != null)
 			removeEntityModifier(entity, this);
 	}

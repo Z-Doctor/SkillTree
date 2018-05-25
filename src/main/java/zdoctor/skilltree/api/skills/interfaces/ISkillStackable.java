@@ -15,6 +15,6 @@ public interface ISkillStackable {
 
 	public List<ISkillRequirment> getRequirments(EntityLivingBase entity, boolean hasSkill);
 
-	public void onSkillRePurchase(EntityLivingBase owner);
+	public void onSkillRePurchase(EntityLivingBase entity);
 	
 }

@@ -55,7 +55,7 @@ public class CPacketSyncSkills implements IMessage {
 	public static class PacketSyncHandler implements IMessageHandler<CPacketSyncSkills, IMessage> {
 		@Override
 		public IMessage onMessage(CPacketSyncSkills message, MessageContext ctx) {
-			System.out.println("Client update");
+			// System.out.println("Client update");
 			Minecraft.getMinecraft().addScheduledTask(new Runnable() {
 				@Override
 				public void run() {
@@ -66,7 +66,7 @@ public class CPacketSyncSkills implements IMessage {
 					if (entity != null && entity instanceof EntityLivingBase) {
 						ISkillHandler cap = SkillTreeApi.getSkillHandler((EntityLivingBase) entity);
 						cap.deserializeNBT(message.skillTreeTag);
-						cap.markDirty();
+						cap.reloadHandler();
 					}
 				}
 			});
