@@ -121,7 +121,8 @@ public class SkillHandler implements ISkillHandler {
 
 	@Override
 	public void onSkillChange(SkillSlot skillSlot, ChangeType type) {
-		System.out.println("Change: " + type);
+		ModMain.proxy.log.debug("Skill Changeg - Owner: {} Type: {} Remote: {}", getOwner(), type,
+				getOwner().world.isRemote);
 		if (skillSlot.getSkill().getParent() != null) {
 			if (!hasSkill(skillSlot.getSkill().getParent())) {
 				skillSlot.setObtained(false);
@@ -132,13 +133,12 @@ public class SkillHandler implements ISkillHandler {
 		switch (type) {
 		case ALL:
 		case SKILL_BOUGHT:
-			skillSlot.getSkill().getChildren().forEach(skill -> {
-				onSkillChange(getSkillSlot(skill), type);
-			});
-			if (skillSlot.isActive())
-				skillSlot.getSkill().onSkillActivated(getOwner());
-			else
-				skillSlot.getSkill().onSkillDeactivated(getOwner());
+			if (skillSlot.isObtained()) {
+				if (skillSlot.isActive())
+					skillSlot.getSkill().onSkillActivated(getOwner());
+				else
+					skillSlot.getSkill().onSkillDeactivated(getOwner());
+			}
 			if (type != ChangeType.ALL)
 				break;
 		case SKILL_ACTIVATED:
@@ -152,21 +152,21 @@ public class SkillHandler implements ISkillHandler {
 			if (type != ChangeType.ALL)
 				break;
 		case SKILL_REBOUGHT:
-			if(skillSlot instanceof ISkillStackable)
-				((ISkillStackable)skillSlot.getSkill()).onSkillRePurchase(getOwner());
+			if (skillSlot instanceof ISkillStackable)
+				((ISkillStackable) skillSlot.getSkill()).onSkillRePurchase(getOwner());
 			if (type != ChangeType.ALL)
 				break;
 		case SKILL_SOLD:
-			if(!skillSlot.isObtained()) {
+			if (!skillSlot.isObtained()) {
 				skillSlot.getSkill().getChildren().forEach(skill -> {
 					onSkillChange(getSkillSlot(skill), ChangeType.SKILL_REMOVED);
 				});
-				onSkillChange(skillSlot, ChangeType.SKILL_DEACTIVATED);
+				onSkillChange(skillSlot, ChangeType.SKILL_REMOVED);
 			}
 			if (type != ChangeType.ALL)
 				break;
 		case SKILL_REMOVED:
-			if(!skillSlot.isObtained()) {
+			if (!skillSlot.isObtained()) {
 				skillSlot.getSkill().getChildren().forEach(skill -> {
 					onSkillChange(getSkillSlot(skill), ChangeType.SKILL_REMOVED);
 				});
@@ -258,7 +258,8 @@ public class SkillHandler implements ISkillHandler {
 				((ISkillStackable) skill).onSkillRePurchase(getOwner());
 				markDirty();
 			} else if (!hasSkill(skill)) {
-				skill.getRequirments(getOwner(), hasSkill(skill)).forEach(requirement -> requirement.onFufillment(getOwner()));
+				skill.getRequirments(getOwner(), hasSkill(skill))
+						.forEach(requirement -> requirement.onFufillment(getOwner()));
 				addSkillTier(skill, 1);
 				setSkillObtained(skill, true);
 				setSkillActive(skill, true);
@@ -291,15 +292,18 @@ public class SkillHandler implements ISkillHandler {
 	}
 
 	private void tick(SkillTick e) {
+		// System.out.println("tick");
 		if (!getOwner().world.isRemote) {
 			if (isDirty()) {
-				System.out.println("Server Dirty: " + this);
+				ModMain.proxy.log.debug("Server Handler Dirty: {}", getOwner());
 				SkillTreeApi.syncSkills(getOwner());
 				clean();
 			}
 		} else {
 			if (isDirty()) {
-				System.out.println("Client Dirty: " + this);
+				ModMain.proxy.log.debug("Client Handler Dirty: {}", getOwner());
+				// System.out.println("Client Dirty");
+				reloadHandler();
 				clean();
 			}
 		}

@@ -66,7 +66,7 @@ public class CPacketSyncSkills implements IMessage {
 					if (entity != null && entity instanceof EntityLivingBase) {
 						ISkillHandler cap = SkillTreeApi.getSkillHandler((EntityLivingBase) entity);
 						cap.deserializeNBT(message.skillTreeTag);
-						cap.reloadHandler();
+						cap.markDirty();
 					}
 				}
 			});

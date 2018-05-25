@@ -16,12 +16,8 @@ import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent.Clone;
-import net.minecraftforge.event.entity.player.PlayerEvent.StartTracking;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.WorldTickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
@@ -61,11 +57,10 @@ public class CapabilitySkillHandler {
 			// System.out.println(e.getEntity() + " joined on side " +
 			// (e.getWorld().isRemote ? "Client" : "Server"));
 			if (!e.getWorld().isRemote) {
-				SkillTreeApi.getSkillHandler((EntityLivingBase) e.getEntity()).reloadHandler();
-				SkillTreeApi.syncSkills((EntityLivingBase) e.getEntity());
-				// System.out.println("Marked Dirty: " + e.getEntity());
+				ISkillHandler handler = SkillTreeApi.getSkillHandler((EntityLivingBase) e.getEntity());
+				handler.reloadHandler();
+				handler.markDirty();
 			}
-
 		}
 	}
 
@@ -105,9 +100,19 @@ public class CapabilitySkillHandler {
 
 	@SubscribeEvent
 	public void tickEvent(TickEvent.WorldTickEvent e) {
-		if (e.phase == TickEvent.Phase.END) {
+		debug(e);
+	}
+
+	public void debug(TickEvent.WorldTickEvent e) {
+		if (e.phase == TickEvent.Phase.END && !e.world.isRemote) {
 			MinecraftForge.EVENT_BUS.post(new SkillEvent.SkillTick(e.world));
 		}
 	}
 
+	@SubscribeEvent
+	public void playerTick(TickEvent.PlayerTickEvent e) {
+		if (e.phase == TickEvent.Phase.END && e.side == Side.CLIENT) {
+			MinecraftForge.EVENT_BUS.post(new SkillEvent.SkillTick(e.player.world));
+		}
+	}
 }

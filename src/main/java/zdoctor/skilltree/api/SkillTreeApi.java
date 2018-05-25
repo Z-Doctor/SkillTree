@@ -76,7 +76,7 @@ public class SkillTreeApi {
 
 	public static void addSkillPoints(EntityLivingBase entity, int points) {
 		getSkillHandler(entity).addPoints(points);
-//		SkillTreeApi.syncSkills(entity);
+		// SkillTreeApi.syncSkills(entity);
 	}
 
 	public static void resetSkillHandler(EntityLivingBase entity) {
@@ -146,9 +146,9 @@ public class SkillTreeApi {
 		}
 
 		if (!entity.world.isRemote) {
-//			System.out.println("Syncing entity: " + entity);
+			// System.out.println("Syncing entity: " + entity);
 			if (entity.world instanceof WorldServer) {
-//				System.out.println("Syncing from server");
+				// System.out.println("Syncing from server");
 				List<EntityPlayer> receivers = new ArrayList<>(
 						((WorldServer) entity.world).getEntityTracker().getTrackingPlayers(entity));
 				if (entity instanceof EntityPlayerMP)
@@ -157,7 +157,7 @@ public class SkillTreeApi {
 
 			}
 		} else {
-//			System.out.println("Attempt to sync from client");
+			// System.out.println("Attempt to sync from client");
 		}
 	}
 
@@ -169,13 +169,16 @@ public class SkillTreeApi {
 		boolean cleaned = false;
 		for (EntityPlayer receiver : receivers) {
 			if (receiver instanceof EntityPlayerMP) {
-				System.out.println("Sending update to " + receiver + "Dead: " + receiver.isDead);
-				if(receiver.isDead)
+				// System.out.println("Sending update to " + receiver + "Dead: " +
+				// receiver.isDead);
+				if (receiver.isDead) {
 					FMLLog.bigWarning("Receiver {} is Dead!", receiver);
+					continue;
+				}
 				SkillTreePacketHandler.INSTANCE.sendTo(packet, (EntityPlayerMP) receiver);
 				cleaned = true;
 			} else {
-				System.out.println("Unable to sync to receiver: " + receiver);
+				ModMain.proxy.log.debug("Unable to sync to receiver: {}", receiver);
 			}
 		}
 		if (cleaned) {

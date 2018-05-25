@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.events.SkillEvent;
 import zdoctor.skilltree.skills.SkillBase;
 
@@ -55,7 +56,7 @@ public abstract class SkillPageBase {
 			throw new IllegalArgumentException("Attempt to register Skill Page '" + registryName + "' twice");
 		}
 		SkillPage_Registry.put(registryName, this);
-		System.out.println("Register Page: " + registryName);
+		ModMain.proxy.log.debug("Register Page: {}", registryName);
 
 		registerSkills();
 		loadPage();

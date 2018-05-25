@@ -12,6 +12,8 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.enums.SkillFrameType;
 import zdoctor.skilltree.api.skills.interfaces.ISkillRequirment;
@@ -144,6 +146,7 @@ public abstract class SkillBase {
 		return new ArrayList<>(children);
 	}
 
+	@SideOnly(Side.CLIENT)
 	public String getDisplayName() {
 		return I18n.format(getUnlocaizedName());
 	}
