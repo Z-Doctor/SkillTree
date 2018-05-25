@@ -40,7 +40,7 @@ public class Config {
 	public void entityJoinedWorld(BlockEvent.PlaceEvent event) {
 		if (event.getPlacedBlock().getBlock() instanceof BlockWorkbench) {
 			event.setCanceled(true);
-			System.out.println("Class: " + event.getPlacedBlock().getBlock().getClass().getName());
+//			System.out.println("Class: " + event.getPlacedBlock().getBlock().getClass().getName());
 		}
 	}
 
