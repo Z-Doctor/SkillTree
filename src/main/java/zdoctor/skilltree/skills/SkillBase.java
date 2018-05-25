@@ -190,6 +190,7 @@ public abstract class SkillBase {
 	 * Used when drawing skill info when hovered. You can manipulate the order the
 	 * info is given
 	 */
+	@SideOnly(Side.CLIENT)
 	public abstract List<SkillToolTip> getToolTip(EntityLivingBase entity);
 
 	public abstract void onSkillActivated(EntityLivingBase entity);
