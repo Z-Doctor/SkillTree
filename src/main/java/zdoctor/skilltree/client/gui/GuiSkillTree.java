@@ -128,7 +128,12 @@ public class GuiSkillTree extends GuiSkillScreen {
 			if (tab == null || tab.getTabPage() != tabPage)
 				continue;
 			this.drawTab(tab);
-
+		}
+		for (SkillTabs tab : SkillTabs.SKILL_TABS) {
+			if (isMouseOverTab(tab, mouseX, mouseY)) {
+				this.drawHoveringText(tab.getTranslatedTabLabel(), mouseX, mouseY);
+				break;
+			}
 		}
 
 	}
