@@ -53,7 +53,7 @@ public interface ISkillHandler extends INBTSerializable<NBTTagCompound> {
 	 * 
 	 * @param skillSlot
 	 */
-	public void onSkillChange(SkillSlot skillSlot);
+	public void onSkillChange(SkillSlot skillSlot, ChangeType type);
 
 	/**
 	 * Used to obtain a skill. Does not check if the play can buy skill, but makes
@@ -94,5 +94,16 @@ public interface ISkillHandler extends INBTSerializable<NBTTagCompound> {
 	public void markDirty();
 
 	public List<SkillBase> getActiveSkillListeners();
+	
+	public static enum ChangeType {
+		SKILL_ACTIVATED,
+		SKILL_DEACTIVATED,
+		SKILL_BOUGHT,
+		SKILL_REBOUGHT,
+		SKILL_SOLD,
+		SKILL_REMOVED,
+		NONE,
+		ALL
+	}
 
 }

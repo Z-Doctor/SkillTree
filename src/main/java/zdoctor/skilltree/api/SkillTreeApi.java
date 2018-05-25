@@ -76,7 +76,7 @@ public class SkillTreeApi {
 
 	public static void addSkillPoints(EntityLivingBase entity, int points) {
 		getSkillHandler(entity).addPoints(points);
-		SkillTreeApi.syncSkills(entity);
+//		SkillTreeApi.syncSkills(entity);
 	}
 
 	public static void resetSkillHandler(EntityLivingBase entity) {
@@ -90,7 +90,7 @@ public class SkillTreeApi {
 
 	public static void buySkill(EntityLivingBase entity, SkillBase skill) {
 		ISkillHandler skillHandler = getSkillHandler(entity);
-		if (ModMain.proxy.getEffectiveSide() == Side.CLIENT) {
+		if (entity.world.isRemote) {
 			SPacketSkillSlotInteract message = new SPacketSkillSlotInteract(skill, EnumSkillInteractType.BUY);
 			SkillTreePacketHandler.INSTANCE.sendToServer(message);
 			skillHandler.buySkill(skill);
@@ -102,7 +102,7 @@ public class SkillTreeApi {
 	public static void toggleSkill(EntityLivingBase entity, SkillBase skill) {
 		if (skill instanceof ISkillToggle) {
 			ISkillHandler skillHandler = getSkillHandler(entity);
-			if (ModMain.proxy.getEffectiveSide() == Side.CLIENT) {
+			if (entity.world.isRemote) {
 				SPacketSkillSlotInteract message = new SPacketSkillSlotInteract(skill, EnumSkillInteractType.TOGGLE);
 				SkillTreePacketHandler.INSTANCE.sendToServer(message);
 				skillHandler.setSkillActive(skill, !isSkillActive(entity, skill));

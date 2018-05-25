@@ -93,7 +93,7 @@ public class SkillHandler implements ISkillHandler {
 		boolean orignalState = skillSlot.isObtained();
 		skillSlot.setObtained(obtained);
 		if (orignalState != skillSlot.isObtained())
-			onSkillChange(skillSlot);
+			onSkillChange(skillSlot, skillSlot.isObtained() ? ChangeType.SKILL_BOUGHT : ChangeType.SKILL_SOLD);
 	}
 
 	@Override
@@ -102,7 +102,7 @@ public class SkillHandler implements ISkillHandler {
 		boolean orignalState = skillSlot.isActive();
 		skillSlot.setActive(active);
 		if (orignalState != skillSlot.isActive())
-			onSkillChange(skillSlot);
+			onSkillChange(skillSlot, skillSlot.isActive() ? ChangeType.SKILL_ACTIVATED : ChangeType.SKILL_DEACTIVATED);
 	}
 
 	@Override
@@ -113,12 +113,15 @@ public class SkillHandler implements ISkillHandler {
 	@Override
 	public void addSkillTier(SkillBase skill, int amount) {
 		SkillSlot skillSlot = skillsCodex.get(skill);
+		int orignalState = skillSlot.getSkillTier();
 		skillSlot.addSkillTier(amount);
-		onSkillChange(skillSlot);
+		if (orignalState != skillSlot.getSkillTier())
+			onSkillChange(skillSlot, ChangeType.SKILL_REBOUGHT);
 	}
 
 	@Override
-	public void onSkillChange(SkillSlot skillSlot) {
+	public void onSkillChange(SkillSlot skillSlot, ChangeType type) {
+		System.out.println("Change: " + type);
 		if (skillSlot.getSkill().getParent() != null) {
 			if (!hasSkill(skillSlot.getSkill().getParent())) {
 				skillSlot.setObtained(false);
@@ -126,14 +129,58 @@ public class SkillHandler implements ISkillHandler {
 			}
 		}
 
-		skillSlot.getSkill().getChildren().forEach(skill -> {
-			onSkillChange(getSkillSlot(skill));
-		});
+		switch (type) {
+		case ALL:
+		case SKILL_BOUGHT:
+			skillSlot.getSkill().getChildren().forEach(skill -> {
+				onSkillChange(getSkillSlot(skill), type);
+			});
+			if (skillSlot.isActive())
+				skillSlot.getSkill().onSkillActivated(getOwner());
+			else
+				skillSlot.getSkill().onSkillDeactivated(getOwner());
+			if (type != ChangeType.ALL)
+				break;
+		case SKILL_ACTIVATED:
+			if (skillSlot.isActive())
+				skillSlot.getSkill().onSkillActivated(getOwner());
+			if (type != ChangeType.ALL)
+				break;
+		case SKILL_DEACTIVATED:
+			if (!skillSlot.isActive())
+				skillSlot.getSkill().onSkillActivated(getOwner());
+			if (type != ChangeType.ALL)
+				break;
+		case SKILL_REBOUGHT:
+			if(skillSlot instanceof ISkillStackable)
+				((ISkillStackable)skillSlot.getSkill()).onSkillRePurchase(getOwner());
+			if (type != ChangeType.ALL)
+				break;
+		case SKILL_SOLD:
+			if(!skillSlot.isObtained()) {
+				skillSlot.getSkill().getChildren().forEach(skill -> {
+					onSkillChange(getSkillSlot(skill), ChangeType.SKILL_REMOVED);
+				});
+				onSkillChange(skillSlot, ChangeType.SKILL_DEACTIVATED);
+			}
+			if (type != ChangeType.ALL)
+				break;
+		case SKILL_REMOVED:
+			if(!skillSlot.isObtained()) {
+				skillSlot.getSkill().getChildren().forEach(skill -> {
+					onSkillChange(getSkillSlot(skill), ChangeType.SKILL_REMOVED);
+				});
+				skillSlot.setActive(false);
+				onSkillChange(skillSlot, ChangeType.SKILL_DEACTIVATED);
+				skillSlot.setObtained(false);
+				skillSlot.setSkillTier(0);
+			}
+			if (type != ChangeType.ALL)
+				break;
+		default:
+			break;
+		}
 
-		if (skillSlot.isActive())
-			skillSlot.getSkill().onSkillActivated(getOwner());
-		else
-			skillSlot.getSkill().onSkillDeactivated(getOwner());
 		markDirty();
 	}
 
@@ -209,12 +256,13 @@ public class SkillHandler implements ISkillHandler {
 				skill.getRequirments(getOwner(), true).forEach(requirement -> requirement.onFufillment(getOwner()));
 				addSkillTier(skill);
 				((ISkillStackable) skill).onSkillRePurchase(getOwner());
+				markDirty();
 			} else if (!hasSkill(skill)) {
+				skill.getRequirments(getOwner(), hasSkill(skill)).forEach(requirement -> requirement.onFufillment(getOwner()));
+				addSkillTier(skill, 1);
 				setSkillObtained(skill, true);
 				setSkillActive(skill, true);
-				skill.getRequirments(getOwner(), false).forEach(requirement -> requirement.onFufillment(getOwner()));
 				skill.onSkillPurchase(getOwner());
-				getSkillSlot(skill).setSkillTier(1);
 			}
 		}
 	}

@@ -17,7 +17,7 @@ import zdoctor.skilltree.skills.CapabilitySkillHandler;
 @Mod(modid = ModMain.MODID, version = ModMain.VERSION)
 public class ModMain {
 	public static final String MODID = "skilltree";
-	public static final String VERSION = "1.2.0.2";
+	public static final String VERSION = "1.2.0.10";
 
 	@Instance
 	public static ModMain INSTANCE = new ModMain();

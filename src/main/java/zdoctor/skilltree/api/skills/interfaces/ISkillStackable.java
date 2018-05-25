@@ -3,18 +3,13 @@ package zdoctor.skilltree.api.skills.interfaces;
 import java.util.List;
 
 import net.minecraft.entity.EntityLivingBase;
+import zdoctor.skilltree.skills.SkillBase;
 
 public interface ISkillStackable {
-	public default boolean hasRequirments(EntityLivingBase entity) {
-		for (ISkillRequirment requirement : getRequirments(entity, false)) {
-			if (!requirement.test(entity))
-				return false;
-		}
-		return true;
-	}
+	public boolean hasRequirments(EntityLivingBase entity);
 
 	public List<ISkillRequirment> getRequirments(EntityLivingBase entity, boolean hasSkill);
 
 	public void onSkillRePurchase(EntityLivingBase entity);
-	
+
 }

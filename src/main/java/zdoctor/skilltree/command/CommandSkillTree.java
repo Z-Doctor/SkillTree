@@ -104,11 +104,14 @@ public class CommandSkillTree extends CommandBase {
 				if (skillName.equalsIgnoreCase("all")) {
 					ISkillHandler skillHandler = SkillTreeApi.getSkillHandler(entity);
 					skillHandler.getSkillSlots().forEach(skillSlot -> {
-						skillSlot.setObtained();
-						skillSlot.setActive();
+						SkillBase skill1 = skillSlot.getSkill();
+						if (!skillHandler.hasSkill(skill1)) {
+							skillHandler.setSkillObtained(skill1, true);
+							skillHandler.addSkillTier(skill1);
+							skillHandler.setSkillActive(skill1, true);
+						}
 					});
 					SkillTreeApi.reloadHandler(entity);
-					SkillTreeApi.syncSkills(entity);
 					notifyCommandListener(sender, this, "commands.skilltree.success.give.all", entity.getName(),
 							entity.getName());
 					break;
@@ -132,6 +135,7 @@ public class CommandSkillTree extends CommandBase {
 				ISkillHandler skillHandler = SkillTreeApi.getSkillHandler(entity);
 				for (int i = neededSkills.size() - 1; i >= 0; i--) {
 					skillHandler.getSkillSlot(neededSkills.get(i).getSkill()).setObtained();
+					skillHandler.addSkillTier(neededSkills.get(i).getSkill());
 					skillHandler.getSkillSlot(neededSkills.get(i).getSkill()).setActive();
 				}
 
