@@ -107,7 +107,7 @@ public class CommandSkillTree extends CommandBase {
 						skillSlot.setObtained();
 						skillSlot.setActive();
 					});
-					// SkillTreeApi.reloadHandler(entity);
+					SkillTreeApi.reloadHandler(entity);
 					SkillTreeApi.syncSkills(entity);
 					notifyCommandListener(sender, this, "commands.skilltree.success.give.all", entity.getName(),
 							entity.getName());
@@ -135,7 +135,7 @@ public class CommandSkillTree extends CommandBase {
 					skillHandler.getSkillSlot(neededSkills.get(i).getSkill()).setActive();
 				}
 
-				// SkillTreeApi.reloadHandler(entity);
+				SkillTreeApi.reloadHandler(entity);
 				SkillTreeApi.syncSkills(entity);
 				for (int i = neededSkills.size() - 1; i >= 0; i--) {
 					if (SkillTreeApi.hasSkill(entity, neededSkills.get(i).getSkill()))
@@ -164,6 +164,7 @@ public class CommandSkillTree extends CommandBase {
 					notifyCommandListener(sender, this, "commands.skilltree.failure.remove.unowned", entity.getName(),
 							skillName1);
 				SkillTreeApi.getSkillHandler(entity).setSkillObtained(skill1, false);
+				SkillTreeApi.reloadHandler(entity);
 				SkillTreeApi.syncSkills(entity);
 				if (!SkillTreeApi.hasSkill(entity, skill1))
 					notifyCommandListener(sender, this, "commands.skilltree.success.remove",
