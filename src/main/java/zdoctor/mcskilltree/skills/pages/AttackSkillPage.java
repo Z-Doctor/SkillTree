@@ -3,8 +3,8 @@ package zdoctor.mcskilltree.skills.pages;
 import net.minecraft.init.Items;
 import zdoctor.mcskilltree.skills.attack.DoubleDamage;
 import zdoctor.mcskilltree.skills.attack.ExtraDamage;
-import zdoctor.mcskilltree.skills.attack.NightVision;
-import zdoctor.skilltree.skills.Skill;
+import zdoctor.mcskilltree.skills.attack.SwordProficiency;
+import zdoctor.skilltree.api.skills.Skill;
 import zdoctor.skilltree.skills.SkillBase;
 import zdoctor.skilltree.skills.pages.SkillPageBase;
 
@@ -22,6 +22,7 @@ public class AttackSkillPage extends SkillPageBase {
 
 	private SkillBase temp4;
 	private SkillBase temp5;
+	private SwordProficiency swordProficiency;
 
 	public AttackSkillPage() {
 		super("AttackPage");
@@ -41,6 +42,8 @@ public class AttackSkillPage extends SkillPageBase {
 
 		temp4 = new Skill("temp4", Items.DIAMOND);
 		temp5 = new Skill("temp5", Items.DIAMOND);
+
+		swordProficiency = new SwordProficiency();
 	}
 
 	@Override
@@ -58,6 +61,7 @@ public class AttackSkillPage extends SkillPageBase {
 		addSkill(temp4, 10, -5);
 		addSkill(temp5, 5, 4);
 
+		addSkill(swordProficiency, 0, 5);
 	}
 
 	@Override
