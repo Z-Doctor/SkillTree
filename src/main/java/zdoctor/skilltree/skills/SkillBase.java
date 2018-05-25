@@ -98,7 +98,7 @@ public abstract class SkillBase {
 	public DescriptionRequirment getDescriptionRequirement() {
 		return descReq;
 	}
-	
+
 	public PreviousSkillRequirement getParentRequirement() {
 		return parentRequirement;
 	}
@@ -158,8 +158,11 @@ public abstract class SkillBase {
 
 	public List<ISkillRequirment> getRequirments(EntityLivingBase entity, boolean hasSkill) {
 		ArrayList reqList = new ArrayList<>();
-		if (!hasSkill)
+		if (!hasSkill) {
+			if (parentRequirement != null)
+				reqList.add(parentRequirement);
 			reqList.addAll(requirements);
+		}
 		return reqList;
 	}
 
@@ -191,7 +194,7 @@ public abstract class SkillBase {
 	public abstract void onSkillDeactivated(EntityLivingBase entity);
 
 	public abstract boolean hasRequirments(EntityLivingBase entity);
-	
+
 	public abstract void onSkillPurchase(EntityLivingBase entity);
 
 	public static SkillBase getSkillByKey(ResourceLocation key) {

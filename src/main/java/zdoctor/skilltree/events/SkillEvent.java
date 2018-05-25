@@ -1,6 +1,7 @@
 package zdoctor.skilltree.events;
 
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.common.eventhandler.Cancelable;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import zdoctor.skilltree.skills.SkillBase;
@@ -55,8 +56,15 @@ public class SkillEvent extends Event {
 
 	public static class SkillTick extends SkillEvent {
 
-		public SkillTick() {
+		private World world;
+
+		public SkillTick(World world) {
 			super(EventType.TICK);
+			this.world = world;
+		}
+		
+		public World getWorld() {
+			return world;
 		}
 
 	}

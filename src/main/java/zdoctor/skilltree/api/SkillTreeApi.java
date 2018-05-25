@@ -17,7 +17,6 @@ import zdoctor.skilltree.api.skills.interfaces.ISkillToggle;
 import zdoctor.skilltree.network.SkillTreePacketHandler;
 import zdoctor.skilltree.network.play.client.CPacketSyncSkills;
 import zdoctor.skilltree.network.play.server.SPacketSkillSlotInteract;
-import zdoctor.skilltree.network.play.server.SPacketSyncRequest;
 import zdoctor.skilltree.skills.SkillBase;
 import zdoctor.skilltree.skills.SkillHandler;
 import zdoctor.skilltree.skills.SkillSlot;
@@ -30,8 +29,7 @@ public class SkillTreeApi {
 
 	public static ISkillHandler getSkillHandler(EntityLivingBase entity) {
 		ISkillHandler handler = entity.getCapability(SKILL_CAPABILITY, null);
-		if (handler.getOwner() == null) {
-			// System.out.println("setting owner: " + entity);
+		if (handler != null && handler.getOwner() == null) {
 			handler.setOwner(entity);
 		}
 		return handler;
@@ -130,21 +128,35 @@ public class SkillTreeApi {
 			return;
 		}
 
+		if (entity.world == null) {
+			ModMain.proxy.log.catching(new IllegalArgumentException("Tried to sync with null world." + entity));
+			return;
+		}
+
 		if (!(entity instanceof EntityLivingBase)) {
 			ModMain.proxy.log
 					.catching(new IllegalArgumentException("Tried to sync non-lvining entity. Entity: " + entity));
 			return;
 		}
-		
-		System.out.println("Sync skill");
 
-		if (ModMain.proxy.getEffectiveSide() == Side.SERVER) {
-			List<EntityPlayer> receivers = new ArrayList<>(
-					((WorldServer) ModMain.proxy.getWorld()).getEntityTracker().getTrackingPlayers(entity));
-			SkillTreeApi.syncSkills(entity, receivers);
+		if (getSkillHandler(entity) == null) {
+			ModMain.proxy.log.catching(new IllegalArgumentException("Tried to sync unsupported entity: " + entity));
+			return;
+		}
+
+		if (!entity.world.isRemote) {
+			System.out.println("Syncing entity: " + entity);
+			if (entity.world instanceof WorldServer) {
+				System.out.println("Syncing from server");
+				List<EntityPlayer> receivers = new ArrayList<>(
+						((WorldServer) entity.world).getEntityTracker().getTrackingPlayers(entity));
+				if (entity instanceof EntityPlayerMP)
+					receivers.add((EntityPlayer) entity);
+				SkillTreeApi.syncSkills(entity, receivers);
+
+			}
 		} else {
-			SPacketSyncRequest packet = new SPacketSyncRequest(entity);
-			SkillTreePacketHandler.INSTANCE.sendToServer(packet);
+			System.out.println("Attempt to sync from client");
 		}
 	}
 
@@ -152,12 +164,19 @@ public class SkillTreeApi {
 	 * Used to either send an entity updates from the server to players
 	 */
 	public static void syncSkills(EntityLivingBase entity, List<EntityPlayer> receivers) {
-		if (ModMain.proxy.getEffectiveSide() == Side.SERVER) {
-			CPacketSyncSkills packet = new CPacketSyncSkills(entity);
-			for (EntityPlayer receiver : receivers) {
-				if (receiver instanceof EntityPlayerMP)
-					SkillTreePacketHandler.INSTANCE.sendTo(packet, (EntityPlayerMP) receiver);
+		CPacketSyncSkills packet = new CPacketSyncSkills(entity);
+		boolean cleaned = false;
+		for (EntityPlayer receiver : receivers) {
+			if (receiver instanceof EntityPlayerMP) {
+				System.out.println("Sending update to " + receiver);
+				SkillTreePacketHandler.INSTANCE.sendTo(packet, (EntityPlayerMP) receiver);
+				cleaned = true;
+			} else {
+				System.out.println("Unable to sync to receiver: " + receiver);
 			}
+		}
+		if (cleaned) {
+			getSkillHandler(entity).clean();
 		}
 	}
 

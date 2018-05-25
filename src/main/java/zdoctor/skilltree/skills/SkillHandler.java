@@ -2,6 +2,7 @@ package zdoctor.skilltree.skills;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTBase;
@@ -10,25 +11,27 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
+import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import zdoctor.skilltree.ModMain;
+import zdoctor.skilltree.api.SkillTreeApi;
 import zdoctor.skilltree.api.skills.interfaces.ISkillHandler;
 import zdoctor.skilltree.api.skills.interfaces.ISkillStackable;
 import zdoctor.skilltree.api.skills.interfaces.ISkillTickable;
 import zdoctor.skilltree.events.SkillDeseralizeEvent;
 import zdoctor.skilltree.events.SkillEvent;
 import zdoctor.skilltree.events.SkillEvent.ActiveTick;
+import zdoctor.skilltree.events.SkillEvent.SkillTick;
 import zdoctor.skilltree.tabs.SkillTabs;
 
 public class SkillHandler implements ISkillHandler {
 
 	protected ArrayList<SkillBase> trackerCodex = new ArrayList<>();
-
 	protected HashMap<SkillBase, SkillSlot> skillsCodex = new HashMap();
 	private EntityLivingBase owner;
 	private int skillPoints;
 
-	private boolean isDirty;
+	private boolean isDirty = true;
 
 	public SkillHandler() {
 		for (SkillTabs tab : SkillTabs.SKILL_TABS) {
@@ -78,7 +81,6 @@ public class SkillHandler implements ISkillHandler {
 
 		if (getOwner() != null)
 			reloadHandler();
-		markDirty();
 	}
 
 	@Override
@@ -189,8 +191,9 @@ public class SkillHandler implements ISkillHandler {
 		this.owner = entity;
 
 		if (owner != null) {
-			MinecraftForge.EVENT_BUS.register(this);
 			reloadHandler();
+			MinecraftForge.EVENT_BUS.register(this);
+			markDirty();
 		}
 	}
 
@@ -231,8 +234,33 @@ public class SkillHandler implements ISkillHandler {
 		return getSkillSlot(skill).isActive();
 	}
 
+	@Override
+	public List<SkillBase> getActiveSkillListeners() {
+		List<SkillBase> skills = new ArrayList<>();
+		skills.addAll(trackerCodex);
+		return skills;
+	}
+
 	@SubscribeEvent
 	public void onTick(SkillEvent.SkillTick e) {
+
+		tick(e);
+	}
+
+	private void tick(SkillTick e) {
+		if (!getOwner().world.isRemote) {
+			if (isDirty()) {
+				// System.out.println("Server Dirty: " + this);
+				SkillTreeApi.syncSkills(getOwner());
+				clean();
+			}
+		} else {
+			if (isDirty()) {
+				// System.out.println("Client Dirty: " + this);
+				reloadHandler();
+				clean();
+			}
+		}
 		trackerCodex.forEach(skill -> {
 			SkillSlot skillSlot = skillsCodex.get(skill);
 			if (skill instanceof ISkillTickable && skillSlot.isObtained()) {
@@ -242,6 +270,12 @@ public class SkillHandler implements ISkillHandler {
 					((ISkillTickable) skill).onActiveTick(owner, skillSlot.getSkill(), skillSlot);
 			}
 		});
+
+		if (owner.isDead) {
+			System.out.println("Owner dead, unregistering: " + getOwner());
+			setOwner(null);
+		}
+
 	}
 
 	@Override

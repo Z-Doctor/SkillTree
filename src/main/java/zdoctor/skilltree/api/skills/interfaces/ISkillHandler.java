@@ -1,6 +1,7 @@
 package zdoctor.skilltree.api.skills.interfaces;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -91,5 +92,7 @@ public interface ISkillHandler extends INBTSerializable<NBTTagCompound> {
 	public void addSkillTier(SkillBase skill, int amount);
 
 	public void markDirty();
+
+	public List<SkillBase> getActiveSkillListeners();
 
 }

@@ -46,7 +46,7 @@ public abstract class CommonProxy {
 	public abstract EntityPlayer getPlayer();
 	
 	public Side getEffectiveSide( ) {
-		return getWorld().isRemote ? Side.CLIENT : Side.SERVER;
+		return FMLCommonHandler.instance().getEffectiveSide();
 	}
 
 }

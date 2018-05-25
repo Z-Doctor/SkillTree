@@ -15,6 +15,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
+import zdoctor.skilltree.api.skills.interfaces.ISkillHandler;
 
 /**
  * A packet to update an entities skills on the client side
@@ -54,15 +55,18 @@ public class CPacketSyncSkills implements IMessage {
 	public static class PacketSyncHandler implements IMessageHandler<CPacketSyncSkills, IMessage> {
 		@Override
 		public IMessage onMessage(CPacketSyncSkills message, MessageContext ctx) {
+			System.out.println("Client update");
 			Minecraft.getMinecraft().addScheduledTask(new Runnable() {
 				@Override
 				public void run() {
 					World world = ModMain.proxy.getWorld();
-					if (world == null)
+					if (world == null || !world.isRemote)
 						return;
 					Entity entity = world.getEntityByID(message.entityId);
 					if (entity != null && entity instanceof EntityLivingBase) {
-						SkillTreeApi.getSkillHandler((EntityLivingBase) entity).deserializeNBT(message.skillTreeTag);
+						ISkillHandler cap = SkillTreeApi.getSkillHandler((EntityLivingBase) entity);
+						cap.deserializeNBT(message.skillTreeTag);
+						cap.markDirty();
 					}
 				}
 			});
