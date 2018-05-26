@@ -67,6 +67,7 @@ public class SwordProficiency extends AttackSkill implements ISkillToggle, ISkil
 			modifyEntity(entity, skill);
 	}
 
+	// First one is free, but each level requires more xp
 	@Override
 	public List<ISkillRequirment> getRequirments(EntityLivingBase entity, boolean hasSkill) {
 		if (hasSkill) {

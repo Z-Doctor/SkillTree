@@ -3,17 +3,17 @@ package zdoctor.mcskilltree;
 import java.util.HashMap;
 
 import net.minecraft.block.BlockWorkbench;
-import net.minecraft.item.crafting.CraftingManager;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.ShapedRecipes;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder;
+import zdoctor.mcskilltree.block.SkillWorkbench;
 import zdoctor.skilltree.EasyConfig;
 
 public class Config {
@@ -36,11 +36,31 @@ public class Config {
 		});
 	}
 
+	@ObjectHolder(value = ModMain.MODID + ":workbench")
+	public static final SkillWorkbench WORKBENCH = null;
+
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void entityJoinedWorld(BlockEvent.PlaceEvent event) {
+		debug(event);
+	}
+
+	public void debug(BlockEvent.PlaceEvent event) {
 		if (event.getPlacedBlock().getBlock() instanceof BlockWorkbench) {
-			event.setCanceled(true);
-//			System.out.println("Class: " + event.getPlacedBlock().getBlock().getClass().getName());
+			if (event.getPlacedBlock().getBlock() instanceof SkillWorkbench)
+				return;
+			// event.setCanceled(true);
+			event.getWorld().setBlockState(event.getPos(), WORKBENCH.getDefaultState());
+		}
+	}
+
+	@SubscribeEvent
+	public void playerInteractBlock(PlayerInteractEvent.RightClickBlock event) {
+		debug(event);
+	}
+
+	public void debug(PlayerInteractEvent.RightClickBlock event) {
+		if (event.getWorld().getBlockState(event.getPos()).getBlock() == Blocks.CRAFTING_TABLE) {
+			event.getWorld().setBlockState(event.getPos(), WORKBENCH.getDefaultState());
 		}
 	}
 

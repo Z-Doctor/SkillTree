@@ -2,3 +2,12 @@ skillTree.PlayerInfo=Player Info
 skillTree.AttackTab=Attack Tree
 skillTree.DefenseTab=Defense Tree
 skillTree.MiningTab=Mining Tree
+
+skill.doubleDamage=Double Damage
+skill.doubleDamage.desc=Doubles your total damage
+skill.damageI=Damage I
+skill.damageI.desc=Adds +1 Damage
+skill.damageII=Damage II
+skill.damageII.desc=Adds +1 Damage
+skill.damageIII=Damage III
+skill.damageIII.desc=Adds +1 Damage
