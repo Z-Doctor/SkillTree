@@ -54,9 +54,9 @@ public class GuiSkillButton extends GuiButton {
 
 	@Override
 	public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
-		if(!getSkill().shouldDrawSkill(mc.player))
+		if (!getSkill().shouldDrawSkill(mc.player))
 			return;
-		
+
 		GlStateManager.pushMatrix();
 		this.x = orginalX + parent.offsetX;
 		this.y = oringalY + parent.offsetY;
@@ -117,12 +117,15 @@ public class GuiSkillButton extends GuiButton {
 		GlStateManager.popMatrix();
 		if (skill instanceof ISkillStackable) {
 			GlStateManager.pushMatrix();
-			String tier = String.valueOf(SkillTreeApi.getSkillTier(mc.player, skill));
-			GlStateManager.translate(this.x, this.y, 0);
-			GlStateManager.scale(0.5, 0.5, 0);
-			drawString(mc.fontRenderer, tier, 18 + 10 - mc.fontRenderer.getStringWidth(tier),
-					18 + mc.fontRenderer.FONT_HEIGHT / 2, -1);
-			GlStateManager.popMatrix();
+			int skillTier = SkillTreeApi.getSkillTier(mc.player, skill);
+			if (skillTier > 0) {
+				String tier = String.valueOf(skillTier);
+				GlStateManager.translate(this.x, this.y, 0);
+				GlStateManager.scale(0.5, 0.5, 0);
+				drawString(mc.fontRenderer, tier, 18 + 10 - mc.fontRenderer.getStringWidth(tier),
+						18 + mc.fontRenderer.FONT_HEIGHT / 2, -1);
+				GlStateManager.popMatrix();
+			}
 		}
 
 	}
@@ -164,7 +167,7 @@ public class GuiSkillButton extends GuiButton {
 			return;
 		Minecraft mc = Minecraft.getMinecraft();
 		if (!SkillTreeApi.hasSkill(mc.player, this.getSkill()) || skill instanceof ISkillStackable) {
-			if(SkillTreeApi.canBuySkill(mc.player, getSkill())) {
+			if (SkillTreeApi.canBuySkill(mc.player, getSkill())) {
 				SkillTreeApi.buySkill(mc.player, getSkill());
 			}
 		}

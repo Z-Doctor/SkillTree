@@ -274,7 +274,10 @@ public class SkillHandler implements ISkillHandler {
 
 	@Override
 	public boolean canBuySkill(SkillBase skill) {
-		return skill.hasParent() ? hasSkill(skill.getParent()) : skill.hasRequirments(getOwner());
+		boolean flag = skill.hasParent() ? hasSkill(skill.getParent()) : skill.hasRequirments(getOwner());
+		if (flag && skill instanceof ISkillStackable)
+			flag = getSkillTier(skill) + 1 <= ((ISkillStackable) skill).getMaxTier(getOwner());
+		return flag;
 	}
 
 	@Override
@@ -330,7 +333,8 @@ public class SkillHandler implements ISkillHandler {
 			if (isDirty()) {
 				ModMain.proxy.log.debug(getOwner().getName() + " Client Handler Dirty: " + serializeNBT());
 				// if (getOwner() instanceof EntityPlayer)
-				// System.out.println(getOwner().getName() + " Client Handler Dirty: " + serializeNBT());
+				// System.out.println(getOwner().getName() + " Client Handler Dirty: " +
+				// serializeNBT());
 				reloadHandler();
 				clean();
 			}

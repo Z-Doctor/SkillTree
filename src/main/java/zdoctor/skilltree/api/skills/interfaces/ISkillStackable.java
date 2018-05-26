@@ -11,5 +11,9 @@ public interface ISkillStackable {
 	public List<ISkillRequirment> getRequirments(EntityLivingBase entity, boolean hasSkill);
 
 	public void onSkillRePurchase(EntityLivingBase entity);
+	
+	public default int getMaxTier(EntityLivingBase entity) {
+		return Integer.MAX_VALUE;
+	}
 
 }
