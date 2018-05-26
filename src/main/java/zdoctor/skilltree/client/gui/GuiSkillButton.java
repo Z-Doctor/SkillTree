@@ -116,9 +116,9 @@ public class GuiSkillButton extends GuiButton {
 		mc.getRenderItem().renderItemAndEffectIntoGUI(skill.getIcon(mc.player), 8, 8);
 		GlStateManager.popMatrix();
 		if (skill instanceof ISkillStackable) {
-			GlStateManager.pushMatrix();
 			int skillTier = SkillTreeApi.getSkillTier(mc.player, skill);
 			if (skillTier > 0) {
+				GlStateManager.pushMatrix();
 				String tier = String.valueOf(skillTier);
 				GlStateManager.translate(this.x, this.y, 0);
 				GlStateManager.scale(0.5, 0.5, 0);
