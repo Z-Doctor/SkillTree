@@ -2,7 +2,9 @@ package zdoctor.skilltree.client.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.inventory.GuiContainerCreative;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.util.ResourceLocation;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
@@ -52,6 +54,9 @@ public class GuiSkillButton extends GuiButton {
 
 	@Override
 	public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+		if(!getSkill().shouldDrawSkill(mc.player))
+			return;
+		
 		GlStateManager.pushMatrix();
 		this.x = orginalX + parent.offsetX;
 		this.y = oringalY + parent.offsetY;
@@ -64,7 +69,7 @@ public class GuiSkillButton extends GuiButton {
 		boolean childVisible = false;
 
 		GlStateManager.enableDepth();
-		if (!skill.getChildren().isEmpty()) {
+		if (!skill.getChildren().isEmpty() && skill.shouldDrawLineToChildren()) {
 			this.zLevel = 0;
 
 			GlStateManager.translate(0, 0, this.zLevel);
@@ -107,9 +112,8 @@ public class GuiSkillButton extends GuiButton {
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(posX, posY, 0);
 		GlStateManager.scale(0.5, 0.5, 1);
-		GlStateManager.enableDepth();
-		mc.getRenderItem().renderItemAndEffectIntoGUI(skill.getIcon(), 8, 8);
-		GlStateManager.disableDepth();
+		RenderHelper.enableGUIStandardItemLighting();
+		mc.getRenderItem().renderItemAndEffectIntoGUI(skill.getIcon(mc.player), 8, 8);
 		GlStateManager.popMatrix();
 		if (skill instanceof ISkillStackable) {
 			GlStateManager.pushMatrix();

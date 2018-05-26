@@ -6,6 +6,7 @@ import java.util.List;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import zdoctor.skilltree.api.SkillTreeApi;
 import zdoctor.skilltree.api.enums.SkillFrameType;
 import zdoctor.skilltree.api.skills.interfaces.ISkillRequirment;
@@ -72,6 +73,22 @@ public class Skill extends SkillBase {
 	@Override
 	public void onSkillPurchase(EntityLivingBase entity) {
 		// TODO Toast
+	}
+
+	@Override
+	public boolean shouldDrawSkill(EntityLivingBase entity) {
+		return true;
+	}
+
+	@Override
+	public ResourceLocation getBackroundLocation(EntityLivingBase entity) {
+		return null;
+	}
+
+	@Override
+	public boolean shouldRenderItem(EntityLivingBase entity) {
+		ItemStack icon = getIcon(entity);
+		return icon != null && !icon.isEmpty();
 	}
 
 }

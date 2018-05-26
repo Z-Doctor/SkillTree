@@ -66,8 +66,9 @@ public class EasyConfig {
 	}
 
 	public void sync() {
-		config.save();
 		PROPERTIES.forEach(Property::save);
+		config.save();
+//		PROPERTIES.forEach(Property::save);
 		log.debug("Config Sync");
 	}
 

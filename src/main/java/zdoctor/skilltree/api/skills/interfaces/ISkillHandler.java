@@ -5,11 +5,24 @@ import java.util.List;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.INBTSerializable;
 import zdoctor.skilltree.skills.SkillBase;
 import zdoctor.skilltree.skills.SkillSlot;
 
 public interface ISkillHandler extends INBTSerializable<NBTTagCompound> {
+	
+	public static enum ChangeType {
+		SKILL_ACTIVATED,
+		SKILL_DEACTIVATED,
+		SKILL_BOUGHT,
+		SKILL_REBOUGHT,
+		SKILL_SOLD,
+		SKILL_REMOVED,
+		NONE,
+		ALL
+	}
+	
 	/**
 	 * Checks if the owner or the {@link ISkillHandler} has obtained the skill or
 	 * not
@@ -95,15 +108,6 @@ public interface ISkillHandler extends INBTSerializable<NBTTagCompound> {
 
 	public List<SkillBase> getActiveSkillListeners();
 	
-	public static enum ChangeType {
-		SKILL_ACTIVATED,
-		SKILL_DEACTIVATED,
-		SKILL_BOUGHT,
-		SKILL_REBOUGHT,
-		SKILL_SOLD,
-		SKILL_REMOVED,
-		NONE,
-		ALL
-	}
+	public void onTick(EntityLivingBase entity, World world);
 
 }

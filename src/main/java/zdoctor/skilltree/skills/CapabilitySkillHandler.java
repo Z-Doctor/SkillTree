@@ -1,9 +1,15 @@
 package zdoctor.skilltree.skills;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.FutureTask;
+
+import com.google.common.base.Predicates;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -16,8 +22,10 @@ import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
@@ -53,6 +61,10 @@ public class CapabilitySkillHandler {
 
 	@SubscribeEvent
 	public void entityJoinedWorld(EntityJoinWorldEvent e) {
+		debug(e);
+	}
+
+	public void debug(EntityJoinWorldEvent e) {
 		if (e.getEntity() != null && e.getEntity() instanceof EntityLivingBase && !e.getEntity().isDead) {
 			// System.out.println(e.getEntity() + " joined on side " +
 			// (e.getWorld().isRemote ? "Client" : "Server"));
@@ -90,29 +102,54 @@ public class CapabilitySkillHandler {
 	@SubscribeEvent
 	public void playerTracking(PlayerEvent.StartTracking e) {
 		Entity target = e.getTarget();
-		// System.out.println("Player Tracking: " + e.getEntityPlayer());
+		// System.out.println(e.getEntityPlayer().world + " Player Tracking: " +
+		// e.getEntityPlayer());
 
-		if (target != null && target instanceof EntityLivingBase && e.getEntityPlayer() instanceof EntityPlayerMP) {
+		if (target != null && target instanceof EntityLivingBase) {
 			// System.out.println("Sync Track: " + e.getEntityPlayer());
-			SkillTreeApi.syncSkills((EntityLivingBase) target, Collections.singletonList(e.getEntityPlayer()));
+			List<EntityPlayer> recievers = new ArrayList<>();
+			recievers.add(e.getEntityPlayer());
+			if (target instanceof EntityPlayerMP)
+				recievers.add((EntityPlayer) target);
+			SkillTreeApi.syncSkills((EntityLivingBase) target, recievers);
 		}
 	}
 
 	@SubscribeEvent
 	public void tickEvent(TickEvent.WorldTickEvent e) {
-		debug(e);
-	}
-
-	public void debug(TickEvent.WorldTickEvent e) {
-		if (e.phase == TickEvent.Phase.END && !e.world.isRemote) {
-			MinecraftForge.EVENT_BUS.post(new SkillEvent.SkillTick(e.world));
+		if (e.world != null && e.phase == TickEvent.Phase.END && !e.world.isRemote) {
+			List<EntityLivingBase> livingList = e.world.getEntities(EntityLivingBase.class,
+					entity -> !(entity instanceof EntityPlayer) && !entity.isDead);
+			for (EntityLivingBase entity : livingList) {
+				ISkillHandler handler = SkillTreeApi.getSkillHandler(entity);
+				if (handler != null) {
+					// System.out.println(entity + " Entity: " + e.side);
+					handler.onTick(entity, entity.world);
+				}
+			}
 		}
 	}
 
 	@SubscribeEvent
 	public void playerTick(TickEvent.PlayerTickEvent e) {
-		if (e.phase == TickEvent.Phase.END && e.side == Side.CLIENT) {
-			MinecraftForge.EVENT_BUS.post(new SkillEvent.SkillTick(e.player.world));
+		if (e.player != null && e.phase == TickEvent.Phase.END) {
+			ISkillHandler handler = SkillTreeApi.getSkillHandler(e.player);
+			if (handler != null) {
+				// System.out.println("Player: " + e.side);
+				handler.onTick(e.player, e.player.world);
+			}
+
+			if (e.side == Side.CLIENT) {
+				List<EntityLivingBase> entityList = e.player.world.getEntities(EntityLivingBase.class,
+						entity -> !entity.isDead);
+				for (EntityLivingBase entity : entityList) {
+					ISkillHandler entityHandler = SkillTreeApi.getSkillHandler(entity);
+					if (entityHandler != null) {
+						entityHandler.onTick(entity, entity.world);
+					}
+				}
+			}
 		}
 	}
+
 }

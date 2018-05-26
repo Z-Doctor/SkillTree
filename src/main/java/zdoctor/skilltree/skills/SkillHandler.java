@@ -5,11 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import zdoctor.skilltree.ModMain;
@@ -21,6 +24,8 @@ import zdoctor.skilltree.events.SkillDeseralizeEvent;
 import zdoctor.skilltree.events.SkillEvent;
 import zdoctor.skilltree.events.SkillEvent.ActiveTick;
 import zdoctor.skilltree.events.SkillEvent.SkillTick;
+import zdoctor.skilltree.events.SkillHandlerEvent;
+import zdoctor.skilltree.events.SkillHandlerEvent.ReloadedEvent;
 import zdoctor.skilltree.tabs.SkillTabs;
 
 public class SkillHandler implements ISkillHandler {
@@ -31,6 +36,7 @@ public class SkillHandler implements ISkillHandler {
 	private int skillPoints;
 
 	private boolean isDirty = true;
+	private boolean hasLoaded = false;
 
 	public SkillHandler() {
 		for (SkillTabs tab : SkillTabs.SKILL_TABS) {
@@ -58,6 +64,7 @@ public class SkillHandler implements ISkillHandler {
 		NBTTagCompound nbt = new NBTTagCompound();
 		nbt.setTag("Skills", nbtTagList);
 		nbt.setInteger("SkillPoints", skillPoints);
+		nbt.setBoolean("HasLoaded", hasLoaded);
 		return nbt;
 	}
 
@@ -77,6 +84,7 @@ public class SkillHandler implements ISkillHandler {
 			this.skillsCodex.put(skillSlot.getSkill(), skillSlot);
 		}
 		skillPoints = nbt.getInteger("SkillPoints");
+		hasLoaded = nbt.getBoolean("HasLoaded");
 		markDirty();
 	}
 
@@ -190,6 +198,19 @@ public class SkillHandler implements ISkillHandler {
 
 	@Override
 	public void reloadHandler() {
+		if (getOwner() == null) {
+			ModMain.proxy.log.catching(new IllegalArgumentException("Tried to reload will null owner"));
+			return;
+		}
+		ReloadedEvent event = new SkillHandlerEvent.ReloadedEvent(getOwner().world, getOwner(), hasLoaded);
+		MinecraftForge.EVENT_BUS.post(event);
+		if (event.isCanceled())
+			return;
+		if (event.getResult() != Result.DENY && (!hasLoaded || event.getResult() == Result.ALLOW)) {
+			MinecraftForge.EVENT_BUS
+					.post(new SkillHandlerEvent.FirstLoadEvent(getOwner().world, getOwner(), hasLoaded));
+			hasLoaded = true;
+		}
 		skillsCodex.values().forEach(skillSlot -> {
 			if (skillSlot.isActive())
 				skillSlot.getSkill().onSkillActivated(getOwner());
@@ -230,11 +251,18 @@ public class SkillHandler implements ISkillHandler {
 
 	@Override
 	public void setOwner(EntityLivingBase entity) {
-		if (entity == null && owner != null)
-			MinecraftForge.EVENT_BUS.unregister(this);
+		// if (entity == null || owner != null)
+		// MinecraftForge.EVENT_BUS.unregister(this);
+		boolean flag = false;
+		if (entity != owner) {
+			// System.out.println("Old owner: " + owner);
+			// System.out.println("New owner: " + entity);
+			flag = true;
+		}
 		this.owner = entity;
-		if (owner != null) {
-			MinecraftForge.EVENT_BUS.register(this);
+		if (owner != null && flag) {
+			// System.out.println("Reloading handler");
+			// MinecraftForge.EVENT_BUS.register(this);
 			reloadHandler();
 		}
 	}
@@ -285,24 +313,24 @@ public class SkillHandler implements ISkillHandler {
 		return skills;
 	}
 
-	@SubscribeEvent
-	public void onTick(SkillEvent.SkillTick e) {
+	@Override
+	public void onTick(EntityLivingBase entity, World world) {
+		if (entity != getOwner()) {
+			ModMain.proxy.log.debug("Tried to update with {} wrong owner. Owner: {}", entity, getOwner());
+			return;
+		}
 
-		tick(e);
-	}
-
-	private void tick(SkillTick e) {
-		// System.out.println("tick");
-		if (!getOwner().world.isRemote) {
+		if (!world.isRemote) {
 			if (isDirty()) {
-				ModMain.proxy.log.debug("Server Handler Dirty: {}", getOwner());
+				ModMain.proxy.log.debug(getOwner().getName() + " Server Handler Dirty: " + serializeNBT());
 				SkillTreeApi.syncSkills(getOwner());
 				clean();
 			}
 		} else {
 			if (isDirty()) {
-				ModMain.proxy.log.debug("Client Handler Dirty: {}", getOwner());
-				// System.out.println("Client Dirty");
+				ModMain.proxy.log.debug(getOwner().getName() + " Client Handler Dirty: " + serializeNBT());
+				// if (getOwner() instanceof EntityPlayer)
+				// System.out.println(getOwner().getName() + " Client Handler Dirty: " + serializeNBT());
 				reloadHandler();
 				clean();
 			}
@@ -316,11 +344,6 @@ public class SkillHandler implements ISkillHandler {
 					((ISkillTickable) skill).onActiveTick(owner, skillSlot.getSkill(), skillSlot);
 			}
 		});
-
-		if (owner.isDead) {
-			// System.out.println("Owner dead, unregistering: " + getOwner());
-			setOwner(null);
-		}
 
 	}
 

@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.ibm.icu.impl.IllegalIcuArgumentException;
 
 import net.minecraft.client.resources.I18n;
@@ -33,25 +35,36 @@ public abstract class SkillBase {
 
 	private static int nextId;
 
+	public static SkillBase getSkillById(int id) {
+		for (SkillBase skill : Skill_Registry.values()) {
+			if (skill.getId() == id)
+				return skill;
+		}
+		return null;
+	}
+
+	public static ArrayList<SkillBase> getSkillRegistry() {
+		return new ArrayList<>(Skill_Registry.values());
+	}
+
 	private String skillName;
 	private ResourceLocation registryName;
+	private int id;
 
+	private final ItemStack icon;
 	private SkillFrameType frameType;
+
+	private DescriptionRequirment descReq;
+	private NameRequirment nameReq;
+	private PreviousSkillRequirement parentRequirement;
+
+	private boolean drawLine = true;
 
 	private ArrayList<SkillBase> children = new ArrayList<>();
 	private ArrayList<ISkillRequirment> requirements = new ArrayList<>();
 	private SkillBase parent;
 
-	private final ItemStack icon;
-
-	private int id;
-
-	private DescriptionRequirment descReq;
-	private NameRequirment nameReq;
-
-	private PreviousSkillRequirement parentRequirement;
-
-	public SkillBase(String name, ItemStack iconIn, ISkillRequirment... requirements) {
+	public SkillBase(String name, @Nullable ItemStack iconIn, ISkillRequirment... requirements) {
 		this(name, SkillFrameType.NORMAL, iconIn, requirements);
 	}
 
@@ -60,9 +73,9 @@ public abstract class SkillBase {
 		this.registryName = new ResourceLocation(Loader.instance().activeModContainer().getModId() + ":" + skillName);
 		this.frameType = type;
 		this.icon = iconIn;
-		nameReq = new NameRequirment(this);
+		this.nameReq = new NameRequirment(this);
 		Collections.addAll(this.requirements, requirements);
-		descReq = new DescriptionRequirment(this);
+		this.descReq = new DescriptionRequirment(this);
 		if (Skill_Registry.containsKey(registryName)) {
 			ModMain.proxy.log
 					.catching(new IllegalArgumentException("Attempt to register Skill '" + registryName + "' twice"));
@@ -80,12 +93,14 @@ public abstract class SkillBase {
 			ModMain.proxy.log.catching(new IllegalArgumentException(
 					"Tried to register skill '" + getRegistryName() + "' parent as itself!"));
 		}
-		// TODO have a way to change the parent
-		if (this.parent == null) {
-			this.parent = parent;
-			parentRequirement = new PreviousSkillRequirement(parent);
-			parent.addChildren(this);
+		if (this.parent != null && !this.parent.children.remove(this)) {
+			ModMain.proxy.log.catching(new NullPointerException("Unable to remove '" + getRegistryName()
+					+ "' from previous parent '" + this.parent.getRegistryName() + "'"));
 		}
+
+		this.parent = parent;
+		parentRequirement = new PreviousSkillRequirement(parent);
+		parent.addChildren(this);
 		return this;
 	}
 
@@ -174,7 +189,7 @@ public abstract class SkillBase {
 		return getRegistryName().toString();
 	}
 
-	public ItemStack getIcon() {
+	public ItemStack getIcon(EntityLivingBase entity) {
 		return icon;
 	}
 
@@ -193,6 +208,15 @@ public abstract class SkillBase {
 	@SideOnly(Side.CLIENT)
 	public abstract List<SkillToolTip> getToolTip(EntityLivingBase entity);
 
+	@SideOnly(Side.CLIENT)
+	public abstract boolean shouldDrawSkill(EntityLivingBase entity);
+
+	@SideOnly(Side.CLIENT)
+	public abstract ResourceLocation getBackroundLocation(EntityLivingBase entity);
+
+	@SideOnly(Side.CLIENT)
+	public abstract boolean shouldRenderItem(EntityLivingBase entity);
+
 	public abstract void onSkillActivated(EntityLivingBase entity);
 
 	public abstract void onSkillDeactivated(EntityLivingBase entity);
@@ -205,16 +229,14 @@ public abstract class SkillBase {
 		return Skill_Registry.get(key);
 	}
 
-	public static SkillBase getSkillById(int id) {
-		for (SkillBase skill : Skill_Registry.values()) {
-			if (skill.getId() == id)
-				return skill;
-		}
-		return null;
+	@SideOnly(Side.CLIENT)
+	public boolean shouldDrawLineToChildren() {
+		return drawLine;
 	}
 
-	public static ArrayList<SkillBase> getSkillRegistry() {
-		return new ArrayList<>(Skill_Registry.values());
+	public SkillBase setDrawLineToChildren(boolean doDraw) {
+		drawLine = doDraw;
+		return this;
 	}
 
 }

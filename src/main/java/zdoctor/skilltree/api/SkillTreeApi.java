@@ -3,6 +3,8 @@ package zdoctor.skilltree.api;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.base.Predicates;
+
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -10,7 +12,6 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.fml.common.FMLLog;
-import net.minecraftforge.fml.relauncher.Side;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.enums.EnumSkillInteractType;
 import zdoctor.skilltree.api.skills.interfaces.ISkillHandler;
@@ -80,10 +81,11 @@ public class SkillTreeApi {
 	}
 
 	public static void resetSkillHandler(EntityLivingBase entity) {
-		SkillHandler skillhandler = new SkillHandler();
-		skillhandler.setOwner(entity);
-		SkillTreeApi.getSkillHandler(entity).deserializeNBT(skillhandler.serializeNBT());
-		SkillTreeApi.syncSkills(entity);
+		ISkillHandler handler = SkillTreeApi.getSkillHandler(entity);
+		handler.deserializeNBT(new SkillHandler().serializeNBT());
+		handler.reloadHandler();
+		if (!entity.world.isRemote)
+			handler.markDirty();
 	}
 
 	// Skill Interations
@@ -152,7 +154,8 @@ public class SkillTreeApi {
 				List<EntityPlayer> receivers = new ArrayList<>(
 						((WorldServer) entity.world).getEntityTracker().getTrackingPlayers(entity));
 				if (entity instanceof EntityPlayerMP)
-					receivers.add((EntityPlayer) entity);
+					receivers.addAll(
+							((WorldServer) entity.world).getPlayers(EntityPlayerMP.class, Predicates.alwaysTrue()));
 				SkillTreeApi.syncSkills(entity, receivers);
 
 			}

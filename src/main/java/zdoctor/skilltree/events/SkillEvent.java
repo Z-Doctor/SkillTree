@@ -68,7 +68,7 @@ public class SkillEvent extends Event {
 		}
 
 	}
-
+	
 	/**
 	 * Fired before an obtained tickable skill is ticked. Will not tick if canceled
 	 * or will tick (even if not active) if the result is set to allow
