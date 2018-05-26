@@ -48,7 +48,6 @@ public class Config {
 		if (event.getPlacedBlock().getBlock() instanceof BlockWorkbench) {
 			if (event.getPlacedBlock().getBlock() instanceof SkillWorkbench)
 				return;
-			// event.setCanceled(true);
 			event.getWorld().setBlockState(event.getPos(), WORKBENCH.getDefaultState());
 		}
 	}
