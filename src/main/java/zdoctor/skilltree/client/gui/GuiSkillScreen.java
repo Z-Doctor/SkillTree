@@ -198,14 +198,15 @@ public class GuiSkillScreen extends GuiScreen {
 						if (!cache.equals("")) {
 							SkillToolTip tip = new SkillToolTip(cache, originalTip.getTextColor(), new Object[0]);
 							toolTip.add(tip);
-							cache = "";
 						}
+						if (newWidth > maxWidth)
+							cache = nextString;
+						else
+							cache = "";
 					}
 
 					if (index1 + 1 == text.length) {
-						SkillToolTip tip = new SkillToolTip(
-								cache += (cache.equals("") ? "" : " ") + (newWidth > maxWidth ? nextString : ""),
-								originalTip.getTextColor(), new Object[0]);
+						SkillToolTip tip = new SkillToolTip(cache, originalTip.getTextColor(), new Object[0]);
 						toolTip.add(tip);
 					}
 
