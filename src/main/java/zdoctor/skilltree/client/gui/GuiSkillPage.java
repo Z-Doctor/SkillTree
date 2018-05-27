@@ -66,7 +66,7 @@ public class GuiSkillPage extends GuiSkillScreen {
 			maxOffsetXNeg = minIndexX < 0 ? -19 * minIndexX : 0;
 			maxOffsetYNeg = minIndexY < 0 ? -18 * minIndexY : 0;
 			maxOffsetX = maxIndexX > 11 ? -19 * maxIndexX + 209 : 0;
-			maxOffsetY = maxIndexY > 6 ? -18 * maxIndexY + 90 : 0;
+			maxOffsetY = maxIndexY > 5 ? -18 * maxIndexY + 90 : 0;
 		}
 	}
 
