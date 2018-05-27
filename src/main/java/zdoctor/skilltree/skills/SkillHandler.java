@@ -5,16 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
 import zdoctor.skilltree.api.skills.interfaces.ISkillHandler;
@@ -23,10 +20,8 @@ import zdoctor.skilltree.api.skills.interfaces.ISkillTickable;
 import zdoctor.skilltree.events.SkillDeseralizeEvent;
 import zdoctor.skilltree.events.SkillEvent;
 import zdoctor.skilltree.events.SkillEvent.ActiveTick;
-import zdoctor.skilltree.events.SkillEvent.SkillTick;
 import zdoctor.skilltree.events.SkillHandlerEvent;
 import zdoctor.skilltree.events.SkillHandlerEvent.ReloadedEvent;
-import zdoctor.skilltree.tabs.SkillTabs;
 
 public class SkillHandler implements ISkillHandler {
 
@@ -39,17 +34,13 @@ public class SkillHandler implements ISkillHandler {
 	private boolean hasLoaded = false;
 
 	public SkillHandler() {
-		for (SkillTabs tab : SkillTabs.SKILL_TABS) {
-			if (tab == null)
+		for (SkillBase skill : SkillBase.getSkillRegistry()) {
+			if (skill == null)
 				continue;
-			for (SkillBase skill : tab.getPage().getSkillList()) {
-				if (skill == null)
-					continue;
-				SkillSlot slot = new SkillSlot(skill);
-				skillsCodex.put(skill, slot);
-				if (skill instanceof ISkillTickable)
-					trackerCodex.add(skill);
-			}
+			SkillSlot slot = new SkillSlot(skill);
+			skillsCodex.put(skill, slot);
+			if (skill instanceof ISkillTickable)
+				trackerCodex.add(skill);
 		}
 	}
 
@@ -231,7 +222,11 @@ public class SkillHandler implements ISkillHandler {
 
 	@Override
 	public boolean hasSkill(SkillBase skill) {
-		return getSkillSlot(skill).isObtained();
+		SkillSlot skillSlot = getSkillSlot(skill);
+		if (skillSlot == null)
+			ModMain.proxy.log.catching(new NullPointerException("Tried to get slot from unregistered skill: "
+					+ (skill == null ? null : skill.getUnlocaizedName())));
+		return skillSlot != null ? skillSlot.isObtained() : false;
 	}
 
 	@Override
