@@ -102,16 +102,20 @@ public class CommandSkillTree extends CommandBase {
 				String skillName = args.length > 2 ? args[2] : args.length > 1 ? args[1] : "Invalid";
 				SkillBase skill = SkillBase.getSkillByKey(new ResourceLocation(skillName));
 				if (skillName.equalsIgnoreCase("all")) {
+					boolean dirty = false;
 					ISkillHandler skillHandler = SkillTreeApi.getSkillHandler(entity);
-					skillHandler.getSkillSlots().forEach(skillSlot -> {
-						SkillBase skill1 = skillSlot.getSkill();
-						if (!skillHandler.hasSkill(skill1)) {
-							skillHandler.setSkillObtained(skill1, true);
-							skillHandler.addSkillTier(skill1);
-							skillHandler.setSkillActive(skill1, true);
-						}
-					});
+					for (SkillSlot skillSlot : skillHandler.getSkillSlots()) {
+						if (skillSlot.isObtained())
+							return;
+						skillSlot.setObtained();
+						skillSlot.setSkillTier(1);
+						skillSlot.setActive();
+						dirty = true;
+					}
+
 					SkillTreeApi.reloadHandler(entity);
+					if (dirty)
+						skillHandler.markDirty();
 					notifyCommandListener(sender, this, "commands.skilltree.success.give.all", entity.getName(),
 							entity.getName());
 					break;
