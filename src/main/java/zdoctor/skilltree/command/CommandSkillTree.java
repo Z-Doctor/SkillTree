@@ -106,7 +106,7 @@ public class CommandSkillTree extends CommandBase {
 					ISkillHandler skillHandler = SkillTreeApi.getSkillHandler(entity);
 					for (SkillSlot skillSlot : skillHandler.getSkillSlots()) {
 						if (skillSlot.isObtained())
-							return;
+							continue;
 						skillSlot.setObtained();
 						skillSlot.setSkillTier(1);
 						skillSlot.setActive();
