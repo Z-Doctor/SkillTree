@@ -36,7 +36,6 @@ public class GuiSkillPage extends GuiSkillScreen {
 
 	public GuiSkillPage(SkillPageBase skillPage) {
 		this.page = skillPage;
-		MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	@Override

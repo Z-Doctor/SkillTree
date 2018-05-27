@@ -45,8 +45,6 @@ public abstract class SkillPageBase {
 
 	protected final HashMap<SkillBase, Vector<Integer>> SKILL_ENTRIES = new HashMap();
 
-	// private ArrayList<SkillBase> skillList = new ArrayList<>();
-
 	private SkillBase lastAddedSkill;
 
 	public SkillPageBase(String pageName) {
@@ -75,6 +73,8 @@ public abstract class SkillPageBase {
 	public abstract void loadPage();
 
 	public SkillPageBase addSkill(SkillBase skillIn, int column, int row) {
+		if (skillIn == null)
+			throw new IllegalArgumentException("Tried to add null skill");
 		Vector<Integer> pos = new Vector<>(2);
 		pos.add(column);
 		pos.add(row);
@@ -122,13 +122,28 @@ public abstract class SkillPageBase {
 		return BackgroundType.DEFAULT;
 	}
 
+	public boolean hasSkillInPage(SkillBase skill) {
+		return SKILL_ENTRIES.get(skill) != null;
+	}
+
 	@SideOnly(Side.CLIENT)
 	public int getColumn(SkillBase skill) {
+		if (!hasSkillInPage(skill)) {
+			ModMain.proxy.log.catching(new NullPointerException("Tried to get column of skill '"
+					+ skill.getRegistryName() + "' that is not on page '" + getRegistryName() + "'"));
+			return 0;
+		}
+
 		return SKILL_ENTRIES.get(skill).get(0);
 	}
 
 	@SideOnly(Side.CLIENT)
 	public int getRow(SkillBase skill) {
+		if (!hasSkillInPage(skill)) {
+			ModMain.proxy.log.catching(new NullPointerException("Tried to get row of skill '" + skill.getRegistryName()
+					+ "' that is not on page '" + getRegistryName() + "'"));
+			return 0;
+		}
 		return SKILL_ENTRIES.get(skill).get(1);
 	}
 

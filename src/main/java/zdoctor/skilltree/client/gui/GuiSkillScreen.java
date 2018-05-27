@@ -249,8 +249,17 @@ public class GuiSkillScreen extends GuiScreen {
 		boolean lineDrawn = false;
 
 		for (SkillBase child : skill.getChildren()) {
+			if (child == null) {
+				ModMain.proxy.log.catching(new NullPointerException("Tried to draw null child for parent '"
+						+ skill.getRegistryName() + "' on page '" + page.getRegistryName() + "'"));
+				continue;
+			}
+			if (!page.hasSkillInPage(child))
+				continue;
+			
 			if (!child.shouldDrawSkill(mc.player))
 				continue;
+
 			int childX = 8 + initX + 19 * page.getColumn(child);
 			int childHalfX = 16 + initX + 19 * page.getColumn(child);
 			int childY = 8 + initY + 18 * page.getRow(child);
