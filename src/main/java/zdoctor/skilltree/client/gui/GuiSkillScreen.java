@@ -246,14 +246,11 @@ public class GuiSkillScreen extends GuiScreen {
 		int parentY1 = Math.max(this.minBoundryY, Math.min(this.maxBoundryY, parentY + 1));
 		int parentY2 = Math.max(this.minBoundryY, Math.min(this.maxBoundryY, parentY - 1));
 
-		if (outerLine) {
-			drawHorizontalLine(parentHalfX1, parentX, parentY2, color);
-			drawHorizontalLine(parentHalfX1, parentX, parentY1, color);
-			drawHorizontalLine(parentHalfX1, parentX, parentY, color);
-		} else
-			drawHorizontalLine(parentHalfX, parentX, parentY, color);
+		boolean lineDrawn = false;
 
 		for (SkillBase child : skill.getChildren()) {
+			if (!child.shouldDrawSkill(mc.player))
+				continue;
 			int childX = 8 + initX + 19 * page.getColumn(child);
 			int childHalfX = 16 + initX + 19 * page.getColumn(child);
 			int childY = 8 + initY + 18 * page.getRow(child);
@@ -287,6 +284,16 @@ public class GuiSkillScreen extends GuiScreen {
 				drawHorizontalLine(parentHalfX, childX, childY, color);
 				drawVerticalLine(parentHalfX, parentY, childY, color);
 			}
+			lineDrawn = true;
+		}
+
+		if (lineDrawn) {
+			if (outerLine) {
+				drawHorizontalLine(parentHalfX1, parentX, parentY2, color);
+				drawHorizontalLine(parentHalfX1, parentX, parentY1, color);
+				drawHorizontalLine(parentHalfX1, parentX, parentY, color);
+			} else
+				drawHorizontalLine(parentHalfX, parentX, parentY, color);
 		}
 	}
 
