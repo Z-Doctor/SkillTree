@@ -1,8 +1,8 @@
 [{
 	"modid": "mcskilltree",
 	"name": "Minecraft Skill Trees",
-	"description": "A mod to add basic skill trees",
-	"version": "1.0.0.0",
+	"description": "Minecraft just got a skill tree",
+	"version": "0.0.10.0",
 	"mcversion": "1.12.2",
 	"url": "",
 	"authorList": ["Z_Doctor"],

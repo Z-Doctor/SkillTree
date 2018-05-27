@@ -15,7 +15,7 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder;
-import zdoctor.mcskilltree.Config;
+import zdoctor.mcskilltree.MinecraftOverrrides;
 import zdoctor.mcskilltree.ModMain;
 import zdoctor.mcskilltree.block.SkillWorkbench;
 import zdoctor.mcskilltree.item.ItemSkillPointGem;
@@ -34,14 +34,14 @@ public abstract class CommonProxy {
 		MCSkillTreeTabs.init();
 		MinecraftForge.EVENT_BUS.register(this);
 		this.config = new EasyConfig(e);
-		MinecraftForge.EVENT_BUS.register(new Config());
+		MinecraftForge.EVENT_BUS.register(new MinecraftOverrrides());
 	}
 
 	public void init(FMLInitializationEvent e) {
 	}
 
 	public void postInit(FMLPostInitializationEvent e) {
-		Config.postInit(e);
+		MinecraftForge.EVENT_BUS.register(new MinecraftForge());
 	}
 
 	@SubscribeEvent

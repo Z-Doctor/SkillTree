@@ -4,11 +4,17 @@ import net.minecraft.block.BlockWorkbench;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerWorkbench;
+import net.minecraft.inventory.InventoryCraftResult;
+import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.CraftingManager;
+import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.network.play.server.SPacketSetSlot;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -18,7 +24,10 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.IInteractionObject;
 import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import zdoctor.mcskilltree.ModMain;
+import zdoctor.mcskilltree.event.CraftingEvent;
 import zdoctor.mcskilltree.skills.CraftSkill;
 import zdoctor.skilltree.api.SkillTreeApi;
 
@@ -75,6 +84,7 @@ public class SkillWorkbench extends BlockWorkbench {
 		public String getGuiID() {
 			return "minecraft:crafting_table";
 		}
+
 	}
 
 	public static class SkillContainerWorkbench extends ContainerWorkbench {
@@ -90,6 +100,33 @@ public class SkillWorkbench extends BlockWorkbench {
 			this.pos = posIn;
 			this.player = playerInventory.player;
 
+		}
+
+		@Override
+		protected void slotChangedCraftingGrid(World world, EntityPlayer player, InventoryCrafting craftingMatrix,
+				InventoryCraftResult result) {
+			if (!world.isRemote) {
+				EntityPlayerMP entityplayermp = (EntityPlayerMP) player;
+				ItemStack itemstack = ItemStack.EMPTY;
+				IRecipe irecipe = CraftingManager.findMatchingRecipe(craftingMatrix, world);
+
+				if (irecipe != null && (irecipe.isDynamic() || !world.getGameRules().getBoolean("doLimitedCrafting")
+						|| entityplayermp.getRecipeBook().isUnlocked(irecipe))) {
+					result.setRecipeUsed(irecipe);
+					itemstack = irecipe.getCraftingResult(craftingMatrix);
+				}
+
+				CraftingEvent event = new CraftingEvent(player, irecipe, itemstack);
+				MinecraftForge.EVENT_BUS.post(event);
+				if (event.getResult() != Result.DENY) {
+					itemstack = event.getRecipeResult();
+					result.setInventorySlotContents(0, itemstack);
+					entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, 0, itemstack));
+				} else {
+					result.setInventorySlotContents(0, ItemStack.EMPTY);
+					entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, 0, ItemStack.EMPTY));
+				}
+			}
 		}
 
 		@Override

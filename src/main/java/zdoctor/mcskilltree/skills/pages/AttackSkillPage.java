@@ -58,7 +58,7 @@ public class AttackSkillPage extends SkillPageBase {
 		addSkill(temp2, 1, 3);
 		addSkill(temp3, 1, 4);
 		temp4.setParent(temp);
-		addSkill(temp4, 10, -5);
+		addSkill(temp4, 10, 15);
 		addSkill(temp5, 5, 4);
 
 		addSkill(swordProficiency, 0, 5);
