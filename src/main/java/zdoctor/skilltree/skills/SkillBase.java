@@ -81,6 +81,7 @@ public abstract class SkillBase {
 					.catching(new IllegalArgumentException("Attempt to register Skill '" + registryName + "' twice"));
 		}
 		Skill_Registry.put(registryName, this);
+		ModMain.proxy.log.info("Registered Skill: {}", registryName);
 		this.id = nextId++;
 		if (this instanceof ISkillTickable)
 			CommonProxy.SkillWatcher_Registry.add(this);
