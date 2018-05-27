@@ -77,8 +77,7 @@ public abstract class SkillBase {
 		Collections.addAll(this.requirements, requirements);
 		this.descReq = new DescriptionRequirment(this);
 		if (Skill_Registry.containsKey(registryName)) {
-			ModMain.proxy.log
-					.catching(new IllegalArgumentException("Attempt to register Skill '" + registryName + "' twice"));
+			throw new IllegalArgumentException("Attempt to register Skill '" + registryName + "' twice");
 		}
 		Skill_Registry.put(registryName, this);
 		ModMain.proxy.log.info("Registered Skill: {}", registryName);
