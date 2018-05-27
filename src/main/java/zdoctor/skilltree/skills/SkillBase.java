@@ -121,7 +121,7 @@ public abstract class SkillBase {
 		return parentRequirement;
 	}
 
-	public SkillFrameType getFrameType() {
+	public SkillFrameType getFrameType(EntityLivingBase entity) {
 		return frameType;
 	}
 

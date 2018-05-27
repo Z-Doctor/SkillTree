@@ -97,14 +97,14 @@ public class GuiSkillButton extends GuiButton {
 	}
 
 	protected void drawSkillBackground(Minecraft mc, int posX, int posY) {
-		if (skill.getFrameType() == SkillFrameType.NONE)
+		if (skill.getFrameType(mc.player) == SkillFrameType.NONE)
 			return;
 
 		GlStateManager.color(1, 1, 1, 1);
 		mc.getTextureManager().bindTexture(GuiReference.SKILL_TREE_BACKGROUND);
 		boolean isActive = SkillTreeApi.isSkillActive(mc.player, skill);
-		int xOffset = textureX + (skill.getFrameType().ordinal() % 4) * 26;
-		int yOffset = textureY + (skill.getFrameType().ordinal() / 4) * 26;
+		int xOffset = textureX + (skill.getFrameType(mc.player).ordinal() % 4) * 26;
+		int yOffset = textureY + (skill.getFrameType(mc.player).ordinal() / 4) * 26;
 		drawScaledCustomSizeModalRect(posX, posY, xOffset, yOffset + (isActive ? 0 : 26), 26, 26, 16, 16, 256, 256);
 	}
 
