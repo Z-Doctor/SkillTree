@@ -167,7 +167,53 @@ public class GuiSkillScreen extends GuiScreen {
 		GlStateManager.disableDepth();
 		int i = 0;
 
-		List<SkillToolTip> toolTip = skill.getToolTip(mc.player);
+		List<SkillToolTip> tempTip = skill.getToolTip(mc.player);
+		List<SkillToolTip> toolTip = new ArrayList<>();
+
+		int maxWidth = 0;
+		for (int index = 0; index < tempTip.size(); index++) {
+			SkillToolTip originalTip = tempTip.get(index);
+			int width = this.fontRenderer.getStringWidth(originalTip.getTransatedText());
+			if (index == 0) {
+				maxWidth = width < 125 ? 125 : width;
+				toolTip.add(originalTip);
+				continue;
+			}
+
+			if (width > maxWidth) {
+				String[] text = originalTip.getTransatedText().split(" ");
+				if (text.length == 1) {
+					SkillToolTip tip = new SkillToolTip(text[0], originalTip.getTextColor(), new Object[0]);
+					toolTip.add(tip);
+					continue;
+				}
+
+				String cache = "";
+				for (int index1 = 0; index1 < text.length; index1++) {
+					String nextString = text[index1];
+					int newWidth = this.fontRenderer.getStringWidth(cache + (cache.equals("") ? "" : " ") + nextString);
+					if (newWidth <= maxWidth)
+						cache += (cache.equals("") ? "" : " ") + nextString;
+					else {
+						if (!cache.equals("")) {
+							SkillToolTip tip = new SkillToolTip(cache, originalTip.getTextColor(), new Object[0]);
+							toolTip.add(tip);
+							cache = "";
+						}
+					}
+
+					if (index1 + 1 == text.length) {
+						SkillToolTip tip = new SkillToolTip(
+								cache += (cache.equals("") ? "" : " ") + (newWidth > maxWidth ? nextString : ""),
+								originalTip.getTextColor(), new Object[0]);
+						toolTip.add(tip);
+					}
+
+				}
+			} else {
+				toolTip.add(originalTip);
+			}
+		}
 
 		for (SkillToolTip s : toolTip) {
 			int j = this.fontRenderer.getStringWidth(s.getTransatedText());
@@ -256,7 +302,7 @@ public class GuiSkillScreen extends GuiScreen {
 			}
 			if (!page.hasSkillInPage(child))
 				continue;
-			
+
 			if (!child.shouldDrawSkill(mc.player))
 				continue;
 
