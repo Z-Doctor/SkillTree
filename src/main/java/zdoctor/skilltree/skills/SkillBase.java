@@ -161,11 +161,6 @@ public abstract class SkillBase {
 		return new ArrayList<>(children);
 	}
 
-	@SideOnly(Side.CLIENT)
-	public String getDisplayName() {
-		return I18n.format(getUnlocaizedName());
-	}
-
 	public String getUnlocaizedName() {
 		return "skill." + skillName;
 	}
@@ -189,16 +184,22 @@ public abstract class SkillBase {
 		return getRegistryName().toString();
 	}
 
-	public ItemStack getIcon(EntityLivingBase entity) {
-		return icon;
-	}
-
 	public boolean hasParent() {
 		return getParent() != null;
 	}
 
 	public int getId() {
 		return id;
+	}
+
+	@SideOnly(Side.CLIENT)
+	public ItemStack getIcon(EntityLivingBase entity) {
+		return icon;
+	}
+
+	@SideOnly(Side.CLIENT)
+	public String getDisplayName() {
+		return I18n.format(getUnlocaizedName());
 	}
 
 	/**

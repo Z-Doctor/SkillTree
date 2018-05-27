@@ -43,8 +43,6 @@ public class Skill extends SkillBase {
 	public List<SkillToolTip> getToolTip(EntityLivingBase entity) {
 		List<SkillToolTip> toolTip = new ArrayList<>();
 		toolTip.add(new SkillToolTip(entity, getNameRequirement()));
-		if (getParentRequirement() != null)
-			toolTip.add(new SkillToolTip(entity, getParentRequirement()));
 		getRequirments(entity, SkillTreeApi.hasSkill(entity, this))
 				.forEach(requirement -> toolTip.add(new SkillToolTip(entity, requirement)));
 		toolTip.add(new SkillToolTip(entity, getDescriptionRequirement()));
