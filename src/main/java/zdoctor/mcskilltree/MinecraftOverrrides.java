@@ -12,7 +12,7 @@ import zdoctor.mcskilltree.block.SkillWorkbench;
 import zdoctor.skilltree.api.SkillTreeApi;
 
 public class MinecraftOverrrides {
-	
+
 	@ObjectHolder(value = ModMain.MODID + ":workbench")
 	public static final SkillWorkbench WORKBENCH = null;
 
@@ -34,7 +34,14 @@ public class MinecraftOverrrides {
 
 	@SubscribeEvent
 	public void playerAdvancementEarned(AdvancementEvent event) {
-		SkillTreeApi.addSkillPoints(event.getEntityPlayer(), 1);
+		debug(event);
+	}
+
+	public void debug(AdvancementEvent event) {
+		if (event.getAdvancement().getDisplay() != null) {
+			System.out.println("Advancement: " + event.getAdvancement());
+			SkillTreeApi.addSkillPoints(event.getEntityPlayer(), 1);
+		}
 	}
 
 }

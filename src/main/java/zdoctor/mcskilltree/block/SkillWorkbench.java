@@ -123,6 +123,7 @@ public class SkillWorkbench extends BlockWorkbench {
 					result.setInventorySlotContents(0, itemstack);
 					entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, 0, itemstack));
 				} else {
+					System.out.println("Crafting Canceled");
 					result.setInventorySlotContents(0, ItemStack.EMPTY);
 					entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, 0, ItemStack.EMPTY));
 				}

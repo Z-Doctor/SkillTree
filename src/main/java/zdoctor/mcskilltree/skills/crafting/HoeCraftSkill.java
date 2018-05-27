@@ -6,7 +6,7 @@ import java.util.List;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item.ToolMaterial;
-import net.minecraft.item.ItemAxe;
+import net.minecraft.item.ItemHoe;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import zdoctor.mcskilltree.event.CraftingEvent;
@@ -17,10 +17,9 @@ import zdoctor.skilltree.api.skills.interfaces.ISkillStackable;
 import zdoctor.skilltree.api.skills.requirements.LevelRequirement;
 import zdoctor.skilltree.api.skills.requirements.SkillPointRequirement;
 
-public class AxeCraftSkill extends ItemCrafterSkill implements ISkillStackable {
-	public AxeCraftSkill() {
-		super(ItemAxe.class, "AxeCrafter", Items.DIAMOND_AXE);
-		setFrameType(SkillFrameType.ROUNDED);
+public class HoeCraftSkill extends ItemCrafterSkill implements ISkillStackable {
+	public HoeCraftSkill() {
+		super(ItemHoe.class, "HoeCrafter", Items.DIAMOND_HOE);
 	}
 
 	@Override
@@ -34,11 +33,11 @@ public class AxeCraftSkill extends ItemCrafterSkill implements ISkillStackable {
 		int tier = SkillTreeApi.getSkillTier(entity, this);
 		if (tier >= getMaxTier(entity))
 			return list;
-		list.add(new LevelRequirement(6 * (tier + 1)));
+		list.add(new LevelRequirement(3 * (tier + 1)));
 		list.add(new SkillPointRequirement(tier + 1));
 		return list;
 	}
-
+	
 	@Override
 	public SkillFrameType getFrameType(EntityLivingBase entity) {
 		return SkillTreeApi.getSkillTier(entity, this) >= 5 ? SkillFrameType.SPECIAL
@@ -50,17 +49,17 @@ public class AxeCraftSkill extends ItemCrafterSkill implements ISkillStackable {
 		int tier = SkillTreeApi.getSkillTier(entity, this);
 		switch (tier) {
 		case 0:
-			return new ItemStack(Items.WOODEN_AXE);
+			return new ItemStack(Items.WOODEN_HOE);
 		case 1:
-			return new ItemStack(Items.WOODEN_AXE);
+			return new ItemStack(Items.WOODEN_HOE);
 		case 2:
-			return new ItemStack(Items.STONE_AXE);
+			return new ItemStack(Items.STONE_HOE);
 		case 3:
-			return new ItemStack(Items.GOLDEN_AXE);
+			return new ItemStack(Items.GOLDEN_HOE);
 		case 4:
-			return new ItemStack(Items.IRON_AXE);
+			return new ItemStack(Items.IRON_HOE);
 		case 5:
-			return new ItemStack(Items.DIAMOND_AXE);
+			return new ItemStack(Items.DIAMOND_HOE);
 		default:
 			return super.getIcon(entity);
 		}
@@ -76,9 +75,9 @@ public class AxeCraftSkill extends ItemCrafterSkill implements ISkillStackable {
 		super.craftEvent(event);
 		if (getItemClass().isAssignableFrom(event.getRecipeResult().getItem().getClass())) {
 			if (event.getResult() != Result.DENY) {
-				ItemAxe axe = (ItemAxe) event.getRecipeResult().getItem();
+				ItemHoe hoe = (ItemHoe) event.getRecipeResult().getItem();
 				int tier = SkillTreeApi.getSkillTier(event.getPlayer(), this);
-				ToolMaterial material = ToolMaterial.valueOf(axe.getToolMaterialName());
+				ToolMaterial material = ToolMaterial.valueOf(hoe.getMaterialName());
 				int craftDificulty;
 				switch (material) {
 				case WOOD:

@@ -1,18 +1,18 @@
 package zdoctor.mcskilltree.skills.crafting;
 
 import net.minecraft.init.Items;
-import net.minecraft.item.ItemSpectralArrow;
+import net.minecraft.item.ItemGlassBottle;
 import zdoctor.mcskilltree.skills.pages.CraftingSkillPage;
 import zdoctor.skilltree.api.skills.requirements.LevelRequirement;
 import zdoctor.skilltree.api.skills.requirements.SkillPointRequirement;
 
-public class SpectralArrowCraftSkill extends ArrowCraftSkill {
+public class BottleCraftSkill extends ItemCrafterSkill {
 
-	public SpectralArrowCraftSkill() {
-		super(ItemSpectralArrow.class, "SpectralArrowCraftSkill", Items.SPECTRAL_ARROW);
+	public BottleCraftSkill() {
+		super(ItemGlassBottle.class, "BottleCraftSkill", Items.GLASS_BOTTLE);
+		setParent(CraftingSkillPage.BREWINGSTAND_CRAFTER);
 		addRequirement(new LevelRequirement(5));
 		addRequirement(new SkillPointRequirement(1));
-		setParent(CraftingSkillPage.ARROW_CRAFTER);
 	}
 
 }

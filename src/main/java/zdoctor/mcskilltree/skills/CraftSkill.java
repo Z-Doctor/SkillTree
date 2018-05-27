@@ -39,5 +39,9 @@ public class CraftSkill extends Skill {
 		req.addAll(super.getRequirments(entity, hasSkill));
 		return req;
 	}
-
+	
+	@Override
+	public boolean shouldDrawSkill(EntityLivingBase entity) {
+		return this == CRAFT_SKILL || SkillTreeApi.hasSkill(entity, CRAFT_SKILL) || SkillTreeApi.hasSkill(entity, this);
+	}
 }

@@ -8,7 +8,6 @@ import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemSword;
-import net.minecraftforge.fml.relauncher.Side;
 import zdoctor.mcskilltree.skills.AttackSkill;
 import zdoctor.skilltree.api.SkillTreeApi;
 import zdoctor.skilltree.api.enums.SkillFrameType;
@@ -29,6 +28,7 @@ public class SwordProficiency extends AttackSkill implements ISkillToggle, ISkil
 	public SwordProficiency() {
 		super("SwordProficiency", SkillTabs.enchantItem(Items.DIAMOND_SWORD));
 		SWORD_PROFICIENCY = new SkillAttributeModifier(ATTRIBUTE_NAME, 0, 0);
+		setFrameType(SkillFrameType.SPECIAL);
 	}
 
 	@Override
@@ -75,11 +75,6 @@ public class SwordProficiency extends AttackSkill implements ISkillToggle, ISkil
 		} else {
 			return Collections.EMPTY_LIST;
 		}
-	}
-
-	@Override
-	public SkillFrameType getFrameType() {
-		return SkillFrameType.SPECIAL;
 	}
 
 	@Override

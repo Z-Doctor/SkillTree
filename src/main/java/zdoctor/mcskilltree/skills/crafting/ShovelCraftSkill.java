@@ -20,7 +20,6 @@ import zdoctor.skilltree.api.skills.requirements.SkillPointRequirement;
 public class ShovelCraftSkill extends ItemCrafterSkill implements ISkillStackable {
 	public ShovelCraftSkill() {
 		super(ItemSpade.class, "ShovelCrafter", Items.DIAMOND_SHOVEL);
-		setFrameType(SkillFrameType.ROUNDED);
 	}
 
 	@Override
@@ -31,17 +30,18 @@ public class ShovelCraftSkill extends ItemCrafterSkill implements ISkillStackabl
 	@Override
 	public List<ISkillRequirment> getRequirments(EntityLivingBase entity, boolean hasSkill) {
 		List<ISkillRequirment> list = new ArrayList<>();
-		if (hasSkill) {
-			int tier = SkillTreeApi.getSkillTier(entity, this);
-			if (tier >= getMaxTier(entity))
-				return list;
-			list.add(new LevelRequirement(5 * tier));
-			list.add(new SkillPointRequirement(tier));
-		} else {
-			list = super.getRequirments(entity, hasSkill);
-			list.add(new LevelRequirement(5));
-		}
+		int tier = SkillTreeApi.getSkillTier(entity, this);
+		if (tier >= getMaxTier(entity))
+			return list;
+		list.add(new LevelRequirement(4 * (tier + 1)));
+		list.add(new SkillPointRequirement(tier + 1));
 		return list;
+	}
+	
+	@Override
+	public SkillFrameType getFrameType(EntityLivingBase entity) {
+		return SkillTreeApi.getSkillTier(entity, this) >= 5 ? SkillFrameType.SPECIAL
+				: SkillTreeApi.getSkillTier(entity, this) == 4 ? SkillFrameType.ROUNDED : SkillFrameType.NORMAL;
 	}
 
 	@Override
@@ -73,7 +73,7 @@ public class ShovelCraftSkill extends ItemCrafterSkill implements ISkillStackabl
 	@Override
 	public void craftEvent(CraftingEvent event) {
 		super.craftEvent(event);
-		if (event.getRecipeResult().getItem().getClass().isAssignableFrom(getItemClass())) {
+		if (getItemClass().isAssignableFrom(event.getRecipeResult().getItem().getClass())) {
 			if (event.getResult() != Result.DENY) {
 				ItemSpade shovel = (ItemSpade) event.getRecipeResult().getItem();
 				int tier = SkillTreeApi.getSkillTier(event.getPlayer(), this);

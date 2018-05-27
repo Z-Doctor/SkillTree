@@ -6,7 +6,7 @@ import java.util.List;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item.ToolMaterial;
-import net.minecraft.item.ItemAxe;
+import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import zdoctor.mcskilltree.event.CraftingEvent;
@@ -17,10 +17,9 @@ import zdoctor.skilltree.api.skills.interfaces.ISkillStackable;
 import zdoctor.skilltree.api.skills.requirements.LevelRequirement;
 import zdoctor.skilltree.api.skills.requirements.SkillPointRequirement;
 
-public class AxeCraftSkill extends ItemCrafterSkill implements ISkillStackable {
-	public AxeCraftSkill() {
-		super(ItemAxe.class, "AxeCrafter", Items.DIAMOND_AXE);
-		setFrameType(SkillFrameType.ROUNDED);
+public class PickaxeCraftSkill extends ItemCrafterSkill implements ISkillStackable {
+	public PickaxeCraftSkill() {
+		super(ItemPickaxe.class, "PickaxeCrafter", Items.DIAMOND_PICKAXE);
 	}
 
 	@Override
@@ -50,17 +49,17 @@ public class AxeCraftSkill extends ItemCrafterSkill implements ISkillStackable {
 		int tier = SkillTreeApi.getSkillTier(entity, this);
 		switch (tier) {
 		case 0:
-			return new ItemStack(Items.WOODEN_AXE);
+			return new ItemStack(Items.WOODEN_PICKAXE);
 		case 1:
-			return new ItemStack(Items.WOODEN_AXE);
+			return new ItemStack(Items.WOODEN_PICKAXE);
 		case 2:
-			return new ItemStack(Items.STONE_AXE);
+			return new ItemStack(Items.STONE_PICKAXE);
 		case 3:
-			return new ItemStack(Items.GOLDEN_AXE);
+			return new ItemStack(Items.GOLDEN_PICKAXE);
 		case 4:
-			return new ItemStack(Items.IRON_AXE);
+			return new ItemStack(Items.IRON_PICKAXE);
 		case 5:
-			return new ItemStack(Items.DIAMOND_AXE);
+			return new ItemStack(Items.DIAMOND_PICKAXE);
 		default:
 			return super.getIcon(entity);
 		}
@@ -76,9 +75,9 @@ public class AxeCraftSkill extends ItemCrafterSkill implements ISkillStackable {
 		super.craftEvent(event);
 		if (getItemClass().isAssignableFrom(event.getRecipeResult().getItem().getClass())) {
 			if (event.getResult() != Result.DENY) {
-				ItemAxe axe = (ItemAxe) event.getRecipeResult().getItem();
+				ItemPickaxe pickaxe = (ItemPickaxe) event.getRecipeResult().getItem();
 				int tier = SkillTreeApi.getSkillTier(event.getPlayer(), this);
-				ToolMaterial material = ToolMaterial.valueOf(axe.getToolMaterialName());
+				ToolMaterial material = ToolMaterial.valueOf(pickaxe.getToolMaterialName());
 				int craftDificulty;
 				switch (material) {
 				case WOOD:

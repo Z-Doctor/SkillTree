@@ -8,13 +8,14 @@ import zdoctor.mcskilltree.skills.pages.CraftingSkillPage;
 import zdoctor.skilltree.tabs.SkillTabs;
 
 public class MCSkillTreeTabs {
-	public static final SkillTabs ATTACK_TAB = new SkillTabs("AttackTab", new AttackSkillPage()) {
-
-		@Override
-		public ItemStack getTabIconItem() {
-			return SkillTabs.enchantItem(Items.DIAMOND_SWORD);
-		}
-	};
+	// public static final SkillTabs ATTACK_TAB = new SkillTabs("AttackTab", new
+	// AttackSkillPage()) {
+	//
+	// @Override
+	// public ItemStack getTabIconItem() {
+	// return SkillTabs.enchantItem(Items.DIAMOND_SWORD);
+	// }
+	// };
 
 	// public static final SkillTreeTabs DEF_TAB = new SkillTreeTabs("DefenseTab",
 	// new AttackSkillPage()) {

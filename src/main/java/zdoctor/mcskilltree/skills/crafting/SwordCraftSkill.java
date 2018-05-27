@@ -33,16 +33,11 @@ public class SwordCraftSkill extends ItemCrafterSkill implements ISkillStackable
 	@Override
 	public List<ISkillRequirment> getRequirments(EntityLivingBase entity, boolean hasSkill) {
 		List<ISkillRequirment> list = new ArrayList<>();
-		if (hasSkill) {
-			int tier = SkillTreeApi.getSkillTier(entity, this);
-			if (tier >= getMaxTier(entity))
-				return list;
-			list.add(new LevelRequirement(10 * tier));
-			list.add(new SkillPointRequirement(tier));
-		} else {
-			list = super.getRequirments(entity, hasSkill);
-			list.add(new LevelRequirement(10));
-		}
+		int tier = SkillTreeApi.getSkillTier(entity, this);
+		if (tier >= getMaxTier(entity))
+			return list;
+		list.add(new LevelRequirement(8 * (tier + 1)));
+		list.add(new SkillPointRequirement(tier + 1));
 		return list;
 	}
 
@@ -73,9 +68,15 @@ public class SwordCraftSkill extends ItemCrafterSkill implements ISkillStackable
 	}
 
 	@Override
+	public SkillFrameType getFrameType(EntityLivingBase entity) {
+		return SkillTreeApi.getSkillTier(entity, this) >= 5 ? SkillFrameType.SPECIAL
+				: SkillTreeApi.getSkillTier(entity, this) == 4 ? SkillFrameType.ROUNDED : SkillFrameType.NORMAL;
+	}
+
+	@Override
 	public void craftEvent(CraftingEvent event) {
 		super.craftEvent(event);
-		if (event.getRecipeResult().getItem().getClass().isAssignableFrom(getItemClass())) {
+		if (getItemClass().isAssignableFrom(event.getRecipeResult().getItem().getClass())) {
 			if (event.getResult() != Result.DENY) {
 				ItemSword sword = (ItemSword) event.getRecipeResult().getItem();
 				int tier = SkillTreeApi.getSkillTier(event.getPlayer(), this);
