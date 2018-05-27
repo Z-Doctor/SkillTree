@@ -71,12 +71,12 @@ public class GuiSkillButton extends GuiButton {
 		GlStateManager.enableDepth();
 		if (!skill.getChildren().isEmpty() && skill.shouldDrawLineToChildren()) {
 			this.zLevel = 0;
-
-			GlStateManager.translate(0, 0, this.zLevel);
+			// GlStateManager.translate(0, 0, this.zLevel);
+			// TODO Optimize line drawing (Have them draw down)
 			parent.drawConnectivity(page, skill, parent.offsetX, parent.offsetY, true);
 			parent.drawConnectivity(page, skill, parent.offsetX, parent.offsetY, false);
-
 		}
+
 		this.zLevel = 1;
 		if (this.visible) {
 			GlStateManager.translate(0, 0, this.zLevel);
