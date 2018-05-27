@@ -61,6 +61,7 @@ public class SkillHandler implements ISkillHandler {
 
 	@Override
 	public void deserializeNBT(NBTTagCompound nbt) {
+		ModMain.proxy.log.debug("Deserializing Hanlder - Owner: {} Old: {} New: {}", getOwner(), serializeNBT(), nbt);
 		NBTTagList skillCodex = nbt.getTagList("Skills", Constants.NBT.TAG_COMPOUND);
 		for (NBTBase skillBase : skillCodex) {
 			NBTTagCompound skillTag = (NBTTagCompound) skillBase;
