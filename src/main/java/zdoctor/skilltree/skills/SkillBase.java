@@ -121,10 +121,6 @@ public abstract class SkillBase {
 		return parentRequirement;
 	}
 
-	public SkillFrameType getFrameType(EntityLivingBase entity) {
-		return frameType;
-	}
-
 	public SkillBase setFrameType(SkillFrameType frameType) {
 		this.frameType = frameType;
 		return this;
@@ -191,6 +187,11 @@ public abstract class SkillBase {
 
 	public int getId() {
 		return id;
+	}
+
+	@SideOnly(Side.CLIENT)
+	public SkillFrameType getFrameType(EntityLivingBase entity) {
+		return frameType;
 	}
 
 	@SideOnly(Side.CLIENT)
