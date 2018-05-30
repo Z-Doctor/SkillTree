@@ -5,8 +5,9 @@ import java.util.HashMap;
 import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import zdoctor.skilltree.api.skills.interfaces.ISkillPage;
+import zdoctor.skilltree.api.skills.page.SkillPageBase;
 import zdoctor.skilltree.client.gui.GuiSkillPage;
-import zdoctor.skilltree.skills.pages.SkillPageBase;
 
 /**
  * Use this class to render custom gui pages to use insread of the default
@@ -14,9 +15,9 @@ import zdoctor.skilltree.skills.pages.SkillPageBase;
  */
 @SideOnly(Side.CLIENT)
 public class GuiPageRegistry {
-	protected static final HashMap<Class<? extends SkillPageBase>, Class<? extends GuiSkillPage>> GUI_REGISTRY = new HashMap<>();
+	protected static final HashMap<Class<? extends ISkillPage>, Class<? extends GuiSkillPage>> GUI_REGISTRY = new HashMap<>();
 
-	public static void registerGui(Class<? extends SkillPageBase> page, Class<? extends GuiSkillPage> pageGui) {
+	public static void registerGui(Class<? extends ISkillPage> page, Class<? extends GuiSkillPage> pageGui) {
 		if (!GUI_REGISTRY.containsKey(page))
 			GUI_REGISTRY.put(page, pageGui);
 		else
@@ -24,7 +25,7 @@ public class GuiPageRegistry {
 					GUI_REGISTRY.get(page));
 	}
 
-	public static void overrideGui(Class<? extends SkillPageBase> page, Class<? extends GuiSkillPage> pageGui) {
+	public static void overrideGui(Class<? extends ISkillPage> page, Class<? extends GuiSkillPage> pageGui) {
 		if (GUI_REGISTRY.containsKey(page))
 			GUI_REGISTRY.put(page, pageGui);
 		else {
@@ -33,7 +34,7 @@ public class GuiPageRegistry {
 		}
 	}
 
-	public static Class<? extends GuiSkillPage> getGui(Class<? extends SkillPageBase> page) {
+	public static Class<? extends GuiSkillPage> getGui(Class<? extends ISkillPage> page) {
 		if (GUI_REGISTRY.containsKey(page))
 			return GUI_REGISTRY.get(page);
 		else

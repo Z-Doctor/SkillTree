@@ -1,4 +1,4 @@
-package zdoctor.skilltree.skills;
+package zdoctor.skilltree.skills.cap;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,8 +29,8 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
+import zdoctor.skilltree.api.events.SkillEvent;
 import zdoctor.skilltree.api.skills.interfaces.ISkillHandler;
-import zdoctor.skilltree.events.SkillEvent;
 
 public class CapabilitySkillHandler {
 
@@ -66,8 +66,6 @@ public class CapabilitySkillHandler {
 
 	public void debug(EntityJoinWorldEvent e) {
 		if (e.getEntity() != null && e.getEntity() instanceof EntityLivingBase && !e.getEntity().isDead) {
-			// System.out.println(e.getEntity() + " joined on side " +
-			// (e.getWorld().isRemote ? "Client" : "Server"));
 			if (!e.getWorld().isRemote) {
 				ISkillHandler handler = SkillTreeApi.getSkillHandler((EntityLivingBase) e.getEntity());
 				handler.reloadHandler();

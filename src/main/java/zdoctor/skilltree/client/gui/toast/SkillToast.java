@@ -4,7 +4,7 @@ import net.minecraft.client.gui.toasts.GuiToast;
 import net.minecraft.client.gui.toasts.IToast;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import zdoctor.skilltree.skills.SkillBase;
+import zdoctor.skilltree.api.skills.SkillBase;
 
 @SideOnly(Side.CLIENT)
 public class SkillToast implements IToast {

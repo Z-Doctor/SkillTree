@@ -12,14 +12,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import zdoctor.skilltree.api.skill.tabs.SkillTabs;
+import zdoctor.skilltree.api.skills.page.SkillPageBase;
 import zdoctor.skilltree.client.GuiPageRegistry;
-import zdoctor.skilltree.skills.pages.SkillPageBase;
-import zdoctor.skilltree.tabs.SkillTabs;
+import zdoctor.skilltree.proxy.CommonProxy;
 
 @SideOnly(Side.CLIENT)
 public class GuiSkillTree extends GuiSkillScreen {
 
-	private static int selectedTabIndex = SkillTabs.PLAYER_INFO.getTabIndex();
+	private static int selectedTabIndex = CommonProxy.PLAYER_INFO.getTabIndex();
 
 	private int maxPages = 0;
 

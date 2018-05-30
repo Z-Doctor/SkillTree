@@ -1,4 +1,4 @@
-package zdoctor.skilltree.skills;
+package zdoctor.skilltree.skills.cap;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;

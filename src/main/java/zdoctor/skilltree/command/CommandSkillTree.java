@@ -13,9 +13,10 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.translation.I18n;
 import zdoctor.skilltree.api.SkillTreeApi;
+import zdoctor.skilltree.api.skills.SkillBase;
+import zdoctor.skilltree.api.skills.interfaces.ISkill;
 import zdoctor.skilltree.api.skills.interfaces.ISkillHandler;
-import zdoctor.skilltree.skills.SkillBase;
-import zdoctor.skilltree.skills.SkillSlot;
+import zdoctor.skilltree.api.skills.interfaces.ISkillSlot;
 
 public class CommandSkillTree extends CommandBase {
 
@@ -100,11 +101,11 @@ public class CommandSkillTree extends CommandBase {
 			case "give":
 
 				String skillName = args.length > 2 ? args[2] : args.length > 1 ? args[1] : "Invalid";
-				SkillBase skill = SkillBase.getSkillByKey(new ResourceLocation(skillName));
+				ISkill skill = SkillBase.getSkillByKey(new ResourceLocation(skillName));
 				if (skillName.equalsIgnoreCase("all")) {
 					boolean dirty = false;
 					ISkillHandler skillHandler = SkillTreeApi.getSkillHandler(entity);
-					for (SkillSlot skillSlot : skillHandler.getSkillSlots()) {
+					for (ISkillSlot skillSlot : skillHandler.getSkillSlots()) {
 						if (skillSlot.isObtained())
 							continue;
 						skillSlot.setObtained();
@@ -126,11 +127,12 @@ public class CommandSkillTree extends CommandBase {
 				if (SkillTreeApi.hasSkill(entity, skill))
 					throw new CommandException("commands.skilltree.failure.give.owned", entity.getName(), skillName);
 
-				ArrayList<SkillSlot> neededSkills = new ArrayList<>();
-				SkillSlot currentSkillNode = SkillTreeApi.getSkillSlot(entity, skill);
+				ArrayList<ISkillSlot> neededSkills = new ArrayList<>();
+				ISkillSlot currentSkillNode = SkillTreeApi.getSkillHandler(entity).getSkillSlot(skill);
 				neededSkills.add(currentSkillNode);
 				while (currentSkillNode.getSkill().getParent() != null) {
-					currentSkillNode = SkillTreeApi.getSkillSlot(entity, currentSkillNode.getSkill().getParent());
+					currentSkillNode = SkillTreeApi.getSkillHandler(entity)
+							.getSkillSlot(currentSkillNode.getSkill().getParent());
 					if (currentSkillNode.isObtained())
 						break;
 					neededSkills.add(currentSkillNode);
@@ -159,7 +161,7 @@ public class CommandSkillTree extends CommandBase {
 				break;
 			case "remove":
 				String skillName1 = args.length > 2 ? args[2] : args.length > 1 ? args[1] : "Invalid";
-				SkillBase skill1 = SkillBase.getSkillByKey(new ResourceLocation(skillName1));
+				ISkill skill1 = SkillBase.getSkillByKey(new ResourceLocation(skillName1));
 				if (skillName1.equalsIgnoreCase("all")) {
 					SkillTreeApi.resetSkillHandler(entity);
 					notifyCommandListener(sender, this, "commands.skilltree.success.reset", entity.getName());

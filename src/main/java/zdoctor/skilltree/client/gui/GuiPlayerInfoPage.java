@@ -27,7 +27,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.api.SkillTreeApi;
-import zdoctor.skilltree.skills.pages.SkillPageBase;
+import zdoctor.skilltree.api.skills.page.SkillPageBase;
 
 @SideOnly(Side.CLIENT)
 public class GuiPlayerInfoPage extends GuiSkillPage {
@@ -70,7 +70,7 @@ public class GuiPlayerInfoPage extends GuiSkillPage {
 		this.oldMouseX = mouseX;
 		this.oldMouseY = mouseY;
 
-		int points = SkillTreeApi.getPlayerSkillPoints(thePlayer);
+		int points = SkillTreeApi.getSkillPoints(thePlayer);
 		String points1 = I18n.format("skilltree.points.info", points);
 		GlStateManager.pushMatrix();
 

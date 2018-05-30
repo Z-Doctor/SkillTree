@@ -1,32 +1,46 @@
-package zdoctor.skilltree.skills;
+package zdoctor.skilltree.skills.cap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.google.common.base.Predicates;
+
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
+import zdoctor.skilltree.api.enums.EnumSkillInteractType;
+import zdoctor.skilltree.api.events.SkillDeseralizeEvent;
+import zdoctor.skilltree.api.events.SkillEvent;
+import zdoctor.skilltree.api.events.SkillHandlerEvent;
+import zdoctor.skilltree.api.events.SkillEvent.ActiveTick;
+import zdoctor.skilltree.api.events.SkillHandlerEvent.ReloadedEvent;
+import zdoctor.skilltree.api.skills.SkillBase;
+import zdoctor.skilltree.api.skills.interfaces.ISkill;
 import zdoctor.skilltree.api.skills.interfaces.ISkillHandler;
+import zdoctor.skilltree.api.skills.interfaces.ISkillHandler.ChangeType;
+import zdoctor.skilltree.api.skills.interfaces.ISkillSellable;
+import zdoctor.skilltree.api.skills.interfaces.ISkillSlot;
 import zdoctor.skilltree.api.skills.interfaces.ISkillStackable;
 import zdoctor.skilltree.api.skills.interfaces.ISkillTickable;
-import zdoctor.skilltree.events.SkillDeseralizeEvent;
-import zdoctor.skilltree.events.SkillEvent;
-import zdoctor.skilltree.events.SkillEvent.ActiveTick;
-import zdoctor.skilltree.events.SkillHandlerEvent;
-import zdoctor.skilltree.events.SkillHandlerEvent.ReloadedEvent;
+import zdoctor.skilltree.network.SkillTreePacketHandler;
+import zdoctor.skilltree.network.play.client.CPacketSyncSkills;
+import zdoctor.skilltree.network.play.server.SPacketSkillSlotInteract;
 
 public class SkillHandler implements ISkillHandler {
 
-	protected ArrayList<SkillBase> trackerCodex = new ArrayList<>();
-	protected HashMap<SkillBase, SkillSlot> skillsCodex = new HashMap();
+	protected ArrayList<ISkill> trackerCodex = new ArrayList<>();
+	protected HashMap<ISkill, SkillSlot> skillsCodex = new HashMap();
 	private EntityLivingBase owner;
 	private int skillPoints;
 
@@ -34,7 +48,7 @@ public class SkillHandler implements ISkillHandler {
 	private boolean hasLoaded = false;
 
 	public SkillHandler() {
-		for (SkillBase skill : SkillBase.getSkillRegistry()) {
+		for (ISkill skill : SkillBase.getSkillRegistry()) {
 			if (skill == null)
 				continue;
 			SkillSlot slot = new SkillSlot(skill);
@@ -63,8 +77,8 @@ public class SkillHandler implements ISkillHandler {
 	public void deserializeNBT(NBTTagCompound nbt) {
 		ModMain.proxy.log.debug("Deserializing Hanlder - Owner: {} Old: {} New: {}", getOwner(), serializeNBT(), nbt);
 		NBTTagList skillCodex = nbt.getTagList("Skills", Constants.NBT.TAG_COMPOUND);
-		for (NBTBase skillBase : skillCodex) {
-			NBTTagCompound skillTag = (NBTTagCompound) skillBase;
+		for (NBTBase skill : skillCodex) {
+			NBTTagCompound skillTag = (NBTTagCompound) skill;
 			SkillSlot skillSlot = new SkillSlot(skillTag);
 			SkillDeseralizeEvent event = new SkillDeseralizeEvent(skillTag, skillSlot.getSkill(), skillSlot);
 			MinecraftForge.EVENT_BUS.post(event);
@@ -88,7 +102,7 @@ public class SkillHandler implements ISkillHandler {
 	}
 
 	@Override
-	public void setSkillObtained(SkillBase skill, boolean obtained) {
+	public void setSkillObtained(ISkill skill, boolean obtained) {
 		SkillSlot skillSlot = skillsCodex.get(skill);
 		boolean orignalState = skillSlot.isObtained();
 		skillSlot.setObtained(obtained);
@@ -97,21 +111,26 @@ public class SkillHandler implements ISkillHandler {
 	}
 
 	@Override
-	public void setSkillActive(SkillBase skill, boolean active) {
+	public void setSkillActive(ISkill skill, boolean active) {
 		SkillSlot skillSlot = skillsCodex.get(skill);
 		boolean orignalState = skillSlot.isActive();
 		skillSlot.setActive(active);
 		if (orignalState != skillSlot.isActive())
 			onSkillChange(skillSlot, skillSlot.isActive() ? ChangeType.SKILL_ACTIVATED : ChangeType.SKILL_DEACTIVATED);
+
+		if (getOwner().world.isRemote) {
+			SPacketSkillSlotInteract message = new SPacketSkillSlotInteract(skill, EnumSkillInteractType.TOGGLE);
+			SkillTreePacketHandler.INSTANCE.sendToServer(message);
+		}
 	}
 
 	@Override
-	public void addSkillTier(SkillBase skill) {
+	public void addSkillTier(ISkill skill) {
 		addSkillTier(skill, 1);
 	}
 
 	@Override
-	public void addSkillTier(SkillBase skill, int amount) {
+	public void addSkillTier(ISkill skill, int amount) {
 		SkillSlot skillSlot = skillsCodex.get(skill);
 		int orignalState = skillSlot.getSkillTier();
 		skillSlot.addSkillTier(amount);
@@ -120,7 +139,7 @@ public class SkillHandler implements ISkillHandler {
 	}
 
 	@Override
-	public void onSkillChange(SkillSlot skillSlot, ChangeType type) {
+	public void onSkillChange(ISkillSlot skillSlot, ChangeType type) {
 		ModMain.proxy.log.debug("Skill Changeg - Owner: {} Type: {} Remote: {}", getOwner(), type,
 				getOwner().world.isRemote);
 		if (skillSlot.getSkill().getParent() != null) {
@@ -222,7 +241,7 @@ public class SkillHandler implements ISkillHandler {
 	}
 
 	@Override
-	public boolean hasSkill(SkillBase skill) {
+	public boolean hasSkill(ISkill skill) {
 		SkillSlot skillSlot = getSkillSlot(skill);
 		if (skillSlot == null)
 			ModMain.proxy.log.catching(new NullPointerException("Tried to get slot from unregistered skill: "
@@ -231,17 +250,17 @@ public class SkillHandler implements ISkillHandler {
 	}
 
 	@Override
-	public SkillSlot getSkillSlot(SkillBase skill) {
+	public SkillSlot getSkillSlot(ISkill skill) {
 		return skillsCodex.get(skill);
 	}
 
 	@Override
-	public boolean hasRequirements(SkillBase skill) {
+	public boolean hasRequirements(ISkill skill) {
 		return skill.hasRequirments(getOwner());
 	}
 
 	@Override
-	public ArrayList<SkillSlot> getSkillSlots() {
+	public ArrayList<ISkillSlot> getSkillSlots() {
 		return new ArrayList<>(skillsCodex.values());
 	}
 
@@ -269,7 +288,7 @@ public class SkillHandler implements ISkillHandler {
 	}
 
 	@Override
-	public boolean canBuySkill(SkillBase skill) {
+	public boolean canBuySkill(ISkill skill) {
 		boolean flag = skill.hasParent() ? hasSkill(skill.getParent()) : skill.hasRequirments(getOwner());
 		if (flag && skill instanceof ISkillStackable)
 			flag = getSkillTier(skill) + 1 <= ((ISkillStackable) skill).getMaxTier(getOwner());
@@ -277,7 +296,7 @@ public class SkillHandler implements ISkillHandler {
 	}
 
 	@Override
-	public void buySkill(SkillBase skill) {
+	public void buySkill(ISkill skill) {
 		if (canBuySkill(skill)) {
 			if (hasSkill(skill) && skill instanceof ISkillStackable) {
 				skill.getRequirments(getOwner(), true).forEach(requirement -> requirement.onFufillment(getOwner()));
@@ -293,6 +312,11 @@ public class SkillHandler implements ISkillHandler {
 				skill.onSkillPurchase(getOwner());
 			}
 		}
+
+		if (getOwner().world.isRemote) {
+			SPacketSkillSlotInteract message = new SPacketSkillSlotInteract(skill, EnumSkillInteractType.BUY);
+			SkillTreePacketHandler.INSTANCE.sendToServer(message);
+		}
 	}
 
 	@Override
@@ -301,13 +325,13 @@ public class SkillHandler implements ISkillHandler {
 	}
 
 	@Override
-	public boolean isSkillActive(SkillBase skill) {
+	public boolean isSkillActive(ISkill skill) {
 		return getSkillSlot(skill).isActive();
 	}
 
 	@Override
-	public List<SkillBase> getActiveSkillListeners() {
-		List<SkillBase> skills = new ArrayList<>();
+	public List<ISkill> getActiveSkillListeners() {
+		List<ISkill> skills = new ArrayList<>();
 		skills.addAll(trackerCodex);
 		return skills;
 	}
@@ -348,11 +372,94 @@ public class SkillHandler implements ISkillHandler {
 	}
 
 	@Override
-	public int getSkillTier(SkillBase skill) {
+	public int getSkillTier(ISkill skill) {
 		if (!(skill instanceof ISkillStackable))
 			return hasSkill(skill) ? 1 : 0;
 		SkillSlot skillSlot = skillsCodex.get(skill);
 		return hasSkill(skill) ? skillSlot.getSkillTier() : 0;
+	}
+
+	@Override
+	public void sync() {
+		if (getOwner() == null) {
+			ModMain.proxy.log.catching(new IllegalArgumentException("Tried to sync null entity."));
+			return;
+		}
+
+		if (getOwner().world == null) {
+			ModMain.proxy.log
+					.catching(new IllegalArgumentException("Tried to sync with null world. Entity: " + getOwner()));
+			return;
+		}
+
+		if (getOwner().world.isRemote)
+			return;
+
+		if (!getOwner().world.isRemote) {
+			if (getOwner().world instanceof WorldServer) {
+				List<EntityPlayer> receivers = new ArrayList<>(
+						((WorldServer) getOwner().world).getEntityTracker().getTrackingPlayers(getOwner()));
+				if (getOwner() instanceof EntityPlayerMP)
+					receivers.addAll(
+							((WorldServer) getOwner().world).getPlayers(EntityPlayerMP.class, Predicates.alwaysTrue()));
+				SkillTreeApi.syncSkills(getOwner(), receivers);
+
+			}
+		} else {
+			// System.out.println("Attempt to sync from client");
+		}
+	}
+
+	@Override
+	public void sync(List<EntityPlayer> receivers) {
+		if (getOwner() == null) {
+			ModMain.proxy.log.catching(new IllegalArgumentException("Tried to sync null entity."));
+			return;
+		}
+
+		if (getOwner().world == null) {
+			ModMain.proxy.log
+					.catching(new IllegalArgumentException("Tried to sync with null world. Entity: " + getOwner()));
+			return;
+		}
+
+		if (getOwner().world.isRemote)
+			return;
+
+		CPacketSyncSkills packet = new CPacketSyncSkills(getOwner());
+		boolean cleaned = false;
+		for (EntityPlayer receiver : receivers) {
+			if (receiver instanceof EntityPlayerMP) {
+				if (receiver.isDead) {
+					ModMain.proxy.log.debug("Receiver {} is Dead!", receiver);
+					continue;
+				}
+				SkillTreePacketHandler.INSTANCE.sendTo(packet, (EntityPlayerMP) receiver);
+				cleaned = true;
+			} else {
+				ModMain.proxy.log.debug("Unable to sync to receiver: {}", receiver);
+			}
+		}
+		if (cleaned) {
+			clean();
+		}
+	}
+
+	@Override
+	public void reset() {
+		deserializeNBT(new SkillHandler().serializeNBT());
+		reloadHandler();
+		if (!getOwner().world.isRemote)
+			markDirty();
+	}
+
+	@Override
+	public void sellSkill(ISkill skill) {
+		if(skill instanceof ISkillSellable && hasSkill(skill)) {
+			getSkillSlot(skill).deserializeNBT(new SkillSlot(skill).serializeNBT());
+			((ISkillSellable)skill).onSold(getOwner());
+		}
+		
 	}
 
 }

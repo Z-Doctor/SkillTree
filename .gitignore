@@ -8,6 +8,5 @@ build
 /gradlew.bat
 /build.gradle
 .settings
-.vs
-/Example
 
+/libs
