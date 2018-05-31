@@ -10,7 +10,6 @@ import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.fml.client.IModGuiFactory;
 import net.minecraftforge.fml.client.config.GuiConfig;
 import net.minecraftforge.fml.client.config.IConfigElement;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -20,20 +19,16 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  * a {@link EasyConfig}
  * 
  */
-public class EasyConfigGui extends EasyConfig implements IModGuiFactory {
+@SideOnly(Side.CLIENT)
+public class EasyConfigGui implements IModGuiFactory {
+	private EasyConfig config;
+
 	public EasyConfig getEasyConfig() {
-		return this;
+		return config;
 	};
 
-	public EasyConfigGui() {
-	}
-
-	public EasyConfigGui(FMLPreInitializationEvent e) {
-		this(e, "Default");
-	}
-
-	public EasyConfigGui(FMLPreInitializationEvent e, String defaultCatergory) {
-		super(e, defaultCatergory);
+	public EasyConfigGui(EasyConfig config) {
+		this.config = config;
 		GuiConfigHandler.register(this);
 	}
 
@@ -55,13 +50,13 @@ public class EasyConfigGui extends EasyConfig implements IModGuiFactory {
 	@Override
 	public GuiScreen createConfigGui(GuiScreen parentScreen) {
 		List<IConfigElement> elements = new ArrayList<>();
-		getConfig().getCategoryNames().forEach(cat -> {
-			elements.addAll(new ConfigElement(getConfig().getCategory(cat)).getChildElements());
+		getEasyConfig().getConfig().getCategoryNames().forEach(cat -> {
+			elements.addAll(new ConfigElement(getEasyConfig().getConfig().getCategory(cat)).getChildElements());
 		});
-		return new GuiConfig(parentScreen, elements, getModid(), false, false, getTitle());
+		return new GuiConfig(parentScreen, elements, getEasyConfig().getModid(), false, false, getTitle());
 	}
 
 	public String getTitle() {
-		return getModid();
+		return getEasyConfig().getModid();
 	}
 }
