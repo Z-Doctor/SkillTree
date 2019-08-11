@@ -1,86 +1,73 @@
-package zdoctor.skilltree.skills.cap;
+package zdoctor.skilltree.skills;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import zdoctor.skilltree.api.skills.SkillBase;
-import zdoctor.skilltree.api.skills.interfaces.ISkill;
-import zdoctor.skilltree.api.skills.interfaces.ISkillSlot;
+import net.minecraftforge.common.util.INBTSerializable;
 import zdoctor.skilltree.api.skills.interfaces.ISkillStackable;
 import zdoctor.skilltree.api.skills.interfaces.ISkillToggle;
 
-public class SkillSlot implements ISkillSlot {
+public class SkillSlot implements INBTSerializable<NBTTagCompound> {
 	private boolean obtained;
-	private ISkill skill;
+	private SkillBase skill;
 	private NBTTagCompound skillTagCompound;
 	private boolean active;
 	private int skillTier;
 
-	public SkillSlot(ISkill skill) {
+	public SkillSlot(SkillBase skill) {
 		this(skill, false, false, 0);
 	}
 
-	public SkillSlot(ISkill skill, boolean obtained, boolean active, int skillTier) {
+	public SkillSlot(SkillBase skill, boolean obtained, boolean active, int skillTier) {
 		this.skill = skill;
 		this.obtained = obtained;
 		this.active = active;
 		this.skillTier = skillTier;
 	}
 
-	public SkillSlot(NBTTagCompound nbt) {
-		deserializeNBT(nbt);
-	}
-
-	@Override
 	public boolean isObtained() {
 		return obtained;
 	}
 
-	@Override
 	public void setObtained() {
 		setObtained(true);
 	}
 
-	@Override
 	public void setObtained(boolean obtained) {
 		this.obtained = obtained;
 	}
 
-	@Override
 	public boolean isActive() {
 		return isObtained() && active;
 	}
 
-	@Override
 	public void setActive() {
 		setActive(true);
 	}
 
-	@Override
 	public void setActive(boolean active) {
 		this.active = active;
 	}
 
-	@Override
-	public ISkill getSkill() {
+	public SkillSlot(NBTTagCompound nbt) {
+		deserializeNBT(nbt);
+	}
+
+	public SkillBase getSkill() {
 		return skill;
 	}
 
-	@Override
 	public void addSkillTier() {
 		addSkillTier(1);
 	}
 
-	@Override
 	public void addSkillTier(int amount) {
 		skillTier += amount;
 	}
 
-	@Override
 	public void setSkillTier(int skillTier) {
 		this.skillTier = skillTier;
 	}
 
-	@Override
 	public int getSkillTier() {
 		return skillTier;
 	}
@@ -106,7 +93,6 @@ public class SkillSlot implements ISkillSlot {
 			this.skillTier = nbt.getInteger("skillTier");
 	}
 
-	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
 		nbt.setString("id", skill.getRegistryName().toString());
 		nbt.setBoolean("obtained", isObtained());
@@ -115,9 +101,8 @@ public class SkillSlot implements ISkillSlot {
 		return nbt;
 	}
 
-	@Override
-	public boolean areSkillSlotsEqual(ISkillSlot skillB) {
-		return this.skill == skillB.getSkill();
+	public static boolean areSkillSlotsEqual(SkillSlot skillA, SkillSlot skillB) {
+		return skillA.skill == skillB.skill;
 	}
 
 }

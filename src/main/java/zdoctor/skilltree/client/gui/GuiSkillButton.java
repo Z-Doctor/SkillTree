@@ -2,15 +2,19 @@ package zdoctor.skilltree.client.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.inventory.GuiContainerCreative;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.util.ResourceLocation;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
+import zdoctor.skilltree.api.enums.EnumSkillInteractType;
 import zdoctor.skilltree.api.enums.SkillFrameType;
-import zdoctor.skilltree.api.skills.interfaces.ISkill;
 import zdoctor.skilltree.api.skills.interfaces.ISkillStackable;
-import zdoctor.skilltree.api.skills.page.SkillPageBase;
+import zdoctor.skilltree.network.SkillTreePacketHandler;
+import zdoctor.skilltree.network.play.server.SPacketSkillSlotInteract;
+import zdoctor.skilltree.skills.SkillBase;
+import zdoctor.skilltree.skills.pages.SkillPageBase;
 
 public class GuiSkillButton extends GuiButton {
 	public static final ResourceLocation SKILL_TREE_BACKGROUND = new ResourceLocation(
@@ -19,7 +23,7 @@ public class GuiSkillButton extends GuiButton {
 	public int textureX = 72;
 	public int textureY = 140;
 
-	public ISkill skill;
+	public SkillBase skill;
 	// public boolean hasRequirements;
 	// public boolean hasSkill;
 
@@ -32,12 +36,12 @@ public class GuiSkillButton extends GuiButton {
 
 	public SkillPageBase page;
 
-	public GuiSkillButton(SkillPageBase page, GuiSkillScreen parent, ISkill skill, int column, int row, int startX,
+	public GuiSkillButton(SkillPageBase page, GuiSkillScreen parent, SkillBase skill, int column, int row, int startX,
 			int startY) {
 		this(page, parent, 0, skill, startX + 13 + 19 * column, startY + 21 + 18 * row, 16, 16, "");
 	}
 
-	public GuiSkillButton(SkillPageBase page, GuiSkillScreen parent, int buttonId, ISkill skill, int x, int y,
+	public GuiSkillButton(SkillPageBase page, GuiSkillScreen parent, int buttonId, SkillBase skill, int x, int y,
 			int widthIn, int heightIn, String buttonText) {
 		super(buttonId, x, y, widthIn, heightIn, buttonText);
 		this.page = page;
@@ -138,7 +142,7 @@ public class GuiSkillButton extends GuiButton {
 		drawScaledCustomSizeModalRect(posX, posY, lockType, 176, 18, 18, 16, 16, 256, 256);
 	}
 
-	public ISkill getSkill() {
+	public SkillBase getSkill() {
 		return skill;
 	}
 

@@ -8,13 +8,16 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.api.SkillTreeApi;
-import zdoctor.skilltree.api.enums.BackgroundType;
-import zdoctor.skilltree.api.events.SkillEvent;
-import zdoctor.skilltree.api.events.SkillEvent.ReloadPages.Pre;
-import zdoctor.skilltree.api.skills.interfaces.ISkill;
+import zdoctor.skilltree.api.enums.EnumSkillInteractType;
 import zdoctor.skilltree.api.skills.interfaces.ISkillToggle;
-import zdoctor.skilltree.api.skills.page.SkillPageBase;
 import zdoctor.skilltree.client.KeyHandler;
+import zdoctor.skilltree.events.SkillEvent;
+import zdoctor.skilltree.events.SkillEvent.ReloadPages.Pre;
+import zdoctor.skilltree.network.SkillTreePacketHandler;
+import zdoctor.skilltree.network.play.server.SPacketSkillSlotInteract;
+import zdoctor.skilltree.skills.SkillBase;
+import zdoctor.skilltree.skills.pages.SkillPageBase;
+import zdoctor.skilltree.skills.pages.SkillPageBase.BackgroundType;
 
 /**
  * @author Z_Doctor Custom Skill pages need to extend this class. Return a new
@@ -49,7 +52,7 @@ public class GuiSkillPage extends GuiSkillScreen {
 			maxIndexX = 0;
 			maxIndexY = 0;
 
-			for (ISkill skill : page.getSkillList()) {
+			for (SkillBase skill : page.getSkillList()) {
 				GuiSkillButton button;
 				addButton(button = new GuiSkillButton(page, this, skill, page.getColumn(skill), page.getRow(skill),
 						guiLeft, guiTop));
@@ -135,7 +138,7 @@ public class GuiSkillPage extends GuiSkillScreen {
 	protected void mouseReleased(int mouseX, int mouseY, int state) {
 		if (this.selectedButton != null && state == 1 && this.selectedButton instanceof GuiSkillButton) {
 			GuiSkillButton skillButton = (GuiSkillButton) this.selectedButton;
-			ISkill skill = skillButton.getSkill();
+			SkillBase skill = skillButton.getSkill();
 			if (skill instanceof ISkillToggle && SkillTreeApi.hasSkill(mc.player, skill)) {
 				SkillTreeApi.toggleSkill(mc.player, skill);
 			}

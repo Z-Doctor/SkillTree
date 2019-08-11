@@ -14,9 +14,9 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import zdoctor.skilltree.ModMain;
-import zdoctor.skilltree.api.skills.SkillToolTip;
-import zdoctor.skilltree.api.skills.interfaces.ISkill;
-import zdoctor.skilltree.api.skills.page.SkillPageBase;
+import zdoctor.skilltree.client.SkillToolTip;
+import zdoctor.skilltree.skills.SkillBase;
+import zdoctor.skilltree.skills.pages.SkillPageBase;
 
 @SideOnly(Side.CLIENT)
 public class GuiSkillScreen extends GuiScreen {
@@ -160,7 +160,7 @@ public class GuiSkillScreen extends GuiScreen {
 		}
 	}
 
-	protected void drawSkillToolTip(SkillPageBase page, ISkill skill, int mouseX, int mouseY) {
+	protected void drawSkillToolTip(SkillPageBase page, SkillBase skill, int mouseX, int mouseY) {
 		GlStateManager.disableRescaleNormal();
 		RenderHelper.disableStandardItemLighting();
 		GlStateManager.disableLighting();
@@ -270,7 +270,7 @@ public class GuiSkillScreen extends GuiScreen {
 		GlStateManager.enableRescaleNormal();
 	}
 
-	public void drawConnectivity(SkillPageBase page, ISkill skill, int offsetX, int offsetY, boolean outerLine) {
+	public void drawConnectivity(SkillPageBase page, SkillBase skill, int offsetX, int offsetY, boolean outerLine) {
 		if (skill.getChildren().isEmpty())
 			return;
 
@@ -295,7 +295,7 @@ public class GuiSkillScreen extends GuiScreen {
 
 		boolean lineDrawn = false;
 
-		for (ISkill child : skill.getChildren()) {
+		for (SkillBase child : skill.getChildren()) {
 			if (child == null) {
 				ModMain.proxy.log.catching(new NullPointerException("Tried to draw null child for parent '"
 						+ skill.getRegistryName() + "' on page '" + page.getRegistryName() + "'"));

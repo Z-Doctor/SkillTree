@@ -10,21 +10,20 @@ import net.minecraftforge.fml.relauncher.Side;
 import zdoctor.skilltree.ModMain;
 import zdoctor.skilltree.api.SkillTreeApi;
 import zdoctor.skilltree.api.enums.EnumSkillInteractType;
-import zdoctor.skilltree.api.events.SkillInteractEvent;
-import zdoctor.skilltree.api.skills.SkillBase;
-import zdoctor.skilltree.api.skills.interfaces.ISkill;
+import zdoctor.skilltree.events.SkillInteractEvent;
 import zdoctor.skilltree.network.SkillTreePacketHandler;
 import zdoctor.skilltree.network.play.client.CPacketSyncSkills;
+import zdoctor.skilltree.skills.SkillBase;
 
 public class SPacketSkillSlotInteract implements IMessage {
 
-	private ISkill skill;
+	private SkillBase skill;
 	private EnumSkillInteractType type;
 
 	public SPacketSkillSlotInteract() {
 	}
 
-	public SPacketSkillSlotInteract(ISkill skill, EnumSkillInteractType type) {
+	public SPacketSkillSlotInteract(SkillBase skill, EnumSkillInteractType type) {
 		this.skill = skill;
 		this.type = type;
 	}
@@ -61,6 +60,9 @@ public class SPacketSkillSlotInteract implements IMessage {
 						break;
 					case SELL:
 						SkillTreeApi.sellSkill(ctx.getServerHandler().player, message.skill);
+						break;
+					case REFUND:
+						SkillTreeApi.refundSkill(ctx.getServerHandler().player, message.skill);
 						break;
 					case TOGGLE:
 						SkillTreeApi.toggleSkill(ctx.getServerHandler().player, message.skill);

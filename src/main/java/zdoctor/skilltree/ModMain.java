@@ -12,12 +12,12 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import zdoctor.skilltree.command.CommandSkillTree;
 import zdoctor.skilltree.network.SkillTreePacketHandler;
 import zdoctor.skilltree.proxy.CommonProxy;
-import zdoctor.skilltree.skills.cap.CapabilitySkillHandler;
+import zdoctor.skilltree.skills.CapabilitySkillHandler;
 
 @Mod(modid = ModMain.MODID, version = ModMain.VERSION)
 public class ModMain {
 	public static final String MODID = "skilltree";
-	public static final String VERSION = "1.3.0.0";
+	public static final String VERSION = "1.2.3.0";
 
 	@Instance
 	public static ModMain INSTANCE = new ModMain();

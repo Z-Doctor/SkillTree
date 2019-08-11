@@ -1,39 +1,35 @@
 package zdoctor.skilltree.proxy;
 
+import java.util.ArrayList;
+
 import org.apache.logging.log4j.Logger;
 
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import zdoctor.skilltree.api.config.EasyConfig;
-import zdoctor.skilltree.api.config.EasyConfigGui;
-import zdoctor.skilltree.api.config.EasyConfig.BooleanProperty;
-import zdoctor.skilltree.api.skill.tabs.SkillTabs;
-import zdoctor.skilltree.skills.pages.PlayerInfoPage;
+import net.minecraftforge.fml.relauncher.Side;
+import zdoctor.skilltree.EasyConfig;
+import zdoctor.skilltree.EasyConfig.BooleanProperty;
+import zdoctor.skilltree.ModMain;
+import zdoctor.skilltree.skills.SkillBase;
 
 public abstract class CommonProxy {
+	public static final ArrayList<SkillBase> SkillWatcher_Registry = new ArrayList<>();
+
 	public Logger log;
 	public EasyConfig config;
 
 	public BooleanProperty keepSkillsOnDeath;
-
-	public static final SkillTabs PLAYER_INFO = new SkillTabs(0, "PlayerInfo", new PlayerInfoPage()) {
-
-		@Override
-		public ItemStack getTabIconItem() {
-			return new ItemStack(Items.WRITABLE_BOOK);
-		}
-	};
-
+	
 	public void preInit(FMLPreInitializationEvent e) {
-
-		config = new EasyConfigGui(e);
-		keepSkillsOnDeath = new EasyConfig.BooleanProperty(config, "skilltree.gameplay", "keepSkillsOnDeath", true);
+		config = new EasyConfig(e);
+		MinecraftForge.EVENT_BUS.register(config);
+		keepSkillsOnDeath = new EasyConfig.BooleanProperty(ModMain.proxy.config, "skilltree.gameplay",
+				"keepSkillsOnDeath", true);
 		config.close();
 		log = e.getModLog();
 
@@ -49,7 +45,10 @@ public abstract class CommonProxy {
 	}
 
 	public abstract World getWorld();
-
 	public abstract EntityPlayer getPlayer();
+	
+	public Side getEffectiveSide( ) {
+		return FMLCommonHandler.instance().getEffectiveSide();
+	}
 
 }
