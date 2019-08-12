@@ -2,11 +2,7 @@
 # gradle
 build
 .gradle
-/gradle
 /gradle.properties
-/gradlew
-/gradlew.bat
-/build.gradle
 .settings
 .vs
 /Example
