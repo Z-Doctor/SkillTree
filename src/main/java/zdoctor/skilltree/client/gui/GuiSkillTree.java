@@ -227,6 +227,15 @@ public class GuiSkillTree extends GuiSkillScreen {
 		}
 
 	}
+	
+	@Override
+	protected void keyTyped(char par1, int par2) throws IOException {
+		if (par2 == KeyHandler.OPEN_SKILL_TREE.getKeyCode()) {
+			this.mc.player.closeScreen();
+		} else {
+			super.keyTyped(par1, par2);
+		} 
+	}
 
 	@Override
 	protected void mouseReleased(int mouseX, int mouseY, int state) {
