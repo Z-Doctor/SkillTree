@@ -1,0 +1,29 @@
+skillTree.PlayerInfo=Информация об игроке
+
+commands.skilltree.usage=/skilltree <Действие> [Игрок] [Навык]
+commands.skilltree.success.reset=Статистика игрока [%s] успешно сброшена
+commands.skilltree.success.addPoints=Успешно выдано [%s] очков навыка игроку [%s]
+commands.skilltree.success.removePoints=Успешно удалено [%s] очков навыка у игрока [%s]
+commands.skilltree.success.remove=Успешно удален навык [%s] у игрока [%s]
+commands.skilltree.success.give=Успешно выдан навык [%s] игроку [%s]
+commands.skilltree.success.give.all=Игроку [%s] успешно выданы все навыки
+commands.skilltree.failure.action=Неизвестная команда: [%s]
+commands.skilltree.failure.addPoints=Невозможно выдать [%s] очков навыка игроку [%s]
+commands.skilltree.failure.give.owned=Невозможно выдать игроку [%s] навык [%s]: Навык уже имеется
+commands.skilltree.failure.give=Невозможно выдать игроку [%s] Навык [%s]
+commands.skilltree.failure.remove=Невозможно удалить навык [%s] у игрока [%s]
+commands.skilltree.failure.remove.unowned=Невозможно удалить у игрока [%s] навык [%s]: Навык отсутствует
+
+skilltree.points.info=Доступные очки навыка: %s
+skilltree.maxhealth.info=Здоровье: %s(%s%s)
+skilltree.attackdamage.info=Урон: %s(%s%s)
+skilltree.attackspeed.info=Скорость атаки: %s(%s%s)
+skilltree.armor.info=Броня: %s(%s%s)
+skilltree.armortoughness.info=Прочность брони: %s(%s%s)
+skilltree.movespeed.info=Скорость передвижения: %s(%s%s)
+skilltree.knockbackresistance.info=Сопротивление отталкиванию: %s(%s%s)
+skilltree.luck.info=Удача: %s(%s%s)
+
+requirement.skilltree.level.desc=Необходимо %s уровень/уровней опыта
+requirement.skilltree.requireSkill.desc=Необходимо %s
+requirement.skilltree.skillPoint.desc=Необходимо %s очко/очков навыка
