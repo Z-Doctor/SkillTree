@@ -48,7 +48,7 @@ public class SkillPage implements CriterionTracker {
     private ResourceLocation id;
     private SkillPageDisplayInfo displayInfo;
 
-    public SkillPage() {
+    private SkillPage() {
         id = new ResourceLocation(ModMain.MODID, "empty");
         displayInfo = MISSING;
         criteria = ImmutableMap.<String, Criterion>builder().build();
@@ -70,10 +70,12 @@ public class SkillPage implements CriterionTracker {
         return page;
     }
 
+    @Override
     public Map<String, Criterion> getCriteria() {
         return criteria;
     }
 
+    @Override
     public String[][] getRequirements() {
         return requirements;
     }
@@ -232,10 +234,6 @@ public class SkillPage implements CriterionTracker {
         private String[][] requirements;
         private IRequirementsStrategy requirementsStrategy = IRequirementsStrategy.AND;
 
-        private Builder(@Nullable SkillPageDisplayInfo displayIn, Map<String, Criterion> criteriaIn, String[][] requirementsIn) {
-            this(-1, displayIn, criteriaIn, requirementsIn);
-        }
-
         private Builder(int index, @Nullable SkillPageDisplayInfo displayIn, Map<String, Criterion> criteriaIn, String[][] requirementsIn) {
             this.index = index;
             this.display = displayIn;
@@ -251,8 +249,6 @@ public class SkillPage implements CriterionTracker {
         }
 
         public static Builder deserialize(JsonObject json, ConditionArrayParser conditionParser) {
-            // TODO Make conditional skill page class (?)
-//            if ((json = net.minecraftforge.common.crafting.ConditionalAdvancement.processConditional(json)) == null) return null;
             int index = -1;
             if (JSONUtils.hasField(json, "index"))
                 index = JSONUtils.getInt(json, "index");

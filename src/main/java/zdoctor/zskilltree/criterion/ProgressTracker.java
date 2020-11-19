@@ -14,14 +14,13 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-// TODO Make separate CriterionProgress for skill pages(?)
-// TODO Clean up code and add a isDirty boolean(?)
 public class ProgressTracker implements Comparable<ProgressTracker> {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final String[][] EMPTY = {{""}};
 
     private final Map<String, net.minecraft.advancements.CriterionProgress> criteria = new HashMap<>();
     private String[][] requirements;
+    private boolean sendUpdatesToClient;
 
     public ProgressTracker() {
         criteria.put("", new net.minecraft.advancements.CriterionProgress());
@@ -37,6 +36,18 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
         }
 
         return progressTracker;
+    }
+
+    public boolean sendsUpdatesToClient() {
+        return sendUpdatesToClient;
+    }
+
+    public void enableUpdates() {
+        sendUpdatesToClient = true;
+    }
+
+    public void disableUpdates() {
+        sendUpdatesToClient = false;
     }
 
     public void update(Map<String, Criterion> criteriaIn, String[][] requirements) {

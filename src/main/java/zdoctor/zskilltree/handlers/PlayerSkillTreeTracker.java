@@ -7,10 +7,10 @@ import net.minecraft.profiler.IProfiler;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.PacketDistributor;
+import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.criterion.ProgressTracker;
-import zdoctor.zskilltree.network.ZSkillTreePacketHandler;
-import zdoctor.zskilltree.network.play.server.SSkillPageInfoPacket;
+import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
 import zdoctor.zskilltree.skill.SkillTreeDataManager;
 import zdoctor.zskilltree.skillpages.SkillPage;
 import zdoctor.zskilltree.skillpages.SkillTreeListener;
@@ -19,11 +19,14 @@ import java.io.File;
 import java.util.*;
 
 public class PlayerSkillTreeTracker extends SkillTreeTracker {
+    // Needed to listen in on advancements, essentially creating our own invitation
     private final SkillTreeAdvancementWrapper wrapper;
 
     public PlayerSkillTreeTracker(ServerPlayerEntity player) {
         super(player);
         wrapper = new SkillTreeAdvancementWrapper(player, this);
+        if (player == null)
+            throw new NullPointerException();
     }
 
     protected void onProgressCompleted(SkillPage page) {
@@ -34,38 +37,39 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
         registerListeners(page);
     }
 
+    public ServerPlayerEntity getPlayer() {
+        return (ServerPlayerEntity) super.getOwner();
+    }
+
     @Override
     public void flushDirty() {
-        if (owner == null) {
-            LOGGER.error("Player Handler is null {}", this);
-            return;
-        }
-
         if (firstSync || !progressChanged.isEmpty()) {
             checkPageVisibility();
-            if (owner instanceof ServerPlayerEntity) {
-                LOGGER.debug("Syncing player data to client {}", owner.getDisplayName().getString());
-                Set<CriterionTracker> toAdd = new HashSet<>(completionChanged);
-                toAdd.retainAll(completed);
-                completionChanged.removeAll(toAdd);
+            LOGGER.debug("Syncing player data to client {}", getPlayer().getDisplayName().getString());
+            Set<CriterionTracker> toAdd = new HashSet<>(completionChanged);
+            toAdd.retainAll(completed);
+            completionChanged.removeAll(toAdd);
 
-                Set<ResourceLocation> toRemove = new HashSet<>();
-                completionChanged.forEach(page -> toRemove.add(page.getId()));
+            Set<ResourceLocation> toRemove = new HashSet<>();
+            completionChanged.forEach(page -> toRemove.add(page.getId()));
 
-                Map<ResourceLocation, ProgressTracker> progressUpdate = new HashMap<>();
-                progressChanged.forEach(trackable -> progressUpdate.put(trackable.getId(), getProgress(trackable)));
+            Map<ResourceLocation, ProgressTracker> progressUpdate = new HashMap<>();
+            progressChanged.forEach(progressTracker -> {
+                if (progressTracker.shouldClientTrack())
+                    progressUpdate.put(progressTracker.getId(), getProgress(progressTracker));
+            });
 
-                ZSkillTreePacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
-                        new SSkillPageInfoPacket(firstSync, toAdd, toRemove, progressUpdate));
+            // TODO Send updates to other players without overriding their skills
+            //  so I'll need to make another packet
+            ModMain.getInstance().getPacketChannel().send(PacketDistributor.PLAYER.with(this::getPlayer),
+                    new SCriterionTrackerSyncPacket(firstSync, toAdd, toRemove, progressUpdate));
 
-                progressChanged.forEach(trackable -> {
-                    if (getProgress(trackable).isDone())
-                        unregisterListeners(trackable);
-                    else
-                        registerListeners(trackable);
-                });
-            } else
-                LOGGER.error("Trying to sync data to non-player {}", owner.getDisplayName());
+            progressChanged.forEach(trackable -> {
+                if (getProgress(trackable).isDone())
+                    unregisterListeners(trackable);
+                else
+                    registerListeners(trackable);
+            });
 
             firstSync = false;
             progressChanged.clear();

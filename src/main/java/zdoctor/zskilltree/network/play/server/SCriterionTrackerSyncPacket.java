@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class SSkillPageInfoPacket {
+public class SCriterionTrackerSyncPacket {
     private static final Logger LOGGER = LogManager.getLogger();
     private Collection<CriterionTracker> toAdd;
     private Map<String, List<CriterionTracker>> trackableTypes;
@@ -27,18 +27,17 @@ public class SSkillPageInfoPacket {
     private Set<ResourceLocation> toRemove;
     private Map<ResourceLocation, ProgressTracker> progressChanged;
 
-
-    public SSkillPageInfoPacket() {
+    public SCriterionTrackerSyncPacket() {
     }
 
-    public SSkillPageInfoPacket(boolean firstSync, Collection<CriterionTracker> toAdd, Set<ResourceLocation> toRemove, Map<ResourceLocation, ProgressTracker> progressChanged) {
+    public SCriterionTrackerSyncPacket(boolean firstSync, Collection<CriterionTracker> toAdd, Set<ResourceLocation> toRemove, Map<ResourceLocation, ProgressTracker> progressChanged) {
         this.firstSync = firstSync;
         this.trackableTypes = new HashMap<>();
 
         String key;
         for (CriterionTracker trackable : toAdd) {
             ClassNameMapper mapping = trackable.getClass().getAnnotation(ClassNameMapper.class);
-            if(mapping == null)
+            if (mapping == null)
                 key = trackable.getClass().getSimpleName();
             else
                 key = mapping.mapping();
@@ -50,13 +49,13 @@ public class SSkillPageInfoPacket {
         this.progressChanged = progressChanged;
     }
 
-    public static SSkillPageInfoPacket readFrom(PacketBuffer buf) {
-        SSkillPageInfoPacket infoPacket = new SSkillPageInfoPacket();
+    public static SCriterionTrackerSyncPacket readFrom(PacketBuffer buf) {
+        SCriterionTrackerSyncPacket infoPacket = new SCriterionTrackerSyncPacket();
         infoPacket.readPacketData(buf);
         return infoPacket;
     }
 
-    public static void handle(SSkillPageInfoPacket msg, Supplier<NetworkEvent.Context> ctx) {
+    public static void handle(SCriterionTrackerSyncPacket msg, Supplier<NetworkEvent.Context> ctx) {
         if (ctx.get().getDirection() == NetworkDirection.PLAY_TO_SERVER) {
             LOGGER.error("Client sent Packet to Server");
         } else if (ctx.get().getDirection() == NetworkDirection.PLAY_TO_CLIENT) {

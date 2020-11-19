@@ -8,7 +8,7 @@ import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.api.interfaces.IClientProgressTracker;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.handlers.SkillTreeTracker;
-import zdoctor.zskilltree.network.play.server.SSkillPageInfoPacket;
+import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
 import zdoctor.zskilltree.skillpages.SkillPage;
 
 import javax.annotation.Nullable;
@@ -31,7 +31,7 @@ public class ClientPlayerProgressTracker extends SkillTreeTracker implements ICl
     }
 
     @Override
-    public void read(SSkillPageInfoPacket packetIn) {
+    public void read(SCriterionTrackerSyncPacket packetIn) {
         sorted_pages.clear();
         for (SkillPageAlignment value : SkillPageAlignment.values()) {
             sorted_pages.put(value, new SkillPage[0]);
@@ -42,12 +42,6 @@ public class ClientPlayerProgressTracker extends SkillTreeTracker implements ICl
         if (packetIn.isFirstSync()) {
             pageBuilders.clear();
         }
-
-//        packetIn.getToAdd().forEach((id, trackable) -> {
-//            if(trackable instanceof SkillPage) {
-//                pageBuilders.put(id, ((SkillPage) trackable).copy());
-//            }
-//        });
 
         for (CriterionTracker trackable : packetIn.getToAdd()) {
             if (trackable instanceof SkillPage) {
@@ -68,14 +62,6 @@ public class ClientPlayerProgressTracker extends SkillTreeTracker implements ICl
 
         maxHorizontal = sorted_pages.get(SkillPageAlignment.HORIZONTAL).length;
         maxVertical = sorted_pages.get(SkillPageAlignment.VERTICAL).length;
-//        maxVertical = maxHorizontal = 0;
-//        for (SkillPage page : visible.) {
-//            if (page.getAlignment() == SkillPageAlignment.VERTICAL)
-//                maxVertical = Integer.max(maxVertical, page.getIndex());
-//            else if (page.getAlignment() == SkillPageAlignment.HORIZONTAL)
-//                maxHorizontal = Integer.max(maxHorizontal, page.getIndex());
-//        }
-
         if (listener != null)
             listener.reload();
 

@@ -20,6 +20,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DataSerializerEntry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,7 +35,7 @@ import zdoctor.zskilltree.handlers.CapabilitySkillHandler;
 import zdoctor.zskilltree.manager.SkillManager;
 import zdoctor.zskilltree.manager.SkillPageManager;
 import zdoctor.zskilltree.network.NetworkSerializationRegistry;
-import zdoctor.zskilltree.network.ZSkillTreePacketHandler;
+import zdoctor.zskilltree.network.SkillTreePacketHandler;
 import zdoctor.zskilltree.skill.SkillTreeDataManager;
 import zdoctor.zskilltree.skillpages.SkillPage;
 
@@ -53,6 +54,8 @@ public final class ModMain {
     private SkillPageManager skillPageManager;
     private SkillManager skillManager;
     private Map<String, Function<PacketBuffer, CriterionTracker>> criterionMappings;
+
+    private SimpleChannel packetChannel;
 
     public ModMain() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
@@ -92,13 +95,18 @@ public final class ModMain {
         return criterionMappings;
     }
 
+    public SimpleChannel getPacketChannel() {
+        return packetChannel;
+    }
+
     private void createProviders(GatherDataEvent event) {
         event.getGenerator().addProvider(new SkillPageProvider(event.getGenerator()));
         event.getGenerator().addProvider(new SkillProvider(event.getGenerator()));
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-        ZSkillTreePacketHandler.registerPackets();
+        packetChannel = SkillTreePacketHandler.createChannel();
+
         CapabilitySkillHandler.register();
         ExtendedCriteriaTriggers.init();
         criterionMappings = NetworkSerializationRegistry.registerMapping(CriterionTracker.class);

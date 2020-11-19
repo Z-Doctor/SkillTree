@@ -12,7 +12,7 @@ import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.criterion.ProgressTracker;
-import zdoctor.zskilltree.network.play.server.SSkillPageInfoPacket;
+import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
 import zdoctor.zskilltree.skill.SkillTreeDataManager;
 
 import java.util.*;
@@ -75,6 +75,11 @@ public class SkillTreeTracker implements ISkillTreeTracker {
 
     protected void startProgress(CriterionTracker trackable, ProgressTracker progress) {
         progress.update(trackable.getCriteria(), trackable.getRequirements());
+        if(trackable.shouldClientTrack())
+            progress.enableUpdates();
+        else
+            progress.disableUpdates();
+
         progressTracker.put(trackable, progress);
         progressChanged.add(trackable);
     }
@@ -227,7 +232,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     }
 
     @Override
-    public void read(SSkillPageInfoPacket packetIn) {
+    public void read(SCriterionTrackerSyncPacket packetIn) {
         if (packetIn == null)
             LOGGER.trace("Server-Sided Skill Tree Tracker tried to read a null packet");
         else if (getOwner() == null)
