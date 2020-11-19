@@ -71,7 +71,7 @@ public class SkillTreeCommand {
     private static ISkillTreeTracker[] processCommand(CommandContext<CommandSource> context) throws CommandSyntaxException {
         Collection<? extends Entity> targets = EntityArgument.getEntities(context, "targets");
 
-        return targets.stream().map(livingEntity -> livingEntity.getCapability(ModMain.SKILLTREE_CAPABILITY)).map(LazyOptional::resolve)
+        return targets.stream().map(livingEntity -> livingEntity.getCapability(ModMain.SKILL_TREE_CAPABILITY)).map(LazyOptional::resolve)
                 .filter(Optional::isPresent).map(Optional::get).toArray(ISkillTreeTracker[]::new);
     }
 

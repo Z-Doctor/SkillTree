@@ -26,7 +26,7 @@ public final class KeyBindings {
         if (event.phase == TickEvent.Phase.END) {
             LivingEntity player = Minecraft.getInstance().player;
             while (SKILL_TREE.isPressed() && player != null) {
-                player.getCapability(ModMain.SKILLTREE_CAPABILITY).ifPresent(cap -> {
+                player.getCapability(ModMain.SKILL_TREE_CAPABILITY).ifPresent(cap -> {
                     if (cap instanceof IClientProgressTracker)
                         Minecraft.getInstance().displayGuiScreen(new GuiSkillTreeScreen((IClientProgressTracker) cap));
                 });

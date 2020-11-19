@@ -54,10 +54,10 @@ public class CapabilitySkillHandler {
     public static void onPlayerClone(PlayerEvent.Clone event) {
         if (!event.isWasDeath())
             return;
-        LazyOptional<ISkillTreeTracker> oldCap = event.getPlayer().getCapability(ModMain.SKILLTREE_CAPABILITY);
+        LazyOptional<ISkillTreeTracker> oldCap = event.getPlayer().getCapability(ModMain.SKILL_TREE_CAPABILITY);
         if (!oldCap.isPresent())
             return;
-        LazyOptional<ISkillTreeTracker> newCap = event.getPlayer().getCapability(ModMain.SKILLTREE_CAPABILITY);
+        LazyOptional<ISkillTreeTracker> newCap = event.getPlayer().getCapability(ModMain.SKILL_TREE_CAPABILITY);
         if (!newCap.isPresent())
             return;
         // TODO Add config for keep on death(Default: true)
@@ -90,7 +90,7 @@ public class CapabilitySkillHandler {
         @Nonnull
         @Override
         public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-            if (cap != ModMain.SKILLTREE_CAPABILITY)
+            if (cap != ModMain.SKILL_TREE_CAPABILITY)
                 return LazyOptional.empty();
             return LazyOptional.of(() -> skillHandler).cast();
         }

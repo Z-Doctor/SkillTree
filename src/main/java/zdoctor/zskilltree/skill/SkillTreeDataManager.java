@@ -63,7 +63,7 @@ public class SkillTreeDataManager {
 
 
     public Optional<ISkillTreeTracker> getSkillData(ServerPlayerEntity player) {
-        return player.getCapability(ModMain.SKILLTREE_CAPABILITY).resolve();
+        return player.getCapability(ModMain.SKILL_TREE_CAPABILITY).resolve();
     }
 
     public void reload() {

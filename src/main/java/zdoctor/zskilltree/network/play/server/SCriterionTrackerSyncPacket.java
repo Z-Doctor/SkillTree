@@ -60,7 +60,7 @@ public class SCriterionTrackerSyncPacket {
             LOGGER.error("Client sent Packet to Server");
         } else if (ctx.get().getDirection() == NetworkDirection.PLAY_TO_CLIENT) {
             LOGGER.debug("Server sent packet to client: " + Minecraft.getInstance().player);
-            Optional<ISkillTreeTracker> cap = Minecraft.getInstance().player.getCapability(ModMain.SKILLTREE_CAPABILITY).resolve();
+            Optional<ISkillTreeTracker> cap = Minecraft.getInstance().player.getCapability(ModMain.SKILL_TREE_CAPABILITY).resolve();
             if (cap.isPresent())
                 cap.get().read(msg);
             else
