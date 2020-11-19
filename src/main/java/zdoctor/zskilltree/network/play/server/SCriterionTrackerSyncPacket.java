@@ -45,6 +45,7 @@ public class SCriterionTrackerSyncPacket {
             this.trackableTypes.get(key).add(trackable);
         }
 
+        this.toAdd = toAdd;
         this.toRemove = toRemove;
         this.progressChanged = progressChanged;
     }

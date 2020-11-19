@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.handlers;
+package zdoctor.zskilltree.data.handlers;
 
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.Entity;

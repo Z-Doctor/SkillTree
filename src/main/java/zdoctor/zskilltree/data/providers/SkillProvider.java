@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.data;
+package zdoctor.zskilltree.data.providers;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
@@ -10,7 +10,7 @@ import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.skill.Skill;
-import zdoctor.zskilltree.test.TestSkills;
+import zdoctor.zskilltree.data.generators.SkillGenerator;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -23,7 +23,7 @@ public class SkillProvider implements IDataProvider {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().create();
     private final DataGenerator generator;
-    private final List<Consumer<Consumer<Skill>>> skills = ImmutableList.of(new TestSkills());
+    private final List<Consumer<Consumer<Skill>>> skills = ImmutableList.of(new SkillGenerator());
 
     public SkillProvider(DataGenerator generator) {
         this.generator = generator;

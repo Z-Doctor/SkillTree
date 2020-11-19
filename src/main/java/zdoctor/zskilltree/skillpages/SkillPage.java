@@ -5,7 +5,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.ICriterionInstance;
 import net.minecraft.advancements.IRequirementsStrategy;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.util.ITooltipFlag;
@@ -13,7 +12,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Rarity;
 import net.minecraft.loot.ConditionArrayParser;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.IItemProvider;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.IFormattableTextComponent;
@@ -30,23 +28,23 @@ import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.extra.ImageAsset;
 import zdoctor.zskilltree.skill.Skill;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 
 @ClassNameMapper(mapping = ModMain.MODID + "skill_page")
-public class SkillPage implements CriterionTracker {
+public class SkillPage implements CriterionTracker, Comparable<SkillPage> {
     public static final SkillPage NONE = new SkillPage();
     private static final SkillPageDisplayInfo MISSING = new SkillPageDisplayInfo(ItemStack.EMPTY,
             new TranslationTextComponent("skillpage.missing.title"),
             new TranslationTextComponent("skillpage.missing.description")
     ).setHidden();
     private final Map<ResourceLocation, Skill> children = new HashMap<>();
+
     private int index;
-    private Map<String, Criterion> criteria;
-    private String[][] requirements;
     private ResourceLocation id;
     private SkillPageDisplayInfo displayInfo;
+    private Map<String, Criterion> criteria;
+    private String[][] requirements;
 
     private SkillPage() {
         id = new ResourceLocation(ModMain.MODID, "empty");
@@ -55,19 +53,112 @@ public class SkillPage implements CriterionTracker {
         requirements = new String[0][];
     }
 
+    private SkillPage(SkillPage skillPage) {
+        index = skillPage.getIndex();
+        id = skillPage.getId();
+        displayInfo = skillPage.getDisplayInfo();
+        criteria = skillPage.getCriteria();
+        requirements = skillPage.getRequirements();
+    }
+
+    public SkillPage(PacketBuffer buf) {
+        readFrom(buf);
+    }
+
     public SkillPage(int index, ResourceLocation id, SkillPageDisplayInfo displayInfo, Map<String, Criterion> criteriaIn, String[][] requirementsIn) {
         this.id = id;
         this.displayInfo = displayInfo == null ? MISSING : displayInfo;
         this.index = index;
 
         this.criteria = ImmutableMap.copyOf(criteriaIn);
-        this.requirements = requirementsIn == null ? new String[0][] : requirementsIn;
+        if (requirementsIn == null)
+            if (this.criteria.isEmpty())
+                this.requirements = new String[0][];
+            else
+                this.requirements = IRequirementsStrategy.AND.createRequirements(this.criteria.keySet());
     }
 
-    public static SkillPage fromPacket(PacketBuffer buf) {
-        SkillPage page = new SkillPage();
-        page.readFrom(buf);
-        return page;
+    public static int compare(SkillPage in, SkillPage to) {
+        // Null values will be treated like they are bigger to be pushed down the list
+        if (in == null || to == null) {
+            if (in != null)
+                return -1;
+            else if (to != null)
+                return 1;
+            return 0;
+        }
+        return Integer.compareUnsigned(in.getIndex(), to.getIndex());
+    }
+
+    public static SkillPage deserialize(ResourceLocation id, JsonObject json, ConditionArrayParser conditionParser) {
+        int index = -1;
+        if (JSONUtils.hasField(json, "index"))
+            index = JSONUtils.getInt(json, "index");
+        SkillPageDisplayInfo displayInfo = null;
+        if (JSONUtils.hasField(json, "display")) {
+            displayInfo = SkillPageDisplayInfo.deserialize(JSONUtils.getJsonObject(json, "display"));
+        }
+
+        Map<String, Criterion> criterion = new HashMap<>();
+        String[][] requirements = null;
+
+        if (json.has("criteria")) {
+            criterion = Criterion.deserializeAll(JSONUtils.getJsonObject(json, "criteria"), conditionParser);
+            if (!criterion.isEmpty()) {
+                JsonArray jsonRequirements = JSONUtils.getJsonArray(json, "requirements", new JsonArray());
+                requirements = new String[jsonRequirements.size()][];
+
+                for (int i = 0; i < jsonRequirements.size(); ++i) {
+                    JsonArray requirement = JSONUtils.getJsonArray(jsonRequirements.get(i), "requirements[" + i + "]");
+                    requirements[i] = new String[requirement.size()];
+
+                    for (int j = 0; j < requirement.size(); ++j) {
+                        requirements[i][j] = JSONUtils.getString(requirement.get(j), "requirements[" + i + "][" + j + "]");
+                    }
+                }
+
+                if (requirements.length == 0) {
+                    requirements = new String[criterion.size()][];
+                    int k = 0;
+
+                    for (String s2 : criterion.keySet()) {
+                        requirements[k++] = new String[]{s2};
+                    }
+                }
+
+                for (String[] requirement : requirements) {
+                    if (requirement.length == 0 && criterion.isEmpty()) {
+                        throw new JsonSyntaxException("Requirement entry cannot be empty");
+                    }
+
+                    for (String s : requirement) {
+                        if (!criterion.containsKey(s)) {
+                            throw new JsonSyntaxException("Unknown required criterion '" + s + "'");
+                        }
+                    }
+                }
+
+                for (String s1 : criterion.keySet()) {
+                    boolean flag = false;
+
+                    for (String[] astring2 : requirements) {
+                        if (ArrayUtils.contains(astring2, s1)) {
+                            flag = true;
+                            break;
+                        }
+                    }
+
+                    if (!flag) {
+                        throw new JsonSyntaxException("Criterion '" + s1 + "' isn't a requirement for completion. This isn't supported behaviour, all criteria must be required.");
+                    }
+                }
+            }
+        }
+        return new SkillPage(index, id, displayInfo, criterion, requirements);
+    }
+
+    public void register(Consumer<SkillPage> consumer) {
+        consumer.accept(this);
     }
 
     @Override
@@ -125,6 +216,7 @@ public class SkillPage implements CriterionTracker {
         return id;
     }
 
+    @OnlyIn(Dist.CLIENT)
     public SkillPageDisplayInfo getDisplayInfo() {
         return displayInfo;
     }
@@ -134,6 +226,7 @@ public class SkillPage implements CriterionTracker {
         return this.index;
     }
 
+    @OnlyIn(Dist.CLIENT)
     public void setIndex(int index) {
         this.index = index;
     }
@@ -143,7 +236,6 @@ public class SkillPage implements CriterionTracker {
         return getDisplayInfo().getPageName();
     }
 
-    //
     @OnlyIn(Dist.CLIENT)
     public SkillPageAlignment getAlignment() {
         return displayInfo.getAlignment();
@@ -154,9 +246,6 @@ public class SkillPage implements CriterionTracker {
         return displayInfo.getIcon();
     }
 
-    //    @OnlyIn(Dist.CLIENT)
-//    public abstract ItemStack createIcon();
-//
     @OnlyIn(Dist.CLIENT)
     public ImageAsset getBackgroundImage() {
         return displayInfo.getBackground();
@@ -167,12 +256,38 @@ public class SkillPage implements CriterionTracker {
         return displayInfo.drawTitle();
     }
 
+    @OnlyIn(Dist.CLIENT)
     public int getLabelColor() {
         return 4210752;
     }
 
-    public Builder copy() {
-        return new Builder(index, this.displayInfo, criteria, requirements);
+    public JsonObject serialize() {
+        JsonObject jsonobject = new JsonObject();
+        jsonobject.addProperty("index", index);
+
+        if (getDisplayInfo() != null)
+            jsonobject.add("display", getDisplayInfo().serialize());
+
+        JsonObject criteriaObject = new JsonObject();
+        for (Map.Entry<String, Criterion> entry : getCriteria().entrySet())
+            criteriaObject.add(entry.getKey(), entry.getValue().serialize());
+        jsonobject.add("criteria", criteriaObject);
+
+        JsonArray requirementArray = new JsonArray();
+        for (String[] requirements : getRequirements()) {
+            JsonArray array = new JsonArray();
+            for (String requirement : requirements)
+                array.add(requirement);
+
+            requirementArray.add(array);
+        }
+        jsonobject.add("requirements", requirementArray);
+
+        return jsonobject;
+    }
+
+    public SkillPage copy() {
+        return new SkillPage(this);
     }
 
     @Override
@@ -227,251 +342,8 @@ public class SkillPage implements CriterionTracker {
         return list;
     }
 
-    public static class Builder implements Comparable<Builder> {
-        private int index = -1;
-        private SkillPageDisplayInfo display;
-        private Map<String, Criterion> criteria = new HashMap<>();
-        private String[][] requirements;
-        private IRequirementsStrategy requirementsStrategy = IRequirementsStrategy.AND;
-
-        private Builder(int index, @Nullable SkillPageDisplayInfo displayIn, Map<String, Criterion> criteriaIn, String[][] requirementsIn) {
-            this.index = index;
-            this.display = displayIn;
-            this.criteria = criteriaIn;
-            this.requirements = requirementsIn;
-        }
-
-        private Builder() {
-        }
-
-        public static Builder builder() {
-            return new Builder();
-        }
-
-        public static Builder deserialize(JsonObject json, ConditionArrayParser conditionParser) {
-            int index = -1;
-            if (JSONUtils.hasField(json, "index"))
-                index = JSONUtils.getInt(json, "index");
-            SkillPageDisplayInfo displayInfo = null;
-            if (JSONUtils.hasField(json, "display")) {
-                displayInfo = SkillPageDisplayInfo.deserialize(JSONUtils.getJsonObject(json, "display"));
-            }
-
-            Map<String, Criterion> criterion = new HashMap<>();
-            String[][] requirements = null;
-
-            if (json.has("criteria")) {
-                criterion = Criterion.deserializeAll(JSONUtils.getJsonObject(json, "criteria"), conditionParser);
-                if (!criterion.isEmpty()) {
-                    JsonArray jsonRequirements = JSONUtils.getJsonArray(json, "requirements", new JsonArray());
-                    requirements = new String[jsonRequirements.size()][];
-
-                    for (int i = 0; i < jsonRequirements.size(); ++i) {
-                        JsonArray requirement = JSONUtils.getJsonArray(jsonRequirements.get(i), "requirements[" + i + "]");
-                        requirements[i] = new String[requirement.size()];
-
-                        for (int j = 0; j < requirement.size(); ++j) {
-                            requirements[i][j] = JSONUtils.getString(requirement.get(j), "requirements[" + i + "][" + j + "]");
-                        }
-                    }
-
-                    if (requirements.length == 0) {
-                        requirements = new String[criterion.size()][];
-                        int k = 0;
-
-                        for (String s2 : criterion.keySet()) {
-                            requirements[k++] = new String[]{s2};
-                        }
-                    }
-
-                    for (String[] requirement : requirements) {
-                        if (requirement.length == 0 && criterion.isEmpty()) {
-                            throw new JsonSyntaxException("Requirement entry cannot be empty");
-                        }
-
-                        for (String s : requirement) {
-                            if (!criterion.containsKey(s)) {
-                                throw new JsonSyntaxException("Unknown required criterion '" + s + "'");
-                            }
-                        }
-                    }
-
-                    for (String s1 : criterion.keySet()) {
-                        boolean flag = false;
-
-                        for (String[] astring2 : requirements) {
-                            if (ArrayUtils.contains(astring2, s1)) {
-                                flag = true;
-                                break;
-                            }
-                        }
-
-                        if (!flag) {
-                            throw new JsonSyntaxException("Criterion '" + s1 + "' isn't a requirement for completion. This isn't supported behaviour, all criteria must be required.");
-                        }
-                    }
-                }
-            }
-            return new Builder(index, displayInfo, criterion, requirements);
-        }
-
-        public static Builder readFrom(PacketBuffer buf) {
-            int index = buf.readVarInt();
-            SkillPageDisplayInfo displayInfo = null;
-            if (buf.readBoolean())
-                displayInfo = SkillPageDisplayInfo.read(buf);
-
-            Map<String, Criterion> criteria = Criterion.criteriaFromNetwork(buf);
-            String[][] astring = new String[buf.readVarInt()][];
-
-            for (int i = 0; i < astring.length; ++i) {
-                astring[i] = new String[buf.readVarInt()];
-
-                for (int j = 0; j < astring[i].length; ++j) {
-                    astring[i][j] = buf.readString();
-                }
-            }
-
-            return new Builder(index, displayInfo, criteria, astring);
-        }
-
-        public static int compare(Builder in, Builder to) {
-            // Null values will be treated like they are bigger to be pushed down the list
-            if (in == null || to == null) {
-                if (in != null)
-                    return -1;
-                else if (to != null)
-                    return 1;
-                return 0;
-            }
-            return Integer.compareUnsigned(in.getIndex(), to.getIndex());
-        }
-
-        public Builder withCriterion(String key, ICriterionInstance criterionIn) {
-            return this.withCriterion(key, new Criterion(criterionIn));
-        }
-
-        public Builder withCriterion(String key, Criterion criterionIn) {
-            if (this.criteria.containsKey(key)) {
-                throw new IllegalArgumentException("Duplicate criterion " + key);
-            } else {
-                this.criteria.put(key, criterionIn);
-                return this;
-            }
-        }
-
-        public Builder withRequirementsStrategy(IRequirementsStrategy strategy) {
-            this.requirementsStrategy = strategy;
-            return this;
-        }
-
-        public Builder withDisplay(ItemStack icon, ITextComponent title, ITextComponent description, SkillPageAlignment alignment, ImageAsset background) {
-            return this.withDisplay(new SkillPageDisplayInfo(icon, title, description, background, alignment));
-        }
-
-        public Builder withDisplay(IItemProvider itemIn, ITextComponent title, ITextComponent description, ImageAsset background, SkillPageAlignment alignment) {
-            return this.withDisplay(new SkillPageDisplayInfo(new ItemStack(itemIn.asItem()), title, description, background, alignment));
-        }
-
-        public Builder withDisplay(ItemStack icon, String name) {
-            return withDisplay(icon, name, SkillPageAlignment.VERTICAL);
-        }
-
-        public Builder withDisplay(ItemStack icon, String name, SkillPageAlignment alignment) {
-            return withDisplay(new SkillPageDisplayInfo(icon,
-                    new TranslationTextComponent("skillpage." + name + ".title"),
-                    new TranslationTextComponent("skillpage." + name + ".description"),
-                    alignment));
-        }
-
-        public Builder withDisplay(SkillPageDisplayInfo displayIn) {
-            this.display = displayIn;
-            return this;
-        }
-
-        public Builder atIndex(int index) {
-            this.index = index;
-            return this;
-        }
-
-        public int getIndex() {
-            return index;
-        }
-
-        public JsonObject serialize() {
-            if (this.requirements == null) {
-                this.requirements = this.requirementsStrategy.createRequirements(this.criteria.keySet());
-            }
-
-            JsonObject jsonobject = new JsonObject();
-            jsonobject.addProperty("index", index);
-            if (this.display != null) {
-                jsonobject.add("display", this.display.serialize());
-            }
-
-            JsonObject jsonobject1 = new JsonObject();
-            for (Map.Entry<String, Criterion> entry : this.criteria.entrySet()) {
-                jsonobject1.add(entry.getKey(), entry.getValue().serialize());
-            }
-
-            jsonobject.add("criteria", jsonobject1);
-            JsonArray jsonarray1 = new JsonArray();
-            for (String[] astring : this.requirements) {
-                JsonArray jsonarray = new JsonArray();
-
-                for (String s : astring) {
-                    jsonarray.add(s);
-                }
-
-                jsonarray1.add(jsonarray);
-            }
-            jsonobject.add("requirements", jsonarray1);
-
-            return jsonobject;
-        }
-
-        public void writeTo(PacketBuffer buf) {
-            buf.writeVarInt(index);
-            if (this.display != null) {
-                buf.writeBoolean(true);
-                this.display.write(buf);
-            } else
-                buf.writeBoolean(false);
-
-            Criterion.serializeToNetwork(this.criteria, buf);
-            // TODO Check for 0?
-            int j = requirements == null ? 0 : requirements.length;
-            buf.writeVarInt(j);
-            if (j > 0)
-                for (String[] astring : this.requirements) {
-                    buf.writeVarInt(astring.length);
-
-                    for (String s : astring) {
-                        buf.writeString(s);
-                    }
-                }
-        }
-
-        public SkillPage build(ResourceLocation id) {
-            return new SkillPage(index, id, display, criteria, requirements);
-        }
-
-        public SkillPage register(Consumer<SkillPage> consumer, String id) {
-            SkillPage page = this.build(new ResourceLocation(ModMain.MODID, id));
-            consumer.accept(page);
-            return page;
-        }
-
-        @Override
-        public String toString() {
-            return "Skill Builder{" + "index=" + index +
-                    ", display=" + display +
-                    '}';
-        }
-
-        @Override
-        public int compareTo(Builder other) {
-            return Builder.compare(this, other);
-        }
+    @Override
+    public int compareTo(SkillPage other) {
+        return compare(this, other);
     }
 }

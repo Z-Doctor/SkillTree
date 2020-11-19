@@ -16,14 +16,14 @@ public class NetworkSerializationRegistry {
     }
 
 
-    public static <T, R> boolean register(Class<T> key, Function<PacketBuffer, R> reader, Class<R> returnType) {
-        if (!CLASS_MAPPER.containsKey(returnType))
+    public static <T, R> boolean register(Class<T> key, Function<PacketBuffer, R> reader, Class<R> mapKey) {
+        if (!CLASS_MAPPER.containsKey(mapKey))
             return false;
         ClassNameMapper mapping = key.getAnnotation(ClassNameMapper.class);
         if(mapping == null)
-            CLASS_MAPPER.get(returnType).put(key.getSimpleName(), reader);
+            CLASS_MAPPER.get(mapKey).put(key.getSimpleName(), reader);
         else
-            CLASS_MAPPER.get(returnType).putIfAbsent(mapping.mapping(), reader);
+            CLASS_MAPPER.get(mapKey).putIfAbsent(mapping.mapping(), reader);
         return true;
     }
 

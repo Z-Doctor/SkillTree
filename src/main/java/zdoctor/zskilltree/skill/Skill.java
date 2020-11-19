@@ -31,11 +31,15 @@ public class Skill implements CriterionTracker {
 
     private ResourceLocation pageId = SkillPage.NONE.getId();
 
-    public Skill() {
+    public Skill(PacketBuffer buf) {
+        readFrom(buf);
+    }
+
+    private Skill() {
 
     }
 
-    public Skill(ItemStack icon, String name, Map<String, Criterion> criteriaIn, String[][] requirementsIn) {
+    private Skill(ItemStack icon, String name, Map<String, Criterion> criteriaIn, String[][] requirementsIn) {
         this(new ResourceLocation(name), new SkillDisplayInfo(icon, new TranslationTextComponent("skill." + name + ".title"),
                 new TranslationTextComponent("skill." + name + ".description")), criteriaIn, requirementsIn);
     }
@@ -47,22 +51,22 @@ public class Skill implements CriterionTracker {
         this.requirements = requirementsIn;
     }
 
-//    @Override
+    @Override
     public ImmutableMap<String, Criterion> getCriteria() {
         return criteria;
     }
 
-//    @Override
+    @Override
     public String[][] getRequirements() {
         return requirements;
     }
 
-//    @Override
+    @Override
     public void writeTo(PacketBuffer buf) {
 
     }
 
-//    @Override
+    @Override
     public void readFrom(PacketBuffer buf) {
 
     }

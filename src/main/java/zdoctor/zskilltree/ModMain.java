@@ -29,13 +29,14 @@ import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.client.KeyBindings;
 import zdoctor.zskilltree.commands.SkillTreeCommand;
-import zdoctor.zskilltree.data.SkillPageProvider;
-import zdoctor.zskilltree.data.SkillProvider;
-import zdoctor.zskilltree.handlers.CapabilitySkillHandler;
-import zdoctor.zskilltree.manager.SkillManager;
-import zdoctor.zskilltree.manager.SkillPageManager;
+import zdoctor.zskilltree.data.providers.SkillPageProvider;
+import zdoctor.zskilltree.data.providers.SkillProvider;
+import zdoctor.zskilltree.data.handlers.CapabilitySkillHandler;
+import zdoctor.zskilltree.data.managers.SkillManager;
+import zdoctor.zskilltree.data.managers.SkillPageManager;
 import zdoctor.zskilltree.network.NetworkSerializationRegistry;
 import zdoctor.zskilltree.network.SkillTreePacketHandler;
+import zdoctor.zskilltree.skill.Skill;
 import zdoctor.zskilltree.skill.SkillTreeDataManager;
 import zdoctor.zskilltree.skillpages.SkillPage;
 
@@ -111,7 +112,8 @@ public final class ModMain {
         CapabilitySkillHandler.register();
         ExtendedCriteriaTriggers.init();
         criterionMappings = NetworkSerializationRegistry.registerMapping(CriterionTracker.class);
-        NetworkSerializationRegistry.register(SkillPage.class, SkillPage::fromPacket, CriterionTracker.class);
+        NetworkSerializationRegistry.register(SkillPage.class, SkillPage::new, CriterionTracker.class);
+        NetworkSerializationRegistry.register(Skill.class, Skill::new, CriterionTracker.class);
     }
 
     private void doClientStuff(final FMLClientSetupEvent event) {

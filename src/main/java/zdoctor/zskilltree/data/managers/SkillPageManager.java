@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.manager;
+package zdoctor.zskilltree.data.managers;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -54,8 +54,8 @@ public class SkillPageManager extends JsonReloadListener {
                 LOGGER.info("Opened: {}", getPreparedPath(location));
                 JsonObject jsonobject = JSONUtils.getJsonObject(page, "skill page");
 
-                SkillPage.Builder builder = SkillPage.Builder.deserialize(jsonobject, new ConditionArrayParser(location, this.lootPredicateManager));
-                newPages.put(location, builder.build(location));
+                SkillPage skillPage = SkillPage.deserialize(location, jsonobject, new ConditionArrayParser(location, this.lootPredicateManager));
+                newPages.put(location, skillPage);
                 LOGGER.info("Added page {}", location);
             } catch (IllegalArgumentException | JsonParseException exception) {
                 LOGGER.error("Parsing error loading custom skill page {}: {}", location, exception.getMessage());

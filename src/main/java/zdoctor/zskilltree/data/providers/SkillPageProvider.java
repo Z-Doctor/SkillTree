@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.data;
+package zdoctor.zskilltree.data.providers;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
@@ -10,7 +10,7 @@ import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.skillpages.SkillPage;
-import zdoctor.zskilltree.test.TestSkillPages;
+import zdoctor.zskilltree.data.generators.SkillPageGenerator;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -23,12 +23,15 @@ public class SkillPageProvider implements IDataProvider {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().create();
     private final DataGenerator generator;
-    private final List<Consumer<Consumer<SkillPage>>> pages = ImmutableList.of(new TestSkillPages());
+    private final List<Consumer<Consumer<SkillPage>>> pages = ImmutableList.of(new SkillPageGenerator());
 
     public SkillPageProvider(DataGenerator generator) {
         this.generator = generator;
     }
 
+    private static Path getPath(Path pathIn, SkillPage pageIn) {
+        return pathIn.resolve("data/" + pageIn.getId().getNamespace() + "/pages/" + pageIn.getId().getPath() + ".json");
+    }
 
     @Override
     public void act(DirectoryCache cache) throws IOException {
@@ -53,10 +56,6 @@ public class SkillPageProvider implements IDataProvider {
         for (Consumer<Consumer<SkillPage>> consumer1 : this.pages) {
             consumer1.accept(consumer);
         }
-    }
-
-    private static Path getPath(Path pathIn, SkillPage pageIn) {
-        return pathIn.resolve("data/" + pageIn.getId().getNamespace() + "/pages/" + pageIn.getId().getPath() + ".json");
     }
 
     @Override

@@ -5,19 +5,18 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
-import zdoctor.zskilltree.api.interfaces.IClientProgressTracker;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
-import zdoctor.zskilltree.handlers.SkillTreeTracker;
+import zdoctor.zskilltree.api.interfaces.IClientProgressTracker;
+import zdoctor.zskilltree.data.handlers.SkillTreeTracker;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
 import zdoctor.zskilltree.skillpages.SkillPage;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
-import java.util.Map;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientPlayerProgressTracker extends SkillTreeTracker implements IClientProgressTracker {
-    private final HashMap<ResourceLocation, SkillPage.Builder> pageBuilders = new HashMap<>();
+    private final HashMap<ResourceLocation, SkillPage> pages = new HashMap<>();
 
     private final HashMap<SkillPageAlignment, SkillPage[]> sorted_pages = new HashMap<>();
 
@@ -40,22 +39,18 @@ public class ClientPlayerProgressTracker extends SkillTreeTracker implements ICl
         completed.clear();
 
         if (packetIn.isFirstSync()) {
-            pageBuilders.clear();
+            pages.clear();
         }
 
-        for (CriterionTracker trackable : packetIn.getToAdd()) {
-            if (trackable instanceof SkillPage) {
-                SkillPage page = (SkillPage) trackable;
-                pageBuilders.put(page.getId(), page.copy());
-            }
-        }
+        for (CriterionTracker trackable : packetIn.getToAdd())
+            if (trackable instanceof SkillPage)
+                pages.put(trackable.getId(), (SkillPage) trackable);
 
-        packetIn.getToRemove().forEach(pageBuilders::remove);
+        packetIn.getToRemove().forEach(pages::remove);
 
-        pageBuilders.entrySet().stream().sorted(Map.Entry.comparingByValue(SkillPage.Builder::compare))
-                .forEach(entry -> {
-                    ResourceLocation id = entry.getKey();
-                    SkillPage skillPage = entry.getValue().build(id);
+        pages.values().stream().sorted(SkillPage::compare)
+                .forEach(page -> {
+                    SkillPage skillPage = page.copy();
                     addPageSafe(skillPage);
                     completed.add(skillPage);
                 });

@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.handlers;
+package zdoctor.zskilltree.data.handlers;
 
 import com.google.gson.JsonElement;
 import net.minecraft.advancements.*;
@@ -15,8 +15,6 @@ import zdoctor.zskilltree.skill.SkillTreeDataManager;
 import zdoctor.zskilltree.skillpages.SkillPage;
 import zdoctor.zskilltree.skillpages.SkillTreeListener;
 
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNullableByDefault;
 import java.io.File;
 import java.util.*;
 
