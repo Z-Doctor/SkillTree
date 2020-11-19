@@ -10,17 +10,19 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
+import zdoctor.zskilltree.api.annotations.ClassNameMapper;
+import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
-import zdoctor.zskilltree.api.interfaces.ITrackCriterion;
 import zdoctor.zskilltree.criterion.ProgressTracker;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class SSkillPageInfoPacket {
     private static final Logger LOGGER = LogManager.getLogger();
-    private Collection<ITrackCriterion> toAdd;
-    private Map<String, List<ITrackCriterion>> trackableTypes;
+    private Collection<CriterionTracker> toAdd;
+    private Map<String, List<CriterionTracker>> trackableTypes;
     private boolean firstSync;
     private Set<ResourceLocation> toRemove;
     private Map<ResourceLocation, ProgressTracker> progressChanged;
@@ -29,15 +31,19 @@ public class SSkillPageInfoPacket {
     public SSkillPageInfoPacket() {
     }
 
-    public SSkillPageInfoPacket(boolean firstSync, Collection<ITrackCriterion> toAdd, Set<ResourceLocation> toRemove, Map<ResourceLocation, ProgressTracker> progressChanged) {
+    public SSkillPageInfoPacket(boolean firstSync, Collection<CriterionTracker> toAdd, Set<ResourceLocation> toRemove, Map<ResourceLocation, ProgressTracker> progressChanged) {
         this.firstSync = firstSync;
         this.trackableTypes = new HashMap<>();
 
-        String className;
-        for (ITrackCriterion trackable : toAdd) {
-            className = trackable.getClass().getName();
-            this.trackableTypes.putIfAbsent(className, new ArrayList<>());
-            this.trackableTypes.get(className).add(trackable);
+        String key;
+        for (CriterionTracker trackable : toAdd) {
+            ClassNameMapper mapping = trackable.getClass().getAnnotation(ClassNameMapper.class);
+            if(mapping == null)
+                key = trackable.getClass().getSimpleName();
+            else
+                key = mapping.mapping();
+            this.trackableTypes.putIfAbsent(key, new ArrayList<>());
+            this.trackableTypes.get(key).add(trackable);
         }
 
         this.toRemove = toRemove;
@@ -72,24 +78,25 @@ public class SSkillPageInfoPacket {
         this.toRemove = new HashSet<>();
         this.progressChanged = new HashMap<>();
 
-        int count;
+        int count, blockEnd, nextBlock;
         for (count = buf.readVarInt(); count > 0; count--) {
-            String className = buf.readString();
+            String type = buf.readString();
+            blockEnd = buf.readerIndex() + buf.readInt();
+            Function<PacketBuffer, CriterionTracker> reader = ModMain.getInstance().getCriterionMappings().get(type);
+            if (reader == null) {
+                LOGGER.error("Skipping: Unable to find reader for type {}", type);
+                buf.readerIndex(blockEnd);
+                continue;
+            }
 
-            int start, size;
             for (int i = buf.readVarInt(); i > 0; i--) {
-                start = buf.readerIndex();
-                size = buf.readInt();
+                nextBlock = buf.readerIndex() + buf.readInt();
                 try {
-                    // TODO Check for static read from
-                    ITrackCriterion trackable = (ITrackCriterion) Class.forName(className).newInstance();
-//                    ResourceLocation id = buf.readResourceLocation();
-                    trackable.readFrom(buf);
-                    toAdd.add(trackable);
-//                    trackableTypes.put(id, trackable);
-                } catch (IllegalAccessException | InstantiationException | ClassNotFoundException e) {
-                    LOGGER.error("Ran into error {}: skipping", e.getLocalizedMessage());
-                    buf.readerIndex(start + size);
+                    toAdd.add(reader.apply(buf));
+                } catch (Exception e) {
+                    LOGGER.error("Skipping: Ran into error {} when paring item of {}", e.getLocalizedMessage()
+                            , type);
+                    buf.readerIndex(nextBlock);
                 }
             }
 
@@ -110,21 +117,29 @@ public class SSkillPageInfoPacket {
         buf.writeBoolean(firstSync);
         buf.writeVarInt(trackableTypes.size());
 
-        int blockSize, start;
-        for (Map.Entry<String, List<ITrackCriterion>> entry : trackableTypes.entrySet()) {
+        int blockSize, blockStart;
+        for (Map.Entry<String, List<CriterionTracker>> entry : trackableTypes.entrySet()) {
             buf.writeString(entry.getKey());
+            blockStart = buf.writerIndex();
+            buf.writeInt(0);
             buf.writeVarInt(entry.getValue().size());
-            for (ITrackCriterion trackable : entry.getValue()) {
+
+            int size, start;
+            for (CriterionTracker trackable : entry.getValue()) {
                 start = buf.writerIndex();
                 buf.writeInt(0);
-//                buf.writeResourceLocation(trackable.getId());
                 trackable.writeTo(buf);
-                blockSize = buf.writerIndex() - start;
+                size = buf.writerIndex() - start;
                 buf.markWriterIndex();
                 buf.writerIndex(start);
-                buf.writeInt(blockSize);
+                buf.writeInt(size);
                 buf.resetWriterIndex();
             }
+            blockSize = buf.writerIndex() - blockStart;
+            buf.markWriterIndex();
+            buf.writerIndex(blockStart);
+            buf.writeInt(blockSize);
+            buf.resetWriterIndex();
         }
 
         buf.writeVarInt(toRemove.size());
@@ -139,7 +154,7 @@ public class SSkillPageInfoPacket {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public Collection<ITrackCriterion> getToAdd() {
+    public Collection<CriterionTracker> getToAdd() {
         return toAdd;
     }
 

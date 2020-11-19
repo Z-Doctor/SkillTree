@@ -6,7 +6,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.api.interfaces.IClientProgressTracker;
-import zdoctor.zskilltree.api.interfaces.ITrackCriterion;
+import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.handlers.SkillTreeTracker;
 import zdoctor.zskilltree.network.play.server.SSkillPageInfoPacket;
 import zdoctor.zskilltree.skillpages.SkillPage;
@@ -37,7 +37,7 @@ public class ClientPlayerProgressTracker extends SkillTreeTracker implements ICl
             sorted_pages.put(value, new SkillPage[0]);
         }
 
-        visible.clear();
+        completed.clear();
 
         if (packetIn.isFirstSync()) {
             pageBuilders.clear();
@@ -49,7 +49,7 @@ public class ClientPlayerProgressTracker extends SkillTreeTracker implements ICl
 //            }
 //        });
 
-        for (ITrackCriterion trackable : packetIn.getToAdd()) {
+        for (CriterionTracker trackable : packetIn.getToAdd()) {
             if (trackable instanceof SkillPage) {
                 SkillPage page = (SkillPage) trackable;
                 pageBuilders.put(page.getId(), page.copy());
@@ -63,7 +63,7 @@ public class ClientPlayerProgressTracker extends SkillTreeTracker implements ICl
                     ResourceLocation id = entry.getKey();
                     SkillPage skillPage = entry.getValue().build(id);
                     addPageSafe(skillPage);
-                    visible.add(skillPage);
+                    completed.add(skillPage);
                 });
 
         maxHorizontal = sorted_pages.get(SkillPageAlignment.HORIZONTAL).length;
@@ -95,7 +95,7 @@ public class ClientPlayerProgressTracker extends SkillTreeTracker implements ICl
     public void setListener(IListener listener) {
         this.listener = listener;
         if (listener != null) {
-            visible.forEach(trackable -> {
+            completed.forEach(trackable -> {
                 if (trackable instanceof SkillPage)
                     listener.skillPageAdded((SkillPage) trackable);
             });

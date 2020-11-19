@@ -12,7 +12,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import zdoctor.zskilltree.ModMain;
-import zdoctor.zskilltree.api.interfaces.ITrackCriterion;
 import zdoctor.zskilltree.client.gui.ImageAssets;
 import zdoctor.zskilltree.extra.ImageAsset;
 import zdoctor.zskilltree.skillpages.SkillPage;
@@ -22,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class Skill implements ITrackCriterion {
+public class Skill {
     private ResourceLocation id;
     private SkillDisplayInfo displayInfo;
 
@@ -47,22 +46,22 @@ public class Skill implements ITrackCriterion {
         this.requirements = requirementsIn;
     }
 
-    @Override
+//    @Override
     public ImmutableMap<String, Criterion> getCriteria() {
         return criteria;
     }
 
-    @Override
+//    @Override
     public String[][] getRequirements() {
         return requirements;
     }
 
-    @Override
+//    @Override
     public void writeTo(PacketBuffer buf) {
 
     }
 
-    @Override
+//    @Override
     public void readFrom(PacketBuffer buf) {
 
     }

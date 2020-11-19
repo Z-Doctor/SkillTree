@@ -5,7 +5,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.ICriterionInstance;
 import net.minecraft.advancements.IRequirementsStrategy;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
@@ -25,8 +24,9 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.ArrayUtils;
 import zdoctor.zskilltree.ModMain;
+import zdoctor.zskilltree.api.annotations.ClassNameMapper;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
-import zdoctor.zskilltree.api.interfaces.ITrackCriterion;
+import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.extra.ImageAsset;
 import zdoctor.zskilltree.skill.Skill;
 
@@ -34,7 +34,8 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 
-public class SkillPage implements ITrackCriterion {
+@ClassNameMapper(mapping = ModMain.MODID + "skill_page")
+public class SkillPage implements CriterionTracker {
     public static final SkillPage NONE = new SkillPage();
     private static final SkillPageDisplayInfo MISSING = new SkillPageDisplayInfo(ItemStack.EMPTY,
             new TranslationTextComponent("skillpage.missing.title"),
@@ -61,6 +62,12 @@ public class SkillPage implements ITrackCriterion {
 
         this.criteria = ImmutableMap.copyOf(criteriaIn);
         this.requirements = requirementsIn == null ? new String[0][] : requirementsIn;
+    }
+
+    public static SkillPage fromPacket(PacketBuffer buf) {
+        SkillPage page = new SkillPage();
+        page.readFrom(buf);
+        return page;
     }
 
     public Map<String, Criterion> getCriteria() {
@@ -97,7 +104,7 @@ public class SkillPage implements ITrackCriterion {
     public void readFrom(PacketBuffer buf) {
         id = buf.readResourceLocation();
         index = buf.readVarInt();
-        if(buf.readBoolean())
+        if (buf.readBoolean())
             displayInfo = SkillPageDisplayInfo.read(buf);
 
         criteria = Criterion.criteriaFromNetwork(buf);
@@ -111,6 +118,7 @@ public class SkillPage implements ITrackCriterion {
         }
     }
 
+    @Override
     public ResourceLocation getId() {
         return id;
     }

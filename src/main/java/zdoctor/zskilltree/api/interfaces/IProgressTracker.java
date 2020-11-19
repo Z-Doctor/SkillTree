@@ -8,29 +8,29 @@ import zdoctor.zskilltree.criterion.ProgressTracker;
 import java.util.Map;
 
 public interface IProgressTracker<T extends INBT> extends INBTSerializable<T> {
-    boolean grant(ITrackCriterion page);
+    boolean grant(CriterionTracker page);
 
-    boolean revoke(ITrackCriterion page);
+    boolean revoke(CriterionTracker page);
 
-    boolean grantCriterion(ITrackCriterion trackable, String criterionKey);
+    boolean grantCriterion(CriterionTracker trackable, String criterionKey);
 
-    boolean revokeCriterion(ITrackCriterion page, String criterionKey);
+    boolean revokeCriterion(CriterionTracker page, String criterionKey);
 
-    boolean startProgress(ITrackCriterion trackable);
+    boolean startProgress(CriterionTracker trackable);
 
-    ProgressTracker stopTracking(ITrackCriterion trackable);
+    ProgressTracker stopTracking(CriterionTracker trackable);
 
-    void update(ITrackCriterion trackable, Map<String, Criterion> criterion, String[][] requirements);
+    void update(CriterionTracker trackable, Map<String, Criterion> criterion, String[][] requirements);
 
-    boolean hasProgress(ITrackCriterion trackable);
+    boolean hasProgress(CriterionTracker trackable);
 
-    ProgressTracker getProgress(ITrackCriterion trackable);
+    ProgressTracker getProgress(CriterionTracker trackable);
 
-    Iterable<ITrackCriterion> getTrackers();
+    Iterable<CriterionTracker> getTrackers();
 
     Iterable<ProgressTracker> getAllProgress();
 
-    boolean contains(ITrackCriterion trackable);
+    boolean contains(CriterionTracker trackable);
 
     void dispose();
 

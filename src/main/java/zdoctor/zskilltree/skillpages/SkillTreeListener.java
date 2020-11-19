@@ -3,15 +3,15 @@ package zdoctor.zskilltree.skillpages;
 import net.minecraft.advancements.ICriterionInstance;
 import net.minecraft.advancements.ICriterionTrigger;
 import net.minecraft.advancements.PlayerAdvancements;
-import zdoctor.zskilltree.api.interfaces.ITrackCriterion;
+import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.handlers.PlayerSkillTreeTracker;
 
 public class SkillTreeListener<T extends ICriterionInstance> extends ICriterionTrigger.Listener<T> {
     private final T criterionInstance;
-    private final ITrackCriterion trackable;
+    private final CriterionTracker trackable;
     private final String criterionName;
 
-    public SkillTreeListener(T criterionInstanceIn, ITrackCriterion trackableIn, String criterionNameIn) {
+    public SkillTreeListener(T criterionInstanceIn, CriterionTracker trackableIn, String criterionNameIn) {
         super(criterionInstanceIn, null, criterionNameIn);
         this.criterionInstance = criterionInstanceIn;
         this.trackable = trackableIn;

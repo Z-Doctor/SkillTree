@@ -7,7 +7,7 @@ import net.minecraft.profiler.IProfiler;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.PacketDistributor;
-import zdoctor.zskilltree.api.interfaces.ITrackCriterion;
+import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.criterion.ProgressTracker;
 import zdoctor.zskilltree.network.ZSkillTreePacketHandler;
 import zdoctor.zskilltree.network.play.server.SSkillPageInfoPacket;
@@ -45,12 +45,12 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
             checkPageVisibility();
             if (owner instanceof ServerPlayerEntity) {
                 LOGGER.debug("Syncing player data to client {}", owner.getDisplayName().getString());
-                Set<ITrackCriterion> toAdd = new HashSet<>(visibilityChanged);
-                toAdd.retainAll(visible);
-                visibilityChanged.removeAll(toAdd);
+                Set<CriterionTracker> toAdd = new HashSet<>(completionChanged);
+                toAdd.retainAll(completed);
+                completionChanged.removeAll(toAdd);
 
                 Set<ResourceLocation> toRemove = new HashSet<>();
-                visibilityChanged.forEach(page -> toRemove.add(page.getId()));
+                completionChanged.forEach(page -> toRemove.add(page.getId()));
 
                 Map<ResourceLocation, ProgressTracker> progressUpdate = new HashMap<>();
                 progressChanged.forEach(trackable -> progressUpdate.put(trackable.getId(), getProgress(trackable)));
@@ -69,7 +69,7 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
 
             firstSync = false;
             progressChanged.clear();
-            visibilityChanged.clear();
+            completionChanged.clear();
         }
     }
 
@@ -90,7 +90,7 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
         }
     }
 
-    protected void registerListeners(ITrackCriterion trackable) {
+    protected void registerListeners(CriterionTracker trackable) {
         ProgressTracker progress = getProgress(trackable);
         if (!progress.isDone()) {
             for (Map.Entry<String, Criterion> entry : trackable.getCriteria().entrySet()) {
@@ -109,7 +109,7 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
         }
     }
 
-    protected void unregisterListeners(ITrackCriterion trackable) {
+    protected void unregisterListeners(CriterionTracker trackable) {
         ProgressTracker progress = getProgress(trackable);
 
         for (Map.Entry<String, Criterion> entry : trackable.getCriteria().entrySet()) {

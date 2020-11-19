@@ -1,16 +1,13 @@
 package zdoctor.zskilltree.skill;
 
 import com.google.common.collect.ImmutableMap;
-import net.minecraft.client.resources.ReloadListener;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.profiler.IProfiler;
-import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
-import zdoctor.zskilltree.api.interfaces.ITrackCriterion;
+import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.manager.SkillPageManager;
 
 import java.util.HashMap;
@@ -20,10 +17,10 @@ import java.util.UUID;
 
 public class SkillTreeDataManager {
     private static final Logger LOGGER = LogManager.getLogger();
-    private static ImmutableMap<ResourceLocation, ITrackCriterion> trackers;
+    private static ImmutableMap<ResourceLocation, CriterionTracker> trackers;
     private final HashMap<UUID, ISkillTreeTracker> playerData = new HashMap<>();
 
-    public static ImmutableMap<ResourceLocation, ITrackCriterion> getAllTrackers() {
+    public static ImmutableMap<ResourceLocation, CriterionTracker> getAllTrackers() {
         return trackers;
     }
 
@@ -32,9 +29,9 @@ public class SkillTreeDataManager {
     }
 
     private static void updateAllTrackers() {
-        Map<ResourceLocation, ITrackCriterion> temp = new HashMap<>();
+        Map<ResourceLocation, CriterionTracker> temp = new HashMap<>();
         temp.putAll(ModMain.getInstance().getSkillPageManager().getAllEntries());
-        temp.putAll(ModMain.getInstance().getSkillManager().getAllEntries());
+//        temp.putAll(ModMain.getInstance().getSkillManager().getAllEntries());
         trackers = ImmutableMap.copyOf(temp);
     }
 

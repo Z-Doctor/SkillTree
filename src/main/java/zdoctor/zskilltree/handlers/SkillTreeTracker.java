@@ -10,7 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
-import zdoctor.zskilltree.api.interfaces.ITrackCriterion;
+import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.criterion.ProgressTracker;
 import zdoctor.zskilltree.network.play.server.SSkillPageInfoPacket;
 import zdoctor.zskilltree.skill.SkillTreeDataManager;
@@ -21,10 +21,10 @@ import java.util.stream.Collectors;
 public class SkillTreeTracker implements ISkillTreeTracker {
     protected static final Logger LOGGER = LogManager.getLogger();
 
-    protected final Set<ITrackCriterion> visible = new HashSet<>();
-    protected final Set<ITrackCriterion> visibilityChanged = new HashSet<>();
-    protected final Set<ITrackCriterion> progressChanged = new HashSet<>();
-    protected final HashMap<ITrackCriterion, ProgressTracker> progressTracker = new HashMap<>();
+    protected final Set<CriterionTracker> completed = new HashSet<>();
+    protected final Set<CriterionTracker> completionChanged = new HashSet<>();
+    protected final Set<CriterionTracker> progressChanged = new HashSet<>();
+    protected final HashMap<CriterionTracker, ProgressTracker> progressTracker = new HashMap<>();
 
     protected boolean firstSync = true;
     protected LivingEntity owner;
@@ -41,7 +41,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
      * Checks to see if the trackable exists without registering one if missing
      */
     @Override
-    public boolean contains(ITrackCriterion trackable) {
+    public boolean contains(CriterionTracker trackable) {
         return progressTracker.get(trackable) != null;
     }
 
@@ -49,7 +49,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
      * Checks to see if the trackable exists and has progress
      */
     @Override
-    public boolean hasProgress(ITrackCriterion trackable) {
+    public boolean hasProgress(CriterionTracker trackable) {
         ProgressTracker progress = progressTracker.get(trackable);
         return progress != null && progress.hasProgress();
     }
@@ -60,7 +60,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     }
 
     @Override
-    public boolean startProgress(ITrackCriterion trackable) {
+    public boolean startProgress(CriterionTracker trackable) {
         ProgressTracker progress = getProgress(trackable);
         if (progress != null)
             return false;
@@ -69,18 +69,18 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     }
 
     @Override
-    public ProgressTracker stopTracking(ITrackCriterion trackable) {
+    public ProgressTracker stopTracking(CriterionTracker trackable) {
         return progressTracker.remove(trackable);
     }
 
-    protected void startProgress(ITrackCriterion trackable, ProgressTracker progress) {
+    protected void startProgress(CriterionTracker trackable, ProgressTracker progress) {
         progress.update(trackable.getCriteria(), trackable.getRequirements());
         progressTracker.put(trackable, progress);
         progressChanged.add(trackable);
     }
 
     @Override
-    public void update(ITrackCriterion trackable, Map<String, Criterion> criterion, String[][] requirements) {
+    public void update(CriterionTracker trackable, Map<String, Criterion> criterion, String[][] requirements) {
         ProgressTracker progress = getProgress(trackable);
         if (progress != null) {
             progress.update(criterion, requirements);
@@ -88,12 +88,12 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     }
 
     @Override
-    public ProgressTracker getProgress(ITrackCriterion trackable) {
+    public ProgressTracker getProgress(CriterionTracker trackable) {
         return progressTracker.get(trackable);
     }
 
     @Override
-    public boolean grant(ITrackCriterion trackable) {
+    public boolean grant(CriterionTracker trackable) {
         ProgressTracker progress = getProgress(trackable);
         if (progress.isDone())
             return false;
@@ -109,7 +109,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     }
 
     @Override
-    public boolean revoke(ITrackCriterion trackable) {
+    public boolean revoke(CriterionTracker trackable) {
         ProgressTracker progress = getProgress(trackable);
         boolean flag = progress.isDone();
         if (!progress.hasProgress())
@@ -122,7 +122,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     }
 
     @Override
-    public boolean grantCriterion(ITrackCriterion trackable, String criterionKey) {
+    public boolean grantCriterion(CriterionTracker trackable, String criterionKey) {
         ProgressTracker progress = getProgress(trackable);
         if (progress.isDone())
             return false;
@@ -135,7 +135,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     }
 
     @Override
-    public boolean revokeCriterion(ITrackCriterion trackable, String criterionKey) {
+    public boolean revokeCriterion(CriterionTracker trackable, String criterionKey) {
         ProgressTracker progress = getProgress(trackable);
         boolean flag = progress.isDone();
         if (progress.revokeCriterion(criterionKey)) {
@@ -147,22 +147,22 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         return false;
     }
 
-    protected void onProgressCompleted(ITrackCriterion trackable) {
+    protected void onProgressCompleted(CriterionTracker trackable) {
         // TODO Add toast and chat announcement to options
         // TODO Event for when a skill page is unlocked
 //        MinecraftForge.EVENT_BUS.post(new SkillPageEvent.SkillPageGrantedEvent(owner, page));
     }
 
-    protected void onProgressRevoked(ITrackCriterion trackable) {
+    protected void onProgressRevoked(CriterionTracker trackable) {
 //        MinecraftForge.EVENT_BUS.post(new SkillPageEvent.SkillPageRevokedEvent(owner, page));
     }
 
     public <T> List<T> get(Class<T> filter) {
-        return visible.stream().filter(filter::isInstance).map(filter::cast).collect(Collectors.toList());
+        return completed.stream().filter(filter::isInstance).map(filter::cast).collect(Collectors.toList());
     }
 
     @Override
-    public Iterable<ITrackCriterion> getTrackers() {
+    public Iterable<CriterionTracker> getTrackers() {
         return progressTracker.keySet();
     }
 
@@ -177,7 +177,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         ListNBT progressList = new ListNBT();
 
         skillTreeData.put("progressList", progressList);
-        for (Map.Entry<ITrackCriterion, ProgressTracker> entry : progressTracker.entrySet()) {
+        for (Map.Entry<CriterionTracker, ProgressTracker> entry : progressTracker.entrySet()) {
             ProgressTracker progress = entry.getValue();
             if (!progress.hasProgress())
                 continue;
@@ -195,13 +195,13 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     public void deserializeNBT(CompoundNBT nbt) {
         dispose();
         reset();
-        final Map<ResourceLocation, ITrackCriterion> allEntries = new HashMap<>();
+        final Map<ResourceLocation, CriterionTracker> allEntries = new HashMap<>();
         allEntries.putAll(ModMain.getInstance().getSkillPageManager().getAllEntries());
-        allEntries.putAll(ModMain.getInstance().getSkillManager().getAllEntries());
+//        allEntries.putAll(ModMain.getInstance().getSkillManager().getAllEntries());
 
         nbt.getList("progressList", Constants.NBT.TAG_COMPOUND).stream().map(tag -> (CompoundNBT) tag).forEach(data -> {
             ResourceLocation id = new ResourceLocation(data.getString("id"));
-            ITrackCriterion trackable = allEntries.get(id);
+            CriterionTracker trackable = allEntries.get(id);
             ProgressTracker progress = getProgress(trackable);
             if (progress == null)
                 startProgress(trackable);
@@ -219,8 +219,8 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     }
 
     protected void reset() {
-        visible.clear();
-        visibilityChanged.clear();
+        completed.clear();
+        completionChanged.clear();
         progressChanged.clear();
 
         firstSync = true;
@@ -241,17 +241,17 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         boolean doneFlag;
         ProgressTracker progress;
 
-        for (ITrackCriterion trackable : progressChanged) {
-            visibleFlag = visible.contains(trackable);
+        for (CriterionTracker trackable : progressChanged) {
+            visibleFlag = completed.contains(trackable);
             progress = getProgress(trackable);
             doneFlag = progress != null && progress.isDone();
 
             if (visibleFlag && !doneFlag) {
-                visible.remove(trackable);
-                visibilityChanged.add(trackable);
+                completed.remove(trackable);
+                completionChanged.add(trackable);
             } else if (!visibleFlag && doneFlag) {
-                visible.add(trackable);
-                visibilityChanged.add(trackable);
+                completed.add(trackable);
+                completionChanged.add(trackable);
             }
         }
     }
@@ -259,8 +259,8 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     @Override
     public void reload() {
         reset();
-        HashSet<ITrackCriterion> missingTrackers = new HashSet<>(progressTracker.keySet());
-        for (ITrackCriterion trackable : SkillTreeDataManager.getAllTrackers().values()) {
+        HashSet<CriterionTracker> missingTrackers = new HashSet<>(progressTracker.keySet());
+        for (CriterionTracker trackable : SkillTreeDataManager.getAllTrackers().values()) {
             missingTrackers.remove(trackable);
             ProgressTracker progress = getProgress(trackable);
             if (progress == null)
@@ -270,7 +270,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
                 progressChanged.add(trackable);
             }
         }
-        visibilityChanged.addAll(missingTrackers);
+        completionChanged.addAll(missingTrackers);
         missingTrackers.forEach(progressTracker::remove);
     }
 
@@ -287,7 +287,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
 
             firstSync = false;
             progressChanged.clear();
-            visibilityChanged.clear();
+            completionChanged.clear();
         }
     }
 

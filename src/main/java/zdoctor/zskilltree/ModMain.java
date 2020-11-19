@@ -1,10 +1,9 @@
 package zdoctor.zskilltree;
 
 import net.minecraft.client.resources.ReloadListener;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.loot.LootPredicateManager;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.resources.IResourceManager;
 import net.minecraftforge.common.MinecraftForge;
@@ -22,10 +21,10 @@ import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DataSerializerEntry;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.advancements.ExtendedCriteriaTriggers;
+import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.client.KeyBindings;
 import zdoctor.zskilltree.commands.SkillTreeCommand;
@@ -34,8 +33,13 @@ import zdoctor.zskilltree.data.SkillProvider;
 import zdoctor.zskilltree.handlers.CapabilitySkillHandler;
 import zdoctor.zskilltree.manager.SkillManager;
 import zdoctor.zskilltree.manager.SkillPageManager;
+import zdoctor.zskilltree.network.NetworkSerializationRegistry;
 import zdoctor.zskilltree.network.ZSkillTreePacketHandler;
 import zdoctor.zskilltree.skill.SkillTreeDataManager;
+import zdoctor.zskilltree.skillpages.SkillPage;
+
+import java.util.Map;
+import java.util.function.Function;
 
 @Mod(ModMain.MODID)
 public final class ModMain {
@@ -48,6 +52,7 @@ public final class ModMain {
     private SkillTreeDataManager skillTreeDataManager;
     private SkillPageManager skillPageManager;
     private SkillManager skillManager;
+    private Map<String, Function<PacketBuffer, CriterionTracker>> criterionMappings;
 
     public ModMain() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
@@ -83,6 +88,10 @@ public final class ModMain {
         return skillTreeDataManager;
     }
 
+    public Map<String, Function<PacketBuffer, CriterionTracker>> getCriterionMappings() {
+        return criterionMappings;
+    }
+
     private void createProviders(GatherDataEvent event) {
         event.getGenerator().addProvider(new SkillPageProvider(event.getGenerator()));
         event.getGenerator().addProvider(new SkillProvider(event.getGenerator()));
@@ -92,6 +101,8 @@ public final class ModMain {
         ZSkillTreePacketHandler.registerPackets();
         CapabilitySkillHandler.register();
         ExtendedCriteriaTriggers.init();
+        criterionMappings = NetworkSerializationRegistry.registerMapping(CriterionTracker.class);
+        NetworkSerializationRegistry.register(SkillPage.class, SkillPage::fromPacket, CriterionTracker.class);
     }
 
     private void doClientStuff(final FMLClientSetupEvent event) {
