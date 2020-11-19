@@ -1,0 +1,7 @@
+{
+    "pack": {
+        "description": "Skill Tree",
+        "pack_format": 3,
+        "_comment": "Everything should be lowercase: including lang files"
+    }
+}

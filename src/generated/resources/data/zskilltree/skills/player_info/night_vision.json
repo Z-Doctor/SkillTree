@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "item": "minecraft:potion",
+      "nbt": "{Potion:night_vision}"
+    },
+    "title": {
+      "translate": "skill.night_vision.title"
+    },
+    "description": {
+      "translate": "skill.night_vision.description"
+    },
+    "frame": {
+      "texture": "zskilltree:textures/gui/skill_tree.png",
+      "data": {
+        "x": 51,
+        "y": 72,
+        "u": 72,
+        "v": 166
+      }
+    }
+  }
+}

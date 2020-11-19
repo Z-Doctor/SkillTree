@@ -1,0 +1,79 @@
+Checklist for progression:
+    * Project builds
+    * Mod runs on client
+    * Mod can run on server
+
+Phase One:
+    * Setup Packet Procedure *
+        - Setup Packet Channel
+        - Made Packet Sync Skills
+    * Setup Keybinds Procedure *
+        - Bound Skill Tree button
+        - Added binding for recentering
+    * Setup Proxy(?) * Not Need
+    * Setup Capabilities Framework *
+        - Attached Capability to entities
+    * ImageAsset class (for GUI rendering) *
+        - Made ImageDisplayInfo
+        - Made GuiSkillTree class
+
+
+Phase Two:
+    * Move skill tree to server like advancements and have client get updated via data packets to allow custom creation *
+        - Datapacks can be used to add or modify skill pages -
+        - Reloading will update them in realtime (if game isn't paused) and some QOL for users when updating -
+    * Make ImageAsset and ImageDisplayInfo serializable in json format *
+    * Create Skill Pages *
+        - Be able to make them from json -
+    * Make sure packet syncs *
+    * Setup Skill Page Rendering *
+        - Created Image Assets for tabs and window -
+        - Create SkillPage class -
+        - Render Tabs for each skill page -
+        - Be able to select tabs -
+        - Be able to navigate pages of tabs -
+        - Custom backgrounds -
+        - Persistent tab selection -
+        - Multiple tab pages -
+        - Tab ordering -
+
+Phase Three:
+    * Skill Commands
+        - Grant Skill (single, branch, related, etc)
+            * single *
+            * branch
+            * related
+            * etc
+        - Revoke Skill(single, branch, related, etc)
+        - Grant Skill Tree
+    * Expand Capabilities
+        - Skill Points
+    * Create Skill Handler *
+    * Add tags to advancements to award skill points
+     * Create Skills
+        - Render skills of page
+        - Setup so skill position and config in json (maybe)
+
+Unknown Phase - Example Mode:
+    * Add advancement for making a crafting table (if one is not already there) used to trigger the addition
+        of a skill page for crafting based skills
+    * On github site create a skill page generator that can help create a skill tree by creating a preview
+    * Create a mod that when a mob kills the player they earn skill points and can use those points to level up skills
+       or attributes as well as become named and don't despawn.
+
+Skill Functionality
+    * Needs to be able to be rendered on the SkillTreee
+    * Have dynamic and extensible requirements that can be made for the skill
+        - Perhaps a system similar to the loot system if not a compatible one
+    * Still work if modders extend the skill
+
+Middle:
+    * Events
+        - Attach event
+    * Config
+        - Keep skills on death
+        - Starting Skill points
+    * Setup GUI Screens
+End:
+    * Help Screen
+    * Item Requirements for skills
