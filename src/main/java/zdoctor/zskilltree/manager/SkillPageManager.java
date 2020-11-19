@@ -12,10 +12,11 @@ import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import zdoctor.zskilltree.skill.SkillTreeDataManager;
 import zdoctor.zskilltree.skillpages.SkillPage;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 // TODO Add hard coded way to add more(?) perhaps through an event
 // TODO Make it so new pages don't override the last page for values not defined by default
@@ -27,7 +28,6 @@ public class SkillPageManager extends JsonReloadListener {
     private final SkillManager skillManager;
     private final LootPredicateManager lootPredicateManager;
     private HashMap<ResourceLocation, SkillPage> pages = new HashMap<>();
-    private SkillTreeDataManager skillTreeDataManager;
 
     public SkillPageManager(SkillManager skillManager, LootPredicateManager lootPredicateManager) {
         super(GSON, "pages");
@@ -38,10 +38,6 @@ public class SkillPageManager extends JsonReloadListener {
 
     public SkillPage getPage(ResourceLocation id) {
         return pages.get(id);
-    }
-
-    public void setPlayerSkillDataManager(SkillTreeDataManager skillTreeDataManager) {
-        this.skillTreeDataManager = skillTreeDataManager;
     }
 
     public void reset() {
@@ -77,8 +73,6 @@ public class SkillPageManager extends JsonReloadListener {
     public Map<ResourceLocation, SkillPage> getAllEntries() {
         return ImmutableMap.copyOf(pages);
     }
-
-
 
 
 }

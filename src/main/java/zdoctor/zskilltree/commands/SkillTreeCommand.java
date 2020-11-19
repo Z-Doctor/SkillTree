@@ -42,8 +42,8 @@ public class SkillTreeCommand {
     private static final DynamicCommandExceptionType SKILLPAGE_NOT_FOUND =
             new DynamicCommandExceptionType((skill) -> new TranslationTextComponent("skilltree.pageNotFound", skill));
 
-    private static Predicate<CommandSource> permission(int permissionLevel) {
-        return commandSource -> commandSource.hasPermissionLevel(permissionLevel);
+    private static Predicate<CommandSource> permission() {
+        return commandSource -> commandSource.hasPermissionLevel(2);
     }
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
@@ -51,7 +51,7 @@ public class SkillTreeCommand {
     }
 
     private static LiteralArgumentBuilder<CommandSource> buildSkillTreeCommand() {
-        return Commands.literal("skilltree").requires(permission(2))
+        return Commands.literal("skilltree").requires(permission())
                 .then(buildGrantCommand())
                 .then(buildRevokeCommand());
     }

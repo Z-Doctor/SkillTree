@@ -6,12 +6,12 @@ import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 
 public class ImageAsset {
-    public ResourceLocation texture;
-    public int xSize;
-    public int ySize;
+    public final ResourceLocation texture;
+    public final int xSize;
+    public final int ySize;
 
-    public int uOffset;
-    public int vOffset;
+    public final int uOffset;
+    public final int vOffset;
 
     public ImageAsset(ResourceLocation texture, int xSize, int ySize) {
         this(texture, 0, 0, xSize, ySize);

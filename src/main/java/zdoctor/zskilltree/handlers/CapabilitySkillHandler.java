@@ -62,12 +62,8 @@ public class CapabilitySkillHandler {
             return;
         // TODO Add config for keep on death(Default: true)
 
-        oldCap.ifPresent(oldHandler -> {
-            newCap.ifPresent(newHandler -> {
-                // TODO Make dirty?
-                newHandler.deserializeNBT(oldHandler.serializeNBT());
-            });
-        });
+        oldCap.ifPresent(oldHandler -> newCap.ifPresent(newHandler ->
+                newHandler.deserializeNBT(oldHandler.serializeNBT())));
     }
 
     public static class CapabilitySkillProvider implements ICapabilitySerializable<CompoundNBT> {

@@ -46,6 +46,7 @@ import java.util.function.Function;
 public final class ModMain {
     public static final String MODID = "zskilltree";
     private static final Logger LOGGER = LogManager.getLogger();
+    @SuppressWarnings("CanBeFinal")
     @CapabilityInject(ISkillTreeTracker.class)
     public static Capability<ISkillTreeTracker> SKILL_TREE_CAPABILITY = null;
     private static ModMain INSTANCE = null;

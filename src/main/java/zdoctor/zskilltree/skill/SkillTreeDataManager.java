@@ -31,7 +31,7 @@ public class SkillTreeDataManager {
     private static void updateAllTrackers() {
         Map<ResourceLocation, CriterionTracker> temp = new HashMap<>();
         temp.putAll(ModMain.getInstance().getSkillPageManager().getAllEntries());
-//        temp.putAll(ModMain.getInstance().getSkillManager().getAllEntries());
+        temp.putAll(ModMain.getInstance().getSkillManager().getAllEntries());
         trackers = ImmutableMap.copyOf(temp);
     }
 

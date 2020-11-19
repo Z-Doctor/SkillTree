@@ -15,6 +15,8 @@ import zdoctor.zskilltree.skill.SkillTreeDataManager;
 import zdoctor.zskilltree.skillpages.SkillPage;
 import zdoctor.zskilltree.skillpages.SkillTreeListener;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNullableByDefault;
 import java.io.File;
 import java.util.*;
 
@@ -117,8 +119,8 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
         ProgressTracker progress = getProgress(trackable);
 
         for (Map.Entry<String, Criterion> entry : trackable.getCriteria().entrySet()) {
-            net.minecraft.advancements.CriterionProgress criterionprogress = progress.getCriterionProgress(entry.getKey());
-            if (criterionprogress != null && (criterionprogress.isObtained() || progress.isDone())) {
+            CriterionProgress criterionProgress = progress.getCriterionProgress(entry.getKey());
+            if (criterionProgress != null && (criterionProgress.isObtained() || progress.isDone())) {
                 ICriterionInstance instance = entry.getValue().getCriterionInstance();
                 if (instance != null) {
                     ICriterionTrigger<ICriterionInstance> trigger = CriteriaTriggers.get(instance.getId());
@@ -207,7 +209,7 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
 
         @Override
         public Collection<Advancement> getAllAdvancements() {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         @Override

@@ -23,7 +23,7 @@ public class GuiSkillTreeScreen extends AbstractGuiSkillTreeScreen implements IC
     private static int tabPageNumber = 0;
     private final HashMap<SkillPage, GuiSkillPage> tabs = new HashMap<>();
     private final IClientProgressTracker skillTreeHandler;
-    protected ImageDisplayInfo window = new ImageDisplayInfo(ImageAssets.SKILL_TREE_WINDOW) {
+    protected final ImageDisplayInfo window = new ImageDisplayInfo(ImageAssets.SKILL_TREE_WINDOW) {
         {
             anchorPoint = AnchorPoint.CENTER;
             pivotPoint = AnchorPoint.CENTER;
@@ -34,7 +34,7 @@ public class GuiSkillTreeScreen extends AbstractGuiSkillTreeScreen implements IC
             };
         }
     };
-    protected ImageDisplayInfo background = new ImageDisplayInfo() {
+    protected final ImageDisplayInfo background = new ImageDisplayInfo() {
         {
             layer = Layer.BACKGROUND;
             xOffset = 6;

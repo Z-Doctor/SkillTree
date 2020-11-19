@@ -12,6 +12,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import zdoctor.zskilltree.ModMain;
+import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.client.gui.ImageAssets;
 import zdoctor.zskilltree.extra.ImageAsset;
 import zdoctor.zskilltree.skillpages.SkillPage;
@@ -21,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class Skill {
+public class Skill implements CriterionTracker {
     private ResourceLocation id;
     private SkillDisplayInfo displayInfo;
 
@@ -95,7 +96,7 @@ public class Skill {
     public static class Builder {
         ResourceLocation pageId = SkillPage.NONE.getId();
         SkillDisplayInfo display;
-        private Map<String, Criterion> criteria = new HashMap<>();;
+        private Map<String, Criterion> criteria = new HashMap<>();
         private String[][] requirements;
 
         // TODO Add Criterion and requirements to be able to see or be able to buy

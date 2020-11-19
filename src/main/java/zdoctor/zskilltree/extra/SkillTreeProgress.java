@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
-import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.network.PacketBuffer;
 
 import java.text.ParseException;
@@ -44,7 +43,7 @@ public class SkillTreeProgress {
     }
 
     public JsonElement serialize() {
-        return (JsonElement)(this.obtained != null ? new JsonPrimitive(DATE_TIME_FORMATTER.format(this.obtained)) : JsonNull.INSTANCE);
+        return this.obtained != null ? new JsonPrimitive(DATE_TIME_FORMATTER.format(this.obtained)) : JsonNull.INSTANCE;
     }
 
     public static SkillTreeProgress read(PacketBuffer buf) {

@@ -25,7 +25,7 @@ public class SkillManager extends JsonReloadListener {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Gson GSON = (new GsonBuilder()).create();
     private final HashMap<ResourceLocation, Skill.Builder> toBuild = new HashMap<>();
-    private HashMap<ResourceLocation, Skill> skills = new HashMap<>();
+    private final HashMap<ResourceLocation, Skill> skills = new HashMap<>();
 
     public SkillManager() {
         super(GSON, "skills");

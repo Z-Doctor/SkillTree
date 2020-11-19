@@ -35,8 +35,8 @@ public class ImageDisplayInfo extends AbstractGuiSkillTreeScreen {
     public int xOffset;
     public int yOffset;
     public boolean listenMouse = true;
-    public boolean buttonsEnabled = true;
-    public boolean hidden = false;
+    public final boolean buttonsEnabled = true;
+    public final boolean hidden = false;
     public IRenderableHandler preRender;
     protected ImageDisplayInfo root;
     protected ImageDisplayInfo parent;

@@ -202,7 +202,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         reset();
         final Map<ResourceLocation, CriterionTracker> allEntries = new HashMap<>();
         allEntries.putAll(ModMain.getInstance().getSkillPageManager().getAllEntries());
-//        allEntries.putAll(ModMain.getInstance().getSkillManager().getAllEntries());
+        allEntries.putAll(ModMain.getInstance().getSkillManager().getAllEntries());
 
         nbt.getList("progressList", Constants.NBT.TAG_COMPOUND).stream().map(tag -> (CompoundNBT) tag).forEach(data -> {
             ResourceLocation id = new ResourceLocation(data.getString("id"));

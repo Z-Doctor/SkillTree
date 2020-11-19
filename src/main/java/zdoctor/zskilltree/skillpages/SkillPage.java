@@ -111,7 +111,7 @@ public class SkillPage implements CriterionTracker {
 
         criteria = Criterion.criteriaFromNetwork(buf);
 
-        String[][] requirements = new String[buf.readVarInt()][];
+        requirements = new String[buf.readVarInt()][];
         for (int i = 0; i < requirements.length; ++i) {
             requirements[i] = new String[buf.readVarInt()];
             for (int j = 0; j < requirements[i].length; ++j) {
@@ -464,11 +464,9 @@ public class SkillPage implements CriterionTracker {
 
         @Override
         public String toString() {
-            final StringBuffer sb = new StringBuffer("Skill Builder{");
-            sb.append("index=").append(index);
-            sb.append(", display=").append(display);
-            sb.append('}');
-            return sb.toString();
+            return "Skill Builder{" + "index=" + index +
+                    ", display=" + display +
+                    '}';
         }
 
         @Override
