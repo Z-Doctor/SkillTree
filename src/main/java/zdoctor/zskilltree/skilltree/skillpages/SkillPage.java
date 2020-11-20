@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.skillpages;
+package zdoctor.zskilltree.skilltree.skillpages;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
@@ -25,20 +25,21 @@ import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.annotations.ClassNameMapper;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
+import zdoctor.zskilltree.data.builders.SkillPageBuilder;
 import zdoctor.zskilltree.extra.ImageAsset;
-import zdoctor.zskilltree.skill.Skill;
+import zdoctor.zskilltree.skilltree.skill.Skill;
 
 import java.util.*;
 import java.util.function.Consumer;
 
-@ClassNameMapper(mapping = ModMain.MODID + "skill_page")
+@ClassNameMapper(key = ModMain.MODID + ":skill_page")
 public class SkillPage implements CriterionTracker, Comparable<SkillPage> {
     public static final SkillPage NONE = new SkillPage();
     private static final SkillPageDisplayInfo MISSING = new SkillPageDisplayInfo(ItemStack.EMPTY,
             new TranslationTextComponent("skillpage.missing.title"),
             new TranslationTextComponent("skillpage.missing.description")
     ).setHidden();
-    private final Map<ResourceLocation, Skill> children = new HashMap<>();
+    private final Map<ResourceLocation, Skill> rootSkills = new HashMap<>();
 
     private int index;
     private ResourceLocation id;
@@ -62,7 +63,26 @@ public class SkillPage implements CriterionTracker, Comparable<SkillPage> {
     }
 
     public SkillPage(PacketBuffer buf) {
-        readFrom(buf);
+        id = buf.readResourceLocation();
+        index = buf.readVarInt();
+        if (buf.readBoolean())
+            displayInfo = SkillPageDisplayInfo.read(buf);
+
+        criteria = Criterion.criteriaFromNetwork(buf);
+
+        requirements = new String[buf.readVarInt()][];
+        for (int i = 0; i < requirements.length; ++i) {
+            requirements[i] = new String[buf.readVarInt()];
+            for (int j = 0; j < requirements[i].length; ++j) {
+                requirements[i][j] = buf.readString();
+            }
+        }
+
+        for (int i = buf.readVarInt(); i > 0; i--) {
+            ResourceLocation skillId = buf.readResourceLocation();
+            Skill skill = ModMain.getInstance().getSkillManager().getSkill(skillId);
+            rootSkills.put(skillId, skill);
+        }
     }
 
     public SkillPage(int index, ResourceLocation id, SkillPageDisplayInfo displayInfo, Map<String, Criterion> criteriaIn, String[][] requirementsIn) {
@@ -185,30 +205,16 @@ public class SkillPage implements CriterionTracker, Comparable<SkillPage> {
         int j = requirements == null ? 0 : requirements.length;
         buf.writeVarInt(j);
         if (j > 0)
-            for (String[] requirements : this.requirements) {
+            for (String[] requirements : requirements) {
                 buf.writeVarInt(requirements.length);
                 for (String requirement : requirements) {
                     buf.writeString(requirement);
                 }
             }
-    }
 
-    @Override
-    public void readFrom(PacketBuffer buf) {
-        id = buf.readResourceLocation();
-        index = buf.readVarInt();
-        if (buf.readBoolean())
-            displayInfo = SkillPageDisplayInfo.read(buf);
-
-        criteria = Criterion.criteriaFromNetwork(buf);
-
-        requirements = new String[buf.readVarInt()][];
-        for (int i = 0; i < requirements.length; ++i) {
-            requirements[i] = new String[buf.readVarInt()];
-            for (int j = 0; j < requirements[i].length; ++j) {
-                requirements[i][j] = buf.readString();
-            }
-        }
+        buf.writeVarInt(rootSkills.size());
+        for (ResourceLocation id : rootSkills.keySet())
+            buf.writeResourceLocation(id);
     }
 
     @Override
@@ -316,11 +322,11 @@ public class SkillPage implements CriterionTracker, Comparable<SkillPage> {
     }
 
     public void addSkill(Skill skill) {
-        children.put(skill.getId(), skill);
+        rootSkills.put(skill.getId(), skill);
     }
 
     public Collection<Skill> getSkills() {
-        return children.values();
+        return rootSkills.values();
     }
 
     // TODO Add rarity to display info
@@ -345,5 +351,11 @@ public class SkillPage implements CriterionTracker, Comparable<SkillPage> {
     @Override
     public int compareTo(SkillPage other) {
         return compare(this, other);
+    }
+
+    public static class Builder extends SkillPageBuilder {
+        public static Builder builder() {
+            return new Builder();
+        }
     }
 }

@@ -9,7 +9,7 @@ import net.minecraft.data.IDataProvider;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import zdoctor.zskilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 import zdoctor.zskilltree.data.generators.SkillPageGenerator;
 
 import java.io.IOException;

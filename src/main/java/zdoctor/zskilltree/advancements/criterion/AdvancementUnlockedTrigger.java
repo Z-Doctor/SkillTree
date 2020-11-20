@@ -13,8 +13,8 @@ import net.minecraftforge.fml.common.Mod;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.advancements.ExtendedCriteriaTriggers;
 import zdoctor.zskilltree.criterion.AbstractSkillTreeCriterionTrigger;
-import zdoctor.zskilltree.events.SkillPageEvent;
-import zdoctor.zskilltree.events.SkillTreeEvent;
+import zdoctor.zskilltree.skilltree.events.SkillPageEvent;
+import zdoctor.zskilltree.skilltree.events.SkillTreeEvent;
 
 @Mod.EventBusSubscriber
 public class AdvancementUnlockedTrigger extends AbstractSkillTreeCriterionTrigger<AdvancementUnlockedTrigger.Instance> {

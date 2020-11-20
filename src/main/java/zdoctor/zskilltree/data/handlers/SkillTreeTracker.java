@@ -13,7 +13,7 @@ import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.criterion.ProgressTracker;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
-import zdoctor.zskilltree.skill.SkillTreeDataManager;
+import zdoctor.zskilltree.skilltree.skill.SkillTreeDataManager;
 
 import java.util.*;
 import java.util.stream.Collectors;

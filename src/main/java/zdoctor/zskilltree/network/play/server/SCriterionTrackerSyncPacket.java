@@ -40,7 +40,7 @@ public class SCriterionTrackerSyncPacket {
             if (mapping == null)
                 key = trackable.getClass().getSimpleName();
             else
-                key = mapping.mapping();
+                key = mapping.key();
             this.trackableTypes.putIfAbsent(key, new ArrayList<>());
             this.trackableTypes.get(key).add(trackable);
         }

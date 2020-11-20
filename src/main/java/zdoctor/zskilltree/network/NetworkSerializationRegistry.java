@@ -20,10 +20,17 @@ public class NetworkSerializationRegistry {
         if (!CLASS_MAPPER.containsKey(mapKey))
             return false;
         ClassNameMapper mapping = key.getAnnotation(ClassNameMapper.class);
-        if(mapping == null)
+        if (mapping == null)
             CLASS_MAPPER.get(mapKey).put(key.getSimpleName(), reader);
         else
-            CLASS_MAPPER.get(mapKey).putIfAbsent(mapping.mapping(), reader);
+            CLASS_MAPPER.get(mapKey).putIfAbsent(mapping.key(), reader);
+        return true;
+    }
+
+    public static <T> boolean register(String key, Function<PacketBuffer, T> reader, Class<T> mapKey) {
+        if (!CLASS_MAPPER.containsKey(mapKey))
+            return false;
+        CLASS_MAPPER.get(mapKey).putIfAbsent(key, reader);
         return true;
     }
 

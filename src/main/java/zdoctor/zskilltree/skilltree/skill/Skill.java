@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.skill;
+package zdoctor.zskilltree.skilltree.skill;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
@@ -12,34 +12,55 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import zdoctor.zskilltree.ModMain;
+import zdoctor.zskilltree.api.annotations.ClassNameMapper;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.client.gui.ImageAssets;
 import zdoctor.zskilltree.extra.ImageAsset;
-import zdoctor.zskilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+@ClassNameMapper(key = ModMain.MODID + ":skill")
 public class Skill implements CriterionTracker {
     private ResourceLocation id;
     private SkillDisplayInfo displayInfo;
 
-    private ImmutableMap<String, Criterion> criteria;
+    private Map<String, Criterion> criteria;
     private String[][] requirements;
 
     private ResourceLocation pageId = SkillPage.NONE.getId();
 
-    public Skill(PacketBuffer buf) {
-        readFrom(buf);
-    }
-
     private Skill() {
-
     }
 
-    private Skill(ItemStack icon, String name, Map<String, Criterion> criteriaIn, String[][] requirementsIn) {
+    private Skill(Skill skill) {
+        id = skill.getId();
+        displayInfo = skill.getDisplayInfo();
+        criteria = skill.getCriteria();
+        requirements = skill.getRequirements();
+    }
+
+    public Skill(PacketBuffer buf) {
+        id = buf.readResourceLocation();
+        if (buf.readBoolean())
+            displayInfo = SkillDisplayInfo.read(buf);
+
+        criteria = Criterion.criteriaFromNetwork(buf);
+
+        requirements = new String[buf.readVarInt()][];
+        for (int i = 0; i < requirements.length; ++i) {
+            requirements[i] = new String[buf.readVarInt()];
+            for (int j = 0; j < requirements[i].length; ++j) {
+                requirements[i][j] = buf.readString();
+            }
+        }
+    }
+
+
+    public Skill(ItemStack icon, String name, Map<String, Criterion> criteriaIn, String[][] requirementsIn) {
         this(new ResourceLocation(name), new SkillDisplayInfo(icon, new TranslationTextComponent("skill." + name + ".title"),
                 new TranslationTextComponent("skill." + name + ".description")), criteriaIn, requirementsIn);
     }
@@ -52,7 +73,7 @@ public class Skill implements CriterionTracker {
     }
 
     @Override
-    public ImmutableMap<String, Criterion> getCriteria() {
+    public Map<String, Criterion> getCriteria() {
         return criteria;
     }
 
@@ -63,12 +84,23 @@ public class Skill implements CriterionTracker {
 
     @Override
     public void writeTo(PacketBuffer buf) {
-
-    }
-
-    @Override
-    public void readFrom(PacketBuffer buf) {
-
+        buf.writeResourceLocation(id);
+        if (displayInfo == null)
+            buf.writeBoolean(false);
+        else {
+            buf.writeBoolean(true);
+            displayInfo.write(buf);
+        }
+        Criterion.serializeToNetwork(criteria, buf);
+        int j = requirements == null ? 0 : requirements.length;
+        buf.writeVarInt(j);
+        if (j > 0)
+            for (String[] requirements : requirements) {
+                buf.writeVarInt(requirements.length);
+                for (String requirement : requirements) {
+                    buf.writeString(requirement);
+                }
+            }
     }
 
     public Skill setPage(SkillPage skillPage) {

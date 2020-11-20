@@ -28,17 +28,17 @@ import zdoctor.zskilltree.advancements.ExtendedCriteriaTriggers;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.client.KeyBindings;
-import zdoctor.zskilltree.commands.SkillTreeCommand;
-import zdoctor.zskilltree.data.providers.SkillPageProvider;
-import zdoctor.zskilltree.data.providers.SkillProvider;
+import zdoctor.zskilltree.skilltree.commands.SkillTreeCommand;
 import zdoctor.zskilltree.data.handlers.CapabilitySkillHandler;
 import zdoctor.zskilltree.data.managers.SkillManager;
 import zdoctor.zskilltree.data.managers.SkillPageManager;
+import zdoctor.zskilltree.data.providers.SkillPageProvider;
+import zdoctor.zskilltree.data.providers.SkillProvider;
 import zdoctor.zskilltree.network.NetworkSerializationRegistry;
 import zdoctor.zskilltree.network.SkillTreePacketHandler;
-import zdoctor.zskilltree.skill.Skill;
-import zdoctor.zskilltree.skill.SkillTreeDataManager;
-import zdoctor.zskilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.skill.Skill;
+import zdoctor.zskilltree.skilltree.skill.SkillTreeDataManager;
+import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -47,7 +47,6 @@ import java.util.function.Function;
 public final class ModMain {
     public static final String MODID = "zskilltree";
     private static final Logger LOGGER = LogManager.getLogger();
-    @SuppressWarnings("CanBeFinal")
     @CapabilityInject(ISkillTreeTracker.class)
     public static Capability<ISkillTreeTracker> SKILL_TREE_CAPABILITY = null;
     private static ModMain INSTANCE = null;
@@ -113,7 +112,7 @@ public final class ModMain {
         ExtendedCriteriaTriggers.init();
         criterionMappings = NetworkSerializationRegistry.registerMapping(CriterionTracker.class);
         NetworkSerializationRegistry.register(SkillPage.class, SkillPage::new, CriterionTracker.class);
-        NetworkSerializationRegistry.register(Skill.class, Skill::new, CriterionTracker.class);
+        NetworkSerializationRegistry.register(ModMain.MODID + ":skill", Skill::new, CriterionTracker.class);
     }
 
     private void doClientStuff(final FMLClientSetupEvent event) {

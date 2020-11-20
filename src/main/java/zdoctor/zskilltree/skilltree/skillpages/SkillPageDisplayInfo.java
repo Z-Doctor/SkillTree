@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.skill;
+package zdoctor.zskilltree.skilltree.skillpages;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -13,30 +13,38 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.registries.ForgeRegistries;
+import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.client.gui.ImageAssets;
 import zdoctor.zskilltree.extra.ImageAsset;
 
-public class SkillDisplayInfo {
-    private final ITextComponent skillName;
+public class SkillPageDisplayInfo {
+    private final ITextComponent pageName;
     private final ITextComponent description;
     private final ItemStack icon;
-    private ImageAsset frame;
-    private int x;
-    private int y;
+    private final SkillPageAlignment alignment;
+    private ImageAsset background;
+    private boolean drawTitle = true;
+    private boolean isHidden = false;
 
-    public SkillDisplayInfo(ItemStack icon, ITextComponent skillName, ITextComponent description) {
-        this(icon, skillName, description, ImageAssets.COMMON_FRAME_UNOWNED);
+
+    public SkillPageDisplayInfo(ItemStack icon, ITextComponent pageName, ITextComponent description) {
+        this(icon, pageName, description, ImageAssets.DEFAULT_TILE, SkillPageAlignment.VERTICAL);
     }
 
-    public SkillDisplayInfo(ItemStack icon, ITextComponent skillName, ITextComponent description, ImageAsset frame) {
-        this.skillName = skillName;
+    public SkillPageDisplayInfo(ItemStack icon, ITextComponent pageName, ITextComponent description, SkillPageAlignment alignment) {
+        this(icon, pageName, description, ImageAssets.DEFAULT_TILE, alignment);
+    }
+
+    public SkillPageDisplayInfo(ItemStack icon, ITextComponent pageName, ITextComponent description, ImageAsset background, SkillPageAlignment alignment) {
+        this.pageName = pageName;
         this.description = description;
         this.icon = icon;
-        this.frame = frame;
+        this.alignment = alignment;
+        this.background = background;
     }
 
-    public ITextComponent getSkillName() {
-        return skillName;
+    public ITextComponent getPageName() {
+        return pageName;
     }
 
     public ITextComponent getDescription() {
@@ -47,37 +55,52 @@ public class SkillDisplayInfo {
         return icon;
     }
 
-    public ImageAsset getFrame() {
-        return frame;
+    public SkillPageAlignment getAlignment() {
+        return alignment;
     }
 
-    public void setFrame(ImageAsset frame) {
-        this.frame = frame;
+    public ImageAsset getBackground() {
+        return background;
     }
 
-    public void setPosition(int x, int y) {
-        this.x = x;
-        this.y = y;
+    public void setBackground(ImageAsset background) {
+        this.background = background;
     }
 
-    public int getX() {
-        return x;
+    public SkillPageDisplayInfo setNoTitle() {
+        drawTitle = false;
+        return this;
     }
 
-    public int getY() {
-        return y;
+    public SkillPageDisplayInfo setHidden() {
+        isHidden = true;
+        return this;
     }
 
-    public static SkillDisplayInfo deserialize(JsonObject object) {
+    public boolean drawTitle() {
+        return drawTitle;
+    }
+
+    public boolean isHidden() {
+        return isHidden;
+    }
+
+    public static SkillPageDisplayInfo deserialize(JsonObject object) {
         ITextComponent pageName = ITextComponent.Serializer.getComponentFromJson(object.get("title"));
         ITextComponent description = ITextComponent.Serializer.getComponentFromJson(object.get("description"));
         if (pageName != null && description != null) {
             ItemStack icon = deserializeIcon(JSONUtils.getJsonObject(object, "icon"));
-
-            ImageAsset frame = null;
-            if (object.has("frame"))
-                frame = ImageAsset.deserialize(JSONUtils.getJsonObject(object, "frame"));
-            return new SkillDisplayInfo(icon, pageName, description, frame);
+            SkillPageAlignment alignment;
+            try {
+                alignment = object.has("alignment") ?
+                        SkillPageAlignment.valueOf(JSONUtils.getString(object, "alignment").toUpperCase()) : SkillPageAlignment.VERTICAL;
+            } catch (IllegalArgumentException e) {
+                alignment = SkillPageAlignment.VERTICAL;
+            }
+            ImageAsset background = null;
+            if (object.has("background"))
+                background = ImageAsset.deserialize(JSONUtils.getJsonObject(object, "background"));
+            return new SkillPageDisplayInfo(icon, pageName, description, background, alignment);
         } else {
             throw new JsonSyntaxException("Both title and description must be set");
         }
@@ -107,37 +130,35 @@ public class SkillDisplayInfo {
     }
 
     public void write(PacketBuffer buf) {
-        buf.writeTextComponent(this.skillName);
+        buf.writeTextComponent(this.pageName);
         buf.writeTextComponent(this.description);
         buf.writeItemStack(this.icon);
-        if (this.frame != null) {
+        buf.writeEnumValue(this.alignment);
+        if (this.background != null) {
             buf.writeBoolean(true);
-            this.frame.write(buf);
+            this.background.write(buf);
         } else
             buf.writeBoolean(false);
-
-        buf.writeInt(x);
-        buf.writeInt(y);
     }
 
-    public static SkillDisplayInfo read(PacketBuffer buf) {
+    public static SkillPageDisplayInfo read(PacketBuffer buf) {
         ITextComponent pageName = buf.readTextComponent();
         ITextComponent description = buf.readTextComponent();
         ItemStack icon = buf.readItemStack();
+        SkillPageAlignment alignment = buf.readEnumValue(SkillPageAlignment.class);
         boolean flag = buf.readBoolean();
-        ImageAsset frame = flag ? ImageAsset.read(buf) : null;
-        SkillDisplayInfo displayInfo = new SkillDisplayInfo(icon, pageName, description, frame);
-        displayInfo.setPosition(buf.readInt(), buf.readInt());
-        return displayInfo;
+        ImageAsset background = flag ? ImageAsset.read(buf) : null;
+        return new SkillPageDisplayInfo(icon, pageName, description, background, alignment);
     }
 
     public JsonElement serialize() {
         JsonObject jsonobject = new JsonObject();
         jsonobject.add("icon", this.serializeIcon());
-        jsonobject.add("title", ITextComponent.Serializer.toJsonTree(this.skillName));
+        jsonobject.add("title", ITextComponent.Serializer.toJsonTree(this.pageName));
         jsonobject.add("description", ITextComponent.Serializer.toJsonTree(this.description));
-        if (this.frame != null) {
-            jsonobject.add("frame", this.frame.serialize());
+        jsonobject.addProperty("alignment", this.alignment.name());
+        if (this.background != null) {
+            jsonobject.add("background", this.background.serialize());
         }
 
         return jsonobject;

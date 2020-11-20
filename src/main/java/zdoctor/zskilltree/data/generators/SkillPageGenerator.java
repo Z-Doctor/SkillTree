@@ -4,7 +4,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.data.builders.SkillPageBuilder;
-import zdoctor.zskilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import java.util.function.Consumer;
 

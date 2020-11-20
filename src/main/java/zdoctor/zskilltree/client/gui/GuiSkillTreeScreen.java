@@ -11,7 +11,7 @@ import zdoctor.zskilltree.api.enums.AnchorPoint;
 import zdoctor.zskilltree.api.enums.Layer;
 import zdoctor.zskilltree.api.interfaces.IClientProgressTracker;
 import zdoctor.zskilltree.client.KeyBindings;
-import zdoctor.zskilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import java.util.HashMap;
 import java.util.Map;

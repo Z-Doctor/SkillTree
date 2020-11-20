@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.events;
+package zdoctor.zskilltree.skilltree.events;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.eventbus.api.Event;

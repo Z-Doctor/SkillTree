@@ -1,9 +1,9 @@
-package zdoctor.zskilltree.events;
+package zdoctor.zskilltree.skilltree.events;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraftforge.eventbus.api.Event;
 import zdoctor.zskilltree.api.enums.SkillTreeAction;
-import zdoctor.zskilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 /**
  * Only called called the first time a skill page is granted or revoked

@@ -9,7 +9,8 @@ import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.IClientProgressTracker;
 import zdoctor.zskilltree.data.handlers.SkillTreeTracker;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
-import zdoctor.zskilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.skill.Skill;
+import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 @OnlyIn(Dist.CLIENT)
 public class ClientPlayerProgressTracker extends SkillTreeTracker implements IClientProgressTracker {
     private final HashMap<ResourceLocation, SkillPage> pages = new HashMap<>();
+    private final HashMap<ResourceLocation, Skill> skills = new HashMap<>();
 
     private final HashMap<SkillPageAlignment, SkillPage[]> sorted_pages = new HashMap<>();
 
@@ -45,6 +47,8 @@ public class ClientPlayerProgressTracker extends SkillTreeTracker implements ICl
         for (CriterionTracker trackable : packetIn.getToAdd())
             if (trackable instanceof SkillPage)
                 pages.put(trackable.getId(), (SkillPage) trackable);
+            else if(trackable instanceof Skill)
+                skills.put(trackable.getId(), (Skill) trackable);
 
         packetIn.getToRemove().forEach(pages::remove);
 

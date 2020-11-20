@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.commands;
+package zdoctor.zskilltree.skilltree.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -20,8 +20,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
-import zdoctor.zskilltree.skill.Skill;
-import zdoctor.zskilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.skill.Skill;
+import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import java.util.Collection;
 import java.util.Optional;

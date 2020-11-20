@@ -6,7 +6,7 @@ import net.minecraft.item.ItemStack;
 import zdoctor.zskilltree.api.enums.AnchorPoint;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.extra.ImageAsset;
-import zdoctor.zskilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 public class GuiSkillPage extends ImageDisplayInfo {
     public static final ImageAsset[][] TOP_TABS = {

@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.skill;
+package zdoctor.zskilltree.skilltree.skill;
 
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.entity.player.ServerPlayerEntity;

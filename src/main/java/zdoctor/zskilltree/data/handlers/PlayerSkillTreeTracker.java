@@ -11,9 +11,9 @@ import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.criterion.ProgressTracker;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
-import zdoctor.zskilltree.skill.SkillTreeDataManager;
-import zdoctor.zskilltree.skillpages.SkillPage;
-import zdoctor.zskilltree.skillpages.SkillTreeListener;
+import zdoctor.zskilltree.skilltree.skill.SkillTreeDataManager;
+import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.skillpages.SkillTreeListener;
 
 import java.io.File;
 import java.util.*;

@@ -11,8 +11,8 @@ import net.minecraft.util.text.TranslationTextComponent;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.extra.ImageAsset;
-import zdoctor.zskilltree.skillpages.SkillPage;
-import zdoctor.zskilltree.skillpages.SkillPageDisplayInfo;
+import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.skillpages.SkillPageDisplayInfo;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -26,14 +26,14 @@ public class SkillPageBuilder {
     private String[][] requirements;
     private IRequirementsStrategy requirementsStrategy = IRequirementsStrategy.AND;
 
-    private SkillPageBuilder(int index, @Nullable SkillPageDisplayInfo displayIn, Map<String, Criterion> criteriaIn, String[][] requirementsIn) {
+    protected SkillPageBuilder(int index, @Nullable SkillPageDisplayInfo displayIn, Map<String, Criterion> criteriaIn, String[][] requirementsIn) {
         this.index = index;
         this.display = displayIn;
         this.criteria = criteriaIn;
         this.requirements = requirementsIn;
     }
 
-    private SkillPageBuilder() {
+    protected SkillPageBuilder() {
     }
 
     public static SkillPageBuilder builder() {

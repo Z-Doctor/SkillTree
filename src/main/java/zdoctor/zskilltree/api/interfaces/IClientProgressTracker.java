@@ -1,6 +1,6 @@
 package zdoctor.zskilltree.api.interfaces;
 
-import zdoctor.zskilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import javax.annotation.Nullable;
 

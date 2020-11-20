@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.skillpages;
+package zdoctor.zskilltree.skilltree.skillpages;
 
 import net.minecraft.advancements.ICriterionInstance;
 import net.minecraft.advancements.ICriterionTrigger;

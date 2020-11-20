@@ -4,5 +4,5 @@ import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ClassNameMapper {
-    String mapping();
+    String key();
 }

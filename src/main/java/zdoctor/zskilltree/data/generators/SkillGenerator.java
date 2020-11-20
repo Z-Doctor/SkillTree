@@ -2,7 +2,7 @@ package zdoctor.zskilltree.data.generators;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import zdoctor.zskilltree.skill.Skill;
+import zdoctor.zskilltree.skilltree.skill.Skill;
 
 import java.util.function.Consumer;
 

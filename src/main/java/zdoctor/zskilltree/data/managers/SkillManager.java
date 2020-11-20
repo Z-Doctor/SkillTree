@@ -13,8 +13,8 @@ import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import zdoctor.zskilltree.skill.Skill;
-import zdoctor.zskilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.skill.Skill;
+import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -80,5 +80,9 @@ public class SkillManager extends JsonReloadListener {
 
     public Collection<Skill> getAllSkills() {
         return ImmutableSet.copyOf(skills.values());
+    }
+
+    public Skill getSkill(ResourceLocation id) {
+        return skills.get(id);
     }
 }
