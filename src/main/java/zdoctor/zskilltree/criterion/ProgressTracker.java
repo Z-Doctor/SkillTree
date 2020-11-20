@@ -2,6 +2,7 @@ package zdoctor.zskilltree.criterion;
 
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.CriterionProgress;
+import net.minecraft.advancements.IRequirementsStrategy;
 import net.minecraft.nbt.*;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.api.distmarker.Dist;
@@ -16,14 +17,13 @@ import java.util.stream.Collectors;
 
 public class ProgressTracker implements Comparable<ProgressTracker> {
     private static final Logger LOGGER = LogManager.getLogger();
-    private static final String[][] EMPTY = {{""}};
+    private static final String[][] EMPTY = {};
 
-    private final Map<String, net.minecraft.advancements.CriterionProgress> criteria = new HashMap<>();
+    private final Map<String, CriterionProgress> criteria = new HashMap<>();
     private String[][] requirements;
     private boolean sendUpdatesToClient;
 
     public ProgressTracker() {
-        criteria.put("", new net.minecraft.advancements.CriterionProgress());
         requirements = EMPTY;
     }
 
@@ -32,7 +32,7 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
         int i = buffer.readVarInt();
 
         for (int j = 0; j < i; ++j) {
-            progressTracker.criteria.put(buffer.readString(), net.minecraft.advancements.CriterionProgress.read(buffer));
+            progressTracker.criteria.put(buffer.readString(), CriterionProgress.read(buffer));
         }
 
         return progressTracker;
@@ -56,37 +56,39 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
         this.criteria.entrySet().removeIf(criterion -> !set.contains(criterion.getKey()));
 
         for (String key : set) {
-            if (!this.criteria.containsKey(key)) {
-                this.criteria.put(key, new net.minecraft.advancements.CriterionProgress());
+            if (!criteria.containsKey(key)) {
+                criteria.put(key, new CriterionProgress());
             }
         }
 
+        // TODO Make serializer not let this be null(?)
         requirements = requirements == null ? EMPTY : requirements;
 
         this.requirements = requirements;
 
-        if (criteria.isEmpty()) {
-            criteria.put("", new net.minecraft.advancements.CriterionProgress());
-            if (Arrays.deepEquals(EMPTY, this.requirements)) {
-                LOGGER.error("Correcting: Empty Criterion with non-empty requirements");
-                this.requirements = EMPTY;
-            }
+        if (criteria.isEmpty() && this.requirements.length > 0) {
+            LOGGER.error("Correcting: Empty Criterion with non-empty requirements: {}", Arrays.deepToString(this.requirements));
+            this.requirements = EMPTY;
+        } else {
+            // TODO Make sure that the current deserializer doesn't allow this to happen
+            // TODO Make progress without criteria auto completed
+            this.requirements = IRequirementsStrategy.AND.createRequirements(criteria.keySet());
         }
     }
 
     public boolean grant() {
         if (isDone())
             return false;
-        criteria.values().forEach(net.minecraft.advancements.CriterionProgress::obtain);
+        criteria.values().forEach(CriterionProgress::obtain);
         return true;
     }
 
     public boolean revoke() {
         boolean flag = false;
-        for (net.minecraft.advancements.CriterionProgress criterionprogress : this.criteria.values())
-            if (criterionprogress.isObtained()) {
+        for (CriterionProgress progress : this.criteria.values())
+            if (progress.isObtained()) {
                 flag = true;
-                criterionprogress.reset();
+                progress.reset();
             }
         return flag;
     }
@@ -95,8 +97,8 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
         for (String[] requirement : requirements) {
             boolean flag = false;
             for (String s : requirement) {
-                net.minecraft.advancements.CriterionProgress criterionprogress = this.getCriterionProgress(s);
-                if (criterionprogress != null && criterionprogress.isObtained()) {
+                CriterionProgress progress = getCriterionProgress(s);
+                if (progress != null && progress.isObtained()) {
                     flag = true;
                     break;
                 }
@@ -109,7 +111,7 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
     }
 
     public boolean hasProgress() {
-        for (net.minecraft.advancements.CriterionProgress criterionprogress : this.criteria.values())
+        for (CriterionProgress criterionprogress : this.criteria.values())
             if (criterionprogress.isObtained())
                 return true;
 
@@ -117,7 +119,7 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
     }
 
     public boolean grantCriterion(String criterionIn) {
-        net.minecraft.advancements.CriterionProgress criterionprogress = this.criteria.get(criterionIn);
+        CriterionProgress criterionprogress = this.criteria.get(criterionIn);
         if (criterionprogress != null && !criterionprogress.isObtained()) {
             criterionprogress.obtain();
             return true;
@@ -126,7 +128,7 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
     }
 
     public boolean revokeCriterion(String criterionIn) {
-        net.minecraft.advancements.CriterionProgress criterionprogress = this.criteria.get(criterionIn);
+        CriterionProgress criterionprogress = this.criteria.get(criterionIn);
         if (criterionprogress != null && criterionprogress.isObtained()) {
             criterionprogress.reset();
             return true;
@@ -138,11 +140,11 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
         CompoundNBT compoundNBT = new CompoundNBT();
 
         ListNBT progressList = new ListNBT();
-        for (Map.Entry<String, net.minecraft.advancements.CriterionProgress> entry : this.criteria.entrySet()) {
+        for (Map.Entry<String, CriterionProgress> entry : this.criteria.entrySet()) {
             CompoundNBT data = new CompoundNBT();
 
             data.put("key", StringNBT.valueOf(entry.getKey()));
-            net.minecraft.advancements.CriterionProgress progress = entry.getValue();
+            CriterionProgress progress = entry.getValue();
             if (progress.isObtained()) {
                 data.put("obtained", ByteNBT.valueOf(true));
                 data.put("obtained-date", LongNBT.valueOf(progress.getObtained().getTime()));
@@ -172,7 +174,7 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
                 continue;
             CompoundNBT data = (CompoundNBT) inbt;
             String key = data.getString("key");
-            net.minecraft.advancements.CriterionProgress progress = new net.minecraft.advancements.CriterionProgress();
+            CriterionProgress progress = new CriterionProgress();
             if (data.getBoolean("obtained")) {
                 progress.obtain();
                 progress.getObtained().setTime(data.getLong("obtained-date"));
@@ -184,7 +186,7 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
     public void serializeToNetwork(PacketBuffer buffer) {
         buffer.writeVarInt(this.criteria.size());
 
-        for (Map.Entry<String, net.minecraft.advancements.CriterionProgress> entry : this.criteria.entrySet()) {
+        for (Map.Entry<String, CriterionProgress> entry : this.criteria.entrySet()) {
             buffer.writeString(entry.getKey());
             entry.getValue().write(buffer);
         }
@@ -192,7 +194,7 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
 
     @Nullable
     public CriterionProgress getCriterionProgress(String criterionIn) {
-        return this.criteria.get(criterionIn);
+        return criteria.get(criterionIn);
     }
 
     @OnlyIn(Dist.CLIENT)

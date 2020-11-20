@@ -181,6 +181,10 @@ public class SkillPage implements CriterionTracker, Comparable<SkillPage> {
         consumer.accept(this);
     }
 
+    public boolean hasRootSkill(Skill skill) {
+        return rootSkills.containsKey(skill.getId());
+    }
+
     @Override
     public Map<String, Criterion> getCriteria() {
         return criteria;
@@ -222,7 +226,6 @@ public class SkillPage implements CriterionTracker, Comparable<SkillPage> {
         return id;
     }
 
-    @OnlyIn(Dist.CLIENT)
     public SkillPageDisplayInfo getDisplayInfo() {
         return displayInfo;
     }

@@ -6,7 +6,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.extra.ImageAsset;
 
-@OnlyIn(Dist.CLIENT)
 public class ImageAssets {
     public static ImageAsset register(String category, String name, int uOffset, int vOffset, int xSize, int ySize) {
         return new ImageAsset(new ResourceLocation(ModMain.MODID, String.format("textures/%s/%s.png", category, name)),

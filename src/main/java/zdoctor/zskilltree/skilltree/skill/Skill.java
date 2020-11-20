@@ -20,6 +20,7 @@ import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -31,7 +32,10 @@ public class Skill implements CriterionTracker {
     private Map<String, Criterion> criteria;
     private String[][] requirements;
 
-    private ResourceLocation pageId = SkillPage.NONE.getId();
+    // Skills should only have a parent page or a parent skill, not both
+    //  The parent page should be inferred from the root skill to save bandwidth
+    private SkillPage parentPage;
+    private List<Skill> child_skills;
 
     private Skill() {
     }
@@ -104,7 +108,7 @@ public class Skill implements CriterionTracker {
     }
 
     public Skill setPage(SkillPage skillPage) {
-        this.pageId = skillPage.getId();
+        this.parentPage = skillPage;
         return this;
     }
 
@@ -116,17 +120,20 @@ public class Skill implements CriterionTracker {
         return displayInfo;
     }
 
+    public SkillPage getParentPage() {
+        return parentPage;
+    }
+
     @Override
     public String toString() {
         return "Skill{" +
                 "id=" + id +
-                ", pageId" + pageId +
                 ", displayInfo=" + displayInfo +
                 '}';
     }
 
     public Builder copy() {
-        return new Builder(pageId, displayInfo, getCriteria(), getRequirements()).onPage(pageId);
+        return new Builder(getId(), getDisplayInfo(), getCriteria(), getRequirements()).onPage(getParentPage());
     }
 
     public static class Builder {

@@ -44,20 +44,29 @@ public class ClientPlayerProgressTracker extends SkillTreeTracker implements ICl
             pages.clear();
         }
 
-        for (CriterionTracker trackable : packetIn.getToAdd())
+        for (CriterionTracker trackable : packetIn.getToAdd()) {
             if (trackable instanceof SkillPage)
                 pages.put(trackable.getId(), (SkillPage) trackable);
-            else if(trackable instanceof Skill)
+            else if (trackable instanceof Skill)
                 skills.put(trackable.getId(), (Skill) trackable);
+        }
+
 
         packetIn.getToRemove().forEach(pages::remove);
+        packetIn.getToRemove().forEach(skills::remove);
 
         pages.values().stream().sorted(SkillPage::compare)
                 .forEach(page -> {
                     SkillPage skillPage = page.copy();
                     addPageSafe(skillPage);
                     completed.add(skillPage);
+                    skills.values().stream().filter(skillPage::hasRootSkill).forEach(skillPage::addSkill);
+
                 });
+
+        skills.values().forEach(skill -> {
+            SkillPage page = pages.get(skill.getParentPage());
+        });
 
         maxHorizontal = sorted_pages.get(SkillPageAlignment.HORIZONTAL).length;
         maxVertical = sorted_pages.get(SkillPageAlignment.VERTICAL).length;

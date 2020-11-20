@@ -33,6 +33,8 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     }
 
     public SkillTreeTracker(LivingEntity entity) {
+        if(entity == null)
+            throw new NullPointerException("Entity is null");
         owner = entity;
         LOGGER.debug("Attached Skill Tree to {}", owner);
     }
@@ -181,7 +183,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         CompoundNBT skillTreeData = new CompoundNBT();
         ListNBT progressList = new ListNBT();
 
-        skillTreeData.put("progressList", progressList);
+        skillTreeData.put("progress_list", progressList);
         for (Map.Entry<CriterionTracker, ProgressTracker> entry : progressTracker.entrySet()) {
             ProgressTracker progress = entry.getValue();
             if (!progress.hasProgress())
@@ -204,7 +206,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         allEntries.putAll(ModMain.getInstance().getSkillPageManager().getAllEntries());
         allEntries.putAll(ModMain.getInstance().getSkillManager().getAllEntries());
 
-        nbt.getList("progressList", Constants.NBT.TAG_COMPOUND).stream().map(tag -> (CompoundNBT) tag).forEach(data -> {
+        nbt.getList("progress_list", Constants.NBT.TAG_COMPOUND).stream().map(tag -> (CompoundNBT) tag).forEach(data -> {
             ResourceLocation id = new ResourceLocation(data.getString("id"));
             CriterionTracker trackable = allEntries.get(id);
             ProgressTracker progress = getProgress(trackable);
