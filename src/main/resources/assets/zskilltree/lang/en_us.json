@@ -1,0 +1,13 @@
+{
+  "argument.entity.options.skill_page.description": "Entities with Skill Trees",
+
+  "commands.skilltree.pageNotFound": "No skill page was found by the name '%1$s'",
+  "commands.skilltree.grant.page.success.single": "Granted the skill tree %s to %s",
+  "commands.skilltree.grant.page.success.many": "Granted the skill tree %s to %s players",
+  "commands.skilltree.grant.page.fail.none": "Couldn't find any players to grant the skill tree %s to",
+  "commands.skilltree.revoke.page.success.single": "Revoked the skill tree %s from %s",
+  "commands.skilltree.revoke.page.success.many": "Revoked the skill tree %s to %s players",
+  "commands.skilltree.revoke.page.success.none": "Couldn't find any players to revoke the skill tree %s from",
+
+  "commands.skilltree.skillNotFound": "No skill was found by the name '%1$s"
+}

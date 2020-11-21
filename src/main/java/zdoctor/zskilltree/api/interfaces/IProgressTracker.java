@@ -18,8 +18,6 @@ public interface IProgressTracker<T extends INBT> extends INBTSerializable<T> {
 
     boolean startProgress(CriterionTracker trackable);
 
-//    ProgressTracker stopTracking(CriterionTracker trackable);
-
     void update(CriterionTracker trackable, Map<String, Criterion> criterion, String[][] requirements);
 
     boolean hasProgress(CriterionTracker trackable);
@@ -31,7 +29,5 @@ public interface IProgressTracker<T extends INBT> extends INBTSerializable<T> {
     Iterable<ProgressTracker> getAllProgress();
 
     boolean contains(CriterionTracker trackable);
-
-    void dispose();
 
 }

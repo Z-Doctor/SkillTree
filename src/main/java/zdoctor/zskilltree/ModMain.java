@@ -23,8 +23,6 @@ import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -47,6 +45,7 @@ import zdoctor.zskilltree.data.managers.SkillPageManager;
 import zdoctor.zskilltree.data.providers.CapabilitySkillTreeProvider;
 import zdoctor.zskilltree.data.providers.SkillPageProvider;
 import zdoctor.zskilltree.data.providers.SkillProvider;
+import zdoctor.zskilltree.extra.SkillTreeEntityOptions;
 import zdoctor.zskilltree.network.NetworkSerializationRegistry;
 import zdoctor.zskilltree.network.SkillTreePacketHandler;
 import zdoctor.zskilltree.skilltree.commands.SkillTreeCommand;
@@ -76,6 +75,9 @@ public final class ModMain {
     private SimpleChannel packetChannel;
 
     public ModMain() {
+        if (INSTANCE != null)
+            return;
+
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doServerStuff);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
@@ -92,12 +94,16 @@ public final class ModMain {
         MinecraftForge.EVENT_BUS.addListener(this::onPlayerClone);
         MinecraftForge.EVENT_BUS.addGenericListener(Entity.class, this::attachCapability);
 
-        if (INSTANCE == null)
-            INSTANCE = this;
+        initBootstrap();
+        INSTANCE = this;
     }
 
     public static ModMain getInstance() {
         return INSTANCE;
+    }
+
+    private static void initBootstrap() {
+        SkillTreeEntityOptions.register();
     }
 
     public SkillPageManager getSkillPageManager() {
@@ -205,6 +211,7 @@ public final class ModMain {
     }
 
     private void attachCapability(AttachCapabilitiesEvent<Entity> event) {
+        // TODO Add a config filter for this and who and what skill trees are attached to
         ICapabilityProvider provider = capabilityProvider.createProvider(event.getObject());
         if (provider != null)
             event.addCapability(SKILL_TREE_CAPABILITY_ID, provider);

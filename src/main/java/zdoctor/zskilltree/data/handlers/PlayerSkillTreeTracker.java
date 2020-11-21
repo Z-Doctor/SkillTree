@@ -94,8 +94,8 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
 
     @Override
     public void dispose() {
+        // A super call is not needed because it will clear the trackers
         CriteriaTriggers.getAll().forEach(t -> t.removeAllListeners(wrapper));
-        super.dispose();
     }
 
     protected void registerListeners(CriterionTracker trackable) {

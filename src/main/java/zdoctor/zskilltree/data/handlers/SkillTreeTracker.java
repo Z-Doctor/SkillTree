@@ -213,7 +213,6 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     }
 
 
-    @Override
     public void dispose() {
         progressTracker.clear();
     }
@@ -290,6 +289,5 @@ public class SkillTreeTracker implements ISkillTreeTracker {
             completionChanged.clear();
         }
     }
-
 
 }

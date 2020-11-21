@@ -38,9 +38,9 @@ public class SkillTreeCommand {
     };
     private static final Logger LOGGER = LogManager.getLogger();
     private static final DynamicCommandExceptionType SKILL_NOT_FOUND =
-            new DynamicCommandExceptionType((skill) -> new TranslationTextComponent("skilltree.skillNotFound", skill));
-    private static final DynamicCommandExceptionType SKILLPAGE_NOT_FOUND =
-            new DynamicCommandExceptionType((skill) -> new TranslationTextComponent("skilltree.pageNotFound", skill));
+            new DynamicCommandExceptionType((skill) -> new TranslationTextComponent("commands.skilltree.skillNotFound", skill));
+    private static final DynamicCommandExceptionType SKILL_PAGE_NOT_FOUND =
+            new DynamicCommandExceptionType((skill) -> new TranslationTextComponent("commands.skilltree.pageNotFound", skill));
 
     private static Predicate<CommandSource> permission() {
         return commandSource -> commandSource.hasPermissionLevel(2);
@@ -83,7 +83,7 @@ public class SkillTreeCommand {
         SkillPage page = ModMain.getInstance().getSkillPageManager().getPage(pageId);
 
         if (page == null)
-            throw SKILLPAGE_NOT_FOUND.create(pageId);
+            throw SKILL_PAGE_NOT_FOUND.create(pageId);
 
         ISkillTreeTracker[] handlers = processCommand(context);
 
@@ -93,11 +93,11 @@ public class SkillTreeCommand {
         }
 
         if (handlers.length == 1 && i == 1)
-            source.sendFeedback(new TranslationTextComponent("skilltree.grant.page.success.single", page.getDisplayInfo().getPageName(), handlers[0].getOwner().getDisplayName()), true);
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.grant.page.success.single", page.getDisplayInfo().getPageName(), handlers[0].getOwner().getDisplayName()), true);
         else if (i > 1)
-            source.sendFeedback(new TranslationTextComponent("skilltree.grant.page.success.many", page.getDisplayInfo().getPageName(), i), true);
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.grant.page.success.many", page.getDisplayInfo().getPageName(), i), true);
         else
-            source.sendFeedback(new TranslationTextComponent("skilltree.grant.page.fail.any", page.getDisplayInfo().getPageName()), true);
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.grant.page.fail.none", page.getDisplayInfo().getPageName()), true);
         return i;
 
     }
@@ -109,7 +109,7 @@ public class SkillTreeCommand {
         SkillPage page = ModMain.getInstance().getSkillPageManager().getPage(pageId);
 
         if (page == null)
-            throw SKILLPAGE_NOT_FOUND.create(pageId);
+            throw SKILL_PAGE_NOT_FOUND.create(pageId);
 
         ISkillTreeTracker[] handlers = processCommand(context);
         for (ISkillTreeTracker handler : handlers) {
@@ -118,11 +118,11 @@ public class SkillTreeCommand {
         }
 
         if (handlers.length == 1 && i == 1)
-            source.sendFeedback(new TranslationTextComponent("skilltree.revoke.page.success.single", page.getDisplayInfo().getPageName(), handlers[0].getOwner().getDisplayName()), true);
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.revoke.page.success.single", page.getDisplayInfo().getPageName(), handlers[0].getOwner().getDisplayName()), true);
         else if (i > 1)
-            source.sendFeedback(new TranslationTextComponent("skilltree.revoke.page.success.many", page.getDisplayInfo().getPageName(), i), true);
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.revoke.page.success.many", page.getDisplayInfo().getPageName(), i), true);
         else
-            source.sendFeedback(new TranslationTextComponent("skilltree.revoke.page.fail.any", page.getDisplayInfo().getPageName()), true);
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.revoke.page.fail.any", page.getDisplayInfo().getPageName()), true);
         return i;
 
     }
