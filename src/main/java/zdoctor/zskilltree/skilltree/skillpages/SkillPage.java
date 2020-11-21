@@ -80,8 +80,8 @@ public class SkillPage implements CriterionTracker, Comparable<SkillPage> {
 
         for (int i = buf.readVarInt(); i > 0; i--) {
             ResourceLocation skillId = buf.readResourceLocation();
-            Skill skill = ModMain.getInstance().getSkillManager().getSkill(skillId);
-            rootSkills.put(skillId, skill);
+//            Skill skill = ModMain.getInstance().getSkillManager().getSkill(skillId);
+            rootSkills.put(skillId, null);
         }
     }
 
@@ -354,6 +354,14 @@ public class SkillPage implements CriterionTracker, Comparable<SkillPage> {
     @Override
     public int compareTo(SkillPage other) {
         return compare(this, other);
+    }
+
+    public Map<ResourceLocation, Skill> getRootSkills() {
+        return ImmutableMap.copyOf(rootSkills);
+    }
+
+    public Skill putRootSkill(ResourceLocation key, Skill skill) {
+        return rootSkills.put(key, skill);
     }
 
     public static class Builder extends SkillPageBuilder {

@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.Mod;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.advancements.ExtendedCriteriaTriggers;
 import zdoctor.zskilltree.criterion.AbstractSkillTreeCriterionTrigger;
-import zdoctor.zskilltree.skilltree.events.SkillPageEvent;
+import zdoctor.zskilltree.skilltree.events.CriterionTrackerEvent;
 import zdoctor.zskilltree.skilltree.events.SkillTreeEvent;
 
 @Mod.EventBusSubscriber
@@ -27,7 +27,7 @@ public class AdvancementUnlockedTrigger extends AbstractSkillTreeCriterionTrigge
     }
 
     @SubscribeEvent
-    public static void onSkillPageRevoked(SkillPageEvent.SkillPageRevokedEvent event) {
+    public static void onProgressRevoked(CriterionTrackerEvent.ProgressRevokedEvent event) {
         if (event.getOwner() instanceof ServerPlayerEntity) {
             ExtendedCriteriaTriggers.Advancement_Unlocked.test((ServerPlayerEntity) event.getOwner());
         }

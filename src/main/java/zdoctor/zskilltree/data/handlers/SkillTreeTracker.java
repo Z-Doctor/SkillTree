@@ -5,14 +5,16 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
-import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
+import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.criterion.ProgressTracker;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
+import zdoctor.zskilltree.skilltree.events.CriterionTrackerEvent;
 import zdoctor.zskilltree.skilltree.skill.SkillTreeDataManager;
 
 import java.util.*;
@@ -33,7 +35,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     }
 
     public SkillTreeTracker(LivingEntity entity) {
-        if(entity == null)
+        if (entity == null)
             throw new NullPointerException("Entity is null");
         owner = entity;
         LOGGER.debug("Attached Skill Tree to {}", owner);
@@ -70,14 +72,9 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         return true;
     }
 
-    @Override
-    public ProgressTracker stopTracking(CriterionTracker trackable) {
-        return progressTracker.remove(trackable);
-    }
-
     protected void startProgress(CriterionTracker trackable, ProgressTracker progress) {
         progress.update(trackable.getCriteria(), trackable.getRequirements());
-        if(trackable.shouldClientTrack())
+        if (trackable.shouldClientTrack())
             progress.enableUpdates();
         else
             progress.disableUpdates();
@@ -156,12 +153,12 @@ public class SkillTreeTracker implements ISkillTreeTracker {
 
     protected void onProgressCompleted(CriterionTracker trackable) {
         // TODO Add toast and chat announcement to options
-        // TODO Event for when a skill page is unlocked
-//        MinecraftForge.EVENT_BUS.post(new SkillPageEvent.SkillPageGrantedEvent(owner, page));
+        MinecraftForge.EVENT_BUS.post(new CriterionTrackerEvent.ProgressGrantedEvent(owner, trackable));
     }
 
     protected void onProgressRevoked(CriterionTracker trackable) {
-//        MinecraftForge.EVENT_BUS.post(new SkillPageEvent.SkillPageRevokedEvent(owner, page));
+        startProgress(trackable);
+        MinecraftForge.EVENT_BUS.post(new CriterionTrackerEvent.ProgressRevokedEvent(owner, trackable));
     }
 
     public <T> List<T> get(Class<T> filter) {
@@ -209,13 +206,9 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         nbt.getList("progress_list", Constants.NBT.TAG_COMPOUND).stream().map(tag -> (CompoundNBT) tag).forEach(data -> {
             ResourceLocation id = new ResourceLocation(data.getString("id"));
             CriterionTracker trackable = allEntries.get(id);
-            ProgressTracker progress = getProgress(trackable);
-            if (progress == null)
-                startProgress(trackable);
-            else {
-                progress.deserializeNBT(data.getCompound("criterion"));
-                progress.update(trackable.getCriteria(), trackable.getRequirements());
-            }
+            ProgressTracker progress = new ProgressTracker();
+            progress.deserializeNBT(data.getCompound("criterion"));
+            startProgress(trackable, progress);
         });
     }
 

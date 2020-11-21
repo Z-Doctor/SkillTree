@@ -94,7 +94,7 @@ public class SCriterionTrackerSyncPacket {
                 try {
                     toAdd.add(reader.apply(buf));
                 } catch (Exception e) {
-                    LOGGER.error("Skipping: Ran into error {} when paring item of {}", e.getLocalizedMessage()
+                    LOGGER.trace("Skipping: Ran into error {} when parsing item of {}", e.getLocalizedMessage()
                             , type);
                     buf.readerIndex(nextBlock);
                 }

@@ -1,6 +1,6 @@
 package zdoctor.zskilltree.api.enums;
 
-public enum SkillTreeAction {
+public enum ProgressAction {
     GRANT,
     REVOKE
 }

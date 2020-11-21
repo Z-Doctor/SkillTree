@@ -28,7 +28,8 @@ public class SkillTreeListener<T extends ICriterionInstance> extends ICriterionT
         if (playerAdvancementsIn instanceof PlayerSkillTreeTracker.SkillTreeAdvancementWrapper) {
             PlayerSkillTreeTracker handler = ((PlayerSkillTreeTracker.SkillTreeAdvancementWrapper) playerAdvancementsIn).getSkillTreeHandler();
             handler.grantCriterion(trackable, criterionName);
-        }
+        } else
+            super.grantCriterion(playerAdvancementsIn);
     }
 
 

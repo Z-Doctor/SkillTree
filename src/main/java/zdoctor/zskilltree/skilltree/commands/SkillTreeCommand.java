@@ -47,6 +47,7 @@ public class SkillTreeCommand {
     }
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
+        // TODO Make it so players can use commands to check if a player has access to a skill tree or has a skill
         dispatcher.register(buildSkillTreeCommand());
     }
 

@@ -13,7 +13,10 @@ import zdoctor.zskilltree.skilltree.skill.Skill;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientPlayerProgressTracker extends SkillTreeTracker implements IClientProgressTracker {
@@ -55,21 +58,29 @@ public class ClientPlayerProgressTracker extends SkillTreeTracker implements ICl
         packetIn.getToRemove().forEach(pages::remove);
         packetIn.getToRemove().forEach(skills::remove);
 
+        Set<ResourceLocation> orphanedSkills = new HashSet<>(skills.keySet());
+
         pages.values().stream().sorted(SkillPage::compare)
                 .forEach(page -> {
                     SkillPage skillPage = page.copy();
+                    for (ResourceLocation id : skillPage.getRootSkills().keySet()) {
+                        Skill skill = skills.get(id);
+                        if (skill != null) {
+                            skillPage.putRootSkill(id, skill);
+                            orphanedSkills.remove(id);
+                        }
+                    }
                     addPageSafe(skillPage);
                     completed.add(skillPage);
-                    skills.values().stream().filter(skillPage::hasRootSkill).forEach(skillPage::addSkill);
-
                 });
 
-        skills.values().forEach(skill -> {
-            SkillPage page = pages.get(skill.getParentPage());
-        });
+        if (!orphanedSkills.isEmpty()) {
+            LOGGER.debug("Found {} skills that have no page. Perhaps they have the skill but not its parent page. " +
+                    "I should make a system for that. {}", orphanedSkills.size(), Arrays.deepToString(orphanedSkills.toArray()));
+        }
 
-        maxHorizontal = sorted_pages.get(SkillPageAlignment.HORIZONTAL).length;
-        maxVertical = sorted_pages.get(SkillPageAlignment.VERTICAL).length;
+        maxHorizontal = Integer.min(0, sorted_pages.get(SkillPageAlignment.HORIZONTAL).length - 1);
+        maxVertical = Integer.min(0, sorted_pages.get(SkillPageAlignment.VERTICAL).length - 1);
         if (listener != null)
             listener.reload();
 

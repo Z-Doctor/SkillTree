@@ -21,8 +21,6 @@ public class GuiSkillTreeScreen extends AbstractGuiSkillTreeScreen implements IC
     protected static final ITextComponent SAD_LABEL = new TranslationTextComponent("advancements.sad_label");
     protected static final ITextComponent EMPTY = new TranslationTextComponent("advancements.empty");
     private static int tabPageNumber = 0;
-    private final HashMap<SkillPage, GuiSkillPage> tabs = new HashMap<>();
-    private final IClientProgressTracker skillTreeHandler;
     protected final ImageDisplayInfo window = new ImageDisplayInfo(ImageAssets.SKILL_TREE_WINDOW) {
         {
             anchorPoint = AnchorPoint.CENTER;
@@ -48,6 +46,8 @@ public class GuiSkillTreeScreen extends AbstractGuiSkillTreeScreen implements IC
             background.renderRepeating(matrixStack, 15, 8, partialTicks);
         }
     };
+    private final HashMap<SkillPage, GuiSkillPage> tabs = new HashMap<>();
+    private final IClientProgressTracker skillTreeHandler;
     private int maxPages = 0;
 
     private GuiSkillPage selectedPage;
@@ -120,7 +120,7 @@ public class GuiSkillTreeScreen extends AbstractGuiSkillTreeScreen implements IC
             skillTreeHandler.setSelectedPage(selectedPage == null ? null : selectedPage.getSkillPage(), true);
 
         maxPages = Integer.max(skillTreeHandler.getMaxVertical() / GuiSkillPage.MAX_VERTICAL,
-                skillTreeHandler.getMaxHorizontal() / GuiSkillPage.MAX_HORIZONTAL) - 1;
+                skillTreeHandler.getMaxHorizontal() / GuiSkillPage.MAX_HORIZONTAL);
 
 
         if (maxPages > 1) {
@@ -159,7 +159,7 @@ public class GuiSkillTreeScreen extends AbstractGuiSkillTreeScreen implements IC
         // Renders the tooltip of a skill page
         for (Map.Entry<SkillPage, GuiSkillPage> entry : tabs.entrySet()) {
             GuiSkillPage tab = entry.getValue();
-            if(tab.isSelected() || tab.getPageNumber() != tabPageNumber)
+            if (tab.isSelected() || tab.getPageNumber() != tabPageNumber)
                 continue;
 
             if (tab.isMouseOver(mouseX, mouseY)) {

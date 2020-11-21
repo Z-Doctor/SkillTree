@@ -6,11 +6,13 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.network.PacketDistributor;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.criterion.ProgressTracker;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
+import zdoctor.zskilltree.skilltree.events.SkillTreeEvent;
 import zdoctor.zskilltree.skilltree.skill.SkillTreeDataManager;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 import zdoctor.zskilltree.skilltree.skillpages.SkillTreeListener;
@@ -25,16 +27,24 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
     public PlayerSkillTreeTracker(ServerPlayerEntity player) {
         super(player);
         wrapper = new SkillTreeAdvancementWrapper(player, this);
-        if (player == null)
-            throw new NullPointerException();
     }
 
-    protected void onProgressCompleted(SkillPage page) {
-        unregisterListeners(page);
+    @Override
+    protected void startProgress(CriterionTracker trackable, ProgressTracker progress) {
+        super.startProgress(trackable, progress);
+        registerListeners(trackable);
     }
 
-    protected void onPageRevoked(SkillPage page) {
-        registerListeners(page);
+    @Override
+    protected void onProgressCompleted(CriterionTracker trackable) {
+        unregisterListeners(trackable);
+        super.onProgressCompleted(trackable);
+    }
+
+    @Override
+    protected void onProgressRevoked(CriterionTracker trackable) {
+        registerListeners(trackable);
+        super.onProgressRevoked(trackable);
     }
 
     public ServerPlayerEntity getPlayer() {
@@ -64,13 +74,6 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
             ModMain.getInstance().getPacketChannel().send(PacketDistributor.PLAYER.with(this::getPlayer),
                     new SCriterionTrackerSyncPacket(firstSync, toAdd, toRemove, progressUpdate));
 
-            progressChanged.forEach(trackable -> {
-                if (getProgress(trackable).isDone())
-                    unregisterListeners(trackable);
-                else
-                    registerListeners(trackable);
-            });
-
             firstSync = false;
             progressChanged.clear();
             completionChanged.clear();
@@ -82,16 +85,17 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
         dispose();
         super.reload();
         SkillTreeDataManager.getAllTrackers().values().forEach(this::registerListeners);
+        MinecraftForge.EVENT_BUS.post(new SkillTreeEvent.PlayerReloadedEvent(getPlayer()));
     }
 
     public SkillTreeAdvancementWrapper getWrapper() {
         return wrapper;
     }
 
+    @Override
     public void dispose() {
-        for (ICriterionTrigger<?> trigger : CriteriaTriggers.getAll()) {
-            trigger.removeAllListeners(wrapper);
-        }
+        CriteriaTriggers.getAll().forEach(t -> t.removeAllListeners(wrapper));
+        super.dispose();
     }
 
     protected void registerListeners(CriterionTracker trackable) {
