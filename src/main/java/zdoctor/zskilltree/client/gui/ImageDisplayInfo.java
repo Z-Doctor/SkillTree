@@ -6,10 +6,13 @@ import net.minecraft.client.gui.IRenderable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import zdoctor.zskilltree.api.ImageAsset;
+import zdoctor.zskilltree.api.ImageAssets;
 import zdoctor.zskilltree.api.enums.AnchorPoint;
 import zdoctor.zskilltree.api.enums.Layer;
 import zdoctor.zskilltree.api.interfaces.IRenderableHandler;
-import zdoctor.zskilltree.extra.ImageAsset;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -20,24 +23,27 @@ import java.util.List;
 // TODO Perhaps make rending z-index based from the renderer and not sorting based on parent(how?)
 // TODO Add system to make custom display info such as rendering text, solid colors, etc than can be registered
 //  maybe even add support for datapacks to render if possible
-public class ImageDisplayInfo extends AbstractGuiSkillTreeScreen {
+@OnlyIn(Dist.CLIENT)
+public class ImageDisplayInfo extends Screen {
+    public static final ImageDisplayInfo MISSING = new ImageDisplayInfo();
+
     private static final ITextComponent EMPTY = new TranslationTextComponent("title.untitled");
-    protected final List<IGuiEventListener> children = new ArrayList<>();
+    protected final List<IGuiEventListener> childDisplays = new ArrayList<>();
+    protected final boolean buttonsEnabled = true;
+    protected final boolean hidden = false;
     public Layer layer = Layer.DEFAULT;
     /**
      * Where relative to the parent the starting point is (where it is drawn); if parent is null, is relative to screen
      */
-    public AnchorPoint anchorPoint = AnchorPoint.TOP_LEFT;
+    protected AnchorPoint anchorPoint = AnchorPoint.TOP_LEFT;
     /**
      * Where relative to the anchor point the starting point is (where it is drawn)
      */
-    public AnchorPoint pivotPoint = AnchorPoint.TOP_LEFT;
-    public int xOffset;
-    public int yOffset;
-    public boolean listenMouse = true;
-    public final boolean buttonsEnabled = true;
-    public final boolean hidden = false;
-    public IRenderableHandler preRender;
+    protected AnchorPoint pivotPoint = AnchorPoint.TOP_LEFT;
+    protected int xOffset;
+    protected int yOffset;
+    protected boolean listenMouse = true;
+    protected IRenderableHandler preRender;
     protected ImageDisplayInfo root;
     protected ImageDisplayInfo parent;
     protected ITextComponent title;
@@ -48,14 +54,16 @@ public class ImageDisplayInfo extends AbstractGuiSkillTreeScreen {
     private int xTrueOffset;
     private int yTrueOffset;
 
-    public ImageDisplayInfo() {
+    private ImageDisplayInfo() {
         super(EMPTY);
         root = this;
+        image = ImageAssets.MISSING;
     }
 
     protected ImageDisplayInfo(ITextComponent title) {
         super(title);
         root = this;
+        updateOffsets();
     }
 
     public ImageDisplayInfo(@Nonnull ImageAsset imageAsset) {
@@ -68,24 +76,42 @@ public class ImageDisplayInfo extends AbstractGuiSkillTreeScreen {
         image = imageAsset;
         this.xRelativeOffset = xOffset;
         this.yRelativeOffset = yOffset;
+        updateOffsets();
     }
 
-    public ImageDisplayInfo addChild(ImageDisplayInfo child) {
-        child.root = root;
-        child.parent = this;
-        child.listenMouse = listenMouse;
+    public ImageDisplayInfo addDisplay(ImageDisplayInfo display) {
+        display.root = root;
+        display.parent = this;
+        display.listenMouse = listenMouse;
+        childDisplays.add(display);
+        return this;
+    }
+
+    public ImageDisplayInfo addChild(IGuiEventListener child) {
         children.add(child);
         return this;
     }
 
-    public ImageDisplayInfo addMiscChild(IGuiEventListener child) {
-        children.add(child);
-        return this;
-    }
-
-    public void clearChildren() {
+    public void dispose() {
+        childDisplays.clear();
         children.clear();
-        super.children.clear();
+    }
+
+    public ImageDisplayInfo setOffsets(int x, int y) {
+        this.xRelativeOffset = x;
+        this.yRelativeOffset = y;
+
+        return this;
+    }
+
+    public ImageDisplayInfo setAnchorPoint(AnchorPoint anchorPoint) {
+        this.anchorPoint = anchorPoint;
+        return this;
+    }
+
+    public ImageDisplayInfo setPivotPoint(AnchorPoint pivotPoint) {
+        this.pivotPoint = pivotPoint;
+        return this;
     }
 
     public void updateOffsets() {
@@ -170,7 +196,7 @@ public class ImageDisplayInfo extends AbstractGuiSkillTreeScreen {
     }
 
     public void sortChildren() {
-        children.sort((a, b) -> {
+        childDisplays.sort((a, b) -> {
             if (a == null || b == null)
                 return a == null ? 1 : -1;
                 // For non-ImageDisplayInfo, they are rendered based on when they were added and are not sorted
@@ -201,16 +227,24 @@ public class ImageDisplayInfo extends AbstractGuiSkillTreeScreen {
     @Override
     protected void init() {
         sortChildren();
-        super.children.addAll(children);
+//        super.children.addAll(childDisplays);
         updateOffsets();
-        super.children.forEach(child -> {
+        childDisplays.forEach(display -> {
+            if (display instanceof Screen)
+                ((Screen) display).init(getMinecraft(), width, height);
+        });
+        children.forEach(child -> {
             if (child instanceof Screen)
-                ((Screen) child).init(minecraft, width, height);
+                ((Screen) child).init(getMinecraft(), width, height);
         });
     }
 
     public void bindTexture() {
-        this.minecraft.getTextureManager().bindTexture(getImage().texture);
+        getMinecraft().getTextureManager().bindTexture(getImage().texture);
+    }
+
+    public void bindTexture(ImageAsset imageAsset) {
+        getMinecraft().getTextureManager().bindTexture(imageAsset.texture);
     }
 
     public ImageAsset getImage() {
@@ -250,6 +284,11 @@ public class ImageDisplayInfo extends AbstractGuiSkillTreeScreen {
         this.blit(matrixStack, x, y, getImage().uOffset, getImage().vOffset, getImage().xSize, getImage().ySize);
     }
 
+    public void renderAt(MatrixStack matrixStack, int x, int y, float partialTicks, ImageAsset imageAsset) {
+        bindTexture(imageAsset);
+        this.blit(matrixStack, x, y, imageAsset.uOffset, imageAsset.vOffset, imageAsset.xSize, imageAsset.ySize);
+    }
+
     public void renderRepeating(MatrixStack matrixStack, int cols, int rows, float partialTicks) {
         renderRepeating(matrixStack, 0, 0, cols, rows, partialTicks);
     }
@@ -262,12 +301,15 @@ public class ImageDisplayInfo extends AbstractGuiSkillTreeScreen {
         }
     }
 
+    protected void renderBackground(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    }
+
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         if (hidden)
             return;
 
-        Iterator<IRenderable> itr = children.stream().filter(child -> child instanceof IRenderable)
+        Iterator<IRenderable> itr = childDisplays.stream().filter(child -> child instanceof IRenderable)
                 .map(child -> (IRenderable) child).iterator();
 
         // Renders background

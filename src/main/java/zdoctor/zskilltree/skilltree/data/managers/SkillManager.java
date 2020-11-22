@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.data.managers;
+package zdoctor.zskilltree.skilltree.data.managers;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;

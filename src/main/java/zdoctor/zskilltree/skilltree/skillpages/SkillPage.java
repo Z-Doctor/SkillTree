@@ -20,20 +20,21 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.registries.ForgeRegistryEntry;
 import org.apache.commons.lang3.ArrayUtils;
 import zdoctor.zskilltree.ModMain;
+import zdoctor.zskilltree.api.ImageAsset;
 import zdoctor.zskilltree.api.annotations.ClassNameMapper;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
-import zdoctor.zskilltree.data.builders.SkillPageBuilder;
-import zdoctor.zskilltree.extra.ImageAsset;
+import zdoctor.zskilltree.skilltree.data.builders.SkillPageBuilder;
 import zdoctor.zskilltree.skilltree.skill.Skill;
 
 import java.util.*;
 import java.util.function.Consumer;
 
 @ClassNameMapper(key = ModMain.MODID + ":skill_page")
-public class SkillPage implements CriterionTracker, Comparable<SkillPage> {
+public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPage> implements CriterionTracker, Comparable<SkillPage> {
     public static final SkillPage NONE = new SkillPage();
     private static final SkillPageDisplayInfo MISSING = new SkillPageDisplayInfo(ItemStack.EMPTY,
             new TranslationTextComponent("skillpage.missing.title"),
@@ -52,6 +53,7 @@ public class SkillPage implements CriterionTracker, Comparable<SkillPage> {
         displayInfo = MISSING;
         criteria = ImmutableMap.<String, Criterion>builder().build();
         requirements = new String[0][];
+        setRegistryName(id);
     }
 
     private SkillPage(SkillPage skillPage) {
@@ -60,6 +62,8 @@ public class SkillPage implements CriterionTracker, Comparable<SkillPage> {
         displayInfo = skillPage.getDisplayInfo();
         criteria = skillPage.getCriteria();
         requirements = skillPage.getRequirements();
+        rootSkills.putAll(skillPage.getRootSkills());
+        setRegistryName(skillPage.getRegistryName());
     }
 
     public SkillPage(PacketBuffer buf) {
@@ -80,9 +84,10 @@ public class SkillPage implements CriterionTracker, Comparable<SkillPage> {
 
         for (int i = buf.readVarInt(); i > 0; i--) {
             ResourceLocation skillId = buf.readResourceLocation();
-//            Skill skill = ModMain.getInstance().getSkillManager().getSkill(skillId);
-            rootSkills.put(skillId, null);
+            rootSkills.put(skillId, Skill.NONE);
         }
+
+        setRegistryName(id);
     }
 
     public SkillPage(int index, ResourceLocation id, SkillPageDisplayInfo displayInfo, Map<String, Criterion> criteriaIn, String[][] requirementsIn) {
@@ -91,22 +96,19 @@ public class SkillPage implements CriterionTracker, Comparable<SkillPage> {
         this.index = index;
 
         this.criteria = ImmutableMap.copyOf(criteriaIn);
-        if (requirementsIn == null)
+        if (requirementsIn == null) {
             if (this.criteria.isEmpty())
                 this.requirements = new String[0][];
             else
                 this.requirements = IRequirementsStrategy.AND.createRequirements(this.criteria.keySet());
+        }
+        setRegistryName(id);
     }
 
     public static int compare(SkillPage in, SkillPage to) {
         // Null values will be treated like they are bigger to be pushed down the list
-        if (in == null || to == null) {
-            if (in != null)
-                return -1;
-            else if (to != null)
-                return 1;
-            return 0;
-        }
+        if (in == null || to == null)
+            return in != null ? -1 : to != null ? 1 : 0;
         return Integer.compareUnsigned(in.getIndex(), to.getIndex());
     }
 
@@ -177,6 +179,7 @@ public class SkillPage implements CriterionTracker, Comparable<SkillPage> {
         return new SkillPage(index, id, displayInfo, criterion, requirements);
     }
 
+    // Used for generators
     public void register(Consumer<SkillPage> consumer) {
         consumer.accept(this);
     }
@@ -184,6 +187,8 @@ public class SkillPage implements CriterionTracker, Comparable<SkillPage> {
     public boolean hasRootSkill(Skill skill) {
         return rootSkills.containsKey(skill.getId());
     }
+
+
 
     @Override
     public Map<String, Criterion> getCriteria() {

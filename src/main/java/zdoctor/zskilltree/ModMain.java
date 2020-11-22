@@ -3,6 +3,7 @@ package zdoctor.zskilltree;
 import net.minecraft.client.resources.ReloadListener;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.Items;
 import net.minecraft.loot.LootPredicateManager;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
@@ -11,6 +12,7 @@ import net.minecraft.profiler.IProfiler;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
@@ -32,26 +34,30 @@ import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DataSerializerEntry;
+import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.RegistryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.advancements.ExtendedCriteriaTriggers;
+import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.client.ClientCapabilityProvider;
 import zdoctor.zskilltree.client.KeyBindings;
-import zdoctor.zskilltree.data.handlers.SkillTreeTracker;
-import zdoctor.zskilltree.data.managers.SkillManager;
-import zdoctor.zskilltree.data.managers.SkillPageManager;
-import zdoctor.zskilltree.data.providers.CapabilitySkillTreeProvider;
-import zdoctor.zskilltree.data.providers.SkillPageProvider;
-import zdoctor.zskilltree.data.providers.SkillProvider;
-import zdoctor.zskilltree.extra.SkillTreeEntityOptions;
 import zdoctor.zskilltree.network.NetworkSerializationRegistry;
 import zdoctor.zskilltree.network.SkillTreePacketHandler;
 import zdoctor.zskilltree.skilltree.commands.SkillTreeCommand;
+import zdoctor.zskilltree.skilltree.commands.SkillTreeEntityOptions;
+import zdoctor.zskilltree.skilltree.data.handlers.SkillTreeTracker;
+import zdoctor.zskilltree.skilltree.data.managers.SkillManager;
+import zdoctor.zskilltree.skilltree.data.managers.SkillPageManager;
+import zdoctor.zskilltree.skilltree.data.providers.CapabilitySkillTreeProvider;
+import zdoctor.zskilltree.skilltree.data.providers.SkillPageProvider;
+import zdoctor.zskilltree.skilltree.data.providers.SkillProvider;
 import zdoctor.zskilltree.skilltree.skill.Skill;
 import zdoctor.zskilltree.skilltree.skill.SkillTreeDataManager;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.skillpages.SkillPageDisplayInfo;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -68,7 +74,10 @@ public final class ModMain {
     private CapabilitySkillTreeProvider capabilityProvider;
 
     private SkillTreeDataManager skillTreeDataManager;
+
+    private IForgeRegistry<SkillPage> skillPageRegistry;
     private SkillPageManager skillPageManager;
+
     private SkillManager skillManager;
     private Map<String, Function<PacketBuffer, CriterionTracker>> criterionMappings;
 
@@ -82,9 +91,11 @@ public final class ModMain {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doServerStuff);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::createProviders);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::createRegistries);
 
         FMLJavaModLoadingContext.get().getModEventBus().addGenericListener(DataSerializerEntry.class, this::registerDataSerializers);
         FMLJavaModLoadingContext.get().getModEventBus().addGenericListener(GlobalLootModifierSerializer.class, this::registerGlobalLootModifierSerializers);
+        FMLJavaModLoadingContext.get().getModEventBus().addGenericListener(SkillPage.class, this::createSkillPages);
 
         MinecraftForge.EVENT_BUS.addListener(this::onServerStarting);
         MinecraftForge.EVENT_BUS.addListener(this::onAddReloadListeners);
@@ -124,6 +135,24 @@ public final class ModMain {
 
     public SimpleChannel getPacketChannel() {
         return packetChannel;
+    }
+
+    // Mod Events
+
+    private void createRegistries(RegistryEvent.NewRegistry event) {
+        LOGGER.info("Creating Registries");
+        skillPageRegistry = new RegistryBuilder<SkillPage>().setType(SkillPage.class).setName(new ResourceLocation(MODID, "skill_page"))
+                .setDefaultKey(SkillPage.NONE.getRegistryName()).create();
+    }
+
+    private void createSkillPages(RegistryEvent.Register<SkillPage> event) {
+        LOGGER.info("Registering Skill Pages");
+        event.getRegistry().register(SkillPage.Builder.builder().atIndex(0)
+                .withDisplay(new SkillPageDisplayInfo(Items.WRITABLE_BOOK.getDefaultInstance(),
+                        new TranslationTextComponent("skillpage.player_info.title"),
+                        new TranslationTextComponent("skillpage.player_info.description"),
+                        SkillPageAlignment.HORIZONTAL))
+                .build(new ResourceLocation(MODID, "player_info")));
     }
 
     private void createProviders(GatherDataEvent event) {
@@ -191,7 +220,6 @@ public final class ModMain {
             }
         });
         SkillTreeCommand.register(event.getDataPackRegistries().getCommandManager().getDispatcher());
-
     }
 
     private void onPlayerTick(TickEvent.PlayerTickEvent event) {

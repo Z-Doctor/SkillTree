@@ -1,10 +1,7 @@
-package zdoctor.zskilltree.client.gui;
+package zdoctor.zskilltree.api;
 
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import zdoctor.zskilltree.ModMain;
-import zdoctor.zskilltree.extra.ImageAsset;
 
 public class ImageAssets {
     public static ImageAsset register(String category, String name, int uOffset, int vOffset, int xSize, int ySize) {
@@ -21,6 +18,7 @@ public class ImageAssets {
     }
 
     // TODO Make ImageAsset registry to make using them in json easier
+    public static final ImageAsset MISSING = registerGui("missing", 16, 16);
     public static final ImageAsset SKILL_TREE_WINDOW = registerGui("skill_tree", 252, 140);
     public static final ImageAsset DEFAULT_TILE = registerGui("skill_tree", 176, 212, 16, 16);
     public static final ImageAsset SANDSTONE_TILE = registerGui("skill_tree", 192, 212, 16, 16);

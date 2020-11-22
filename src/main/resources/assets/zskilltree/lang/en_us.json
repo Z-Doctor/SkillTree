@@ -9,5 +9,8 @@
   "commands.skilltree.revoke.page.success.many": "Revoked the skill tree %s to %s players",
   "commands.skilltree.revoke.page.success.none": "Couldn't find any players to revoke the skill tree %s from",
 
-  "commands.skilltree.skillNotFound": "No skill was found by the name '%1$s"
+  "commands.skilltree.skillNotFound": "No skill was found by the name '%1$s",
+
+  "skilltree.sad_label": ":(",
+  "skilltree.empty": "There doesn't seem to be anything here..."
 }

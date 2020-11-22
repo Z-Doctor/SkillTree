@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.data.handlers;
+package zdoctor.zskilltree.skilltree.data.handlers;
 
 import com.google.gson.JsonElement;
 import net.minecraft.advancements.*;
@@ -14,7 +14,6 @@ import zdoctor.zskilltree.criterion.ProgressTracker;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
 import zdoctor.zskilltree.skilltree.events.SkillTreeEvent;
 import zdoctor.zskilltree.skilltree.skill.SkillTreeDataManager;
-import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 import zdoctor.zskilltree.skilltree.skillpages.SkillTreeListener;
 
 import java.io.File;

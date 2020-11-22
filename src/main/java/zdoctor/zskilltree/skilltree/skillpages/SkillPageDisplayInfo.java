@@ -14,8 +14,8 @@ import net.minecraft.util.JSONUtils;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.registries.ForgeRegistries;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
-import zdoctor.zskilltree.client.gui.ImageAssets;
-import zdoctor.zskilltree.extra.ImageAsset;
+import zdoctor.zskilltree.api.ImageAssets;
+import zdoctor.zskilltree.api.ImageAsset;
 
 public class SkillPageDisplayInfo {
     private final ITextComponent pageName;

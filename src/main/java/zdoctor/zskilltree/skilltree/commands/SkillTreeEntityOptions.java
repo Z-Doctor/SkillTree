@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.extra;
+package zdoctor.zskilltree.skilltree.commands;
 
 import com.google.common.collect.Maps;
 import com.mojang.brigadier.StringReader;
@@ -99,7 +99,6 @@ public class SkillTreeEntityOptions {
                     }
                 }, entitySelector -> true,
                 new TranslationTextComponent("argument.entity.options.skill_page.description"));
-
         // TODO Add skill Entity Option
     }
 }

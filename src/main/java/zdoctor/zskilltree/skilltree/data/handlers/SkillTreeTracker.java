@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.data.handlers;
+package zdoctor.zskilltree.skilltree.data.handlers;
 
 import net.minecraft.advancements.Criterion;
 import net.minecraft.entity.LivingEntity;

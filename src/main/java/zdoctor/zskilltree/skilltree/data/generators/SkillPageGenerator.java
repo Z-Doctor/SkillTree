@@ -1,9 +1,9 @@
-package zdoctor.zskilltree.data.generators;
+package zdoctor.zskilltree.skilltree.data.generators;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
-import zdoctor.zskilltree.data.builders.SkillPageBuilder;
+import zdoctor.zskilltree.skilltree.data.builders.SkillPageBuilder;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import java.util.function.Consumer;

@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.client.gui;
+package zdoctor.zskilltree.client.gui.old;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -8,7 +8,7 @@ import zdoctor.zskilltree.api.ImageAssets;
 import zdoctor.zskilltree.api.enums.AnchorPoint;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeScreen;
-import zdoctor.zskilltree.client.gui.old.GuiSkill;
+import zdoctor.zskilltree.client.gui.ImageDisplayInfo;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 public class GuiSkillPage extends ImageDisplayInfo {
@@ -45,7 +45,6 @@ public class GuiSkillPage extends ImageDisplayInfo {
     private final SkillPage skillPage;
     private final ISkillTreeScreen skillTreeScreen;
 
-
     private boolean isSelected;
 
     private boolean hasDisplay;
@@ -60,8 +59,22 @@ public class GuiSkillPage extends ImageDisplayInfo {
         this.skillTreeScreen = skillTreeScreen;
         this.skillPage = page;
         this.pageNumber = page.getIndex() / (page.getAlignment() == SkillPageAlignment.VERTICAL ? MAX_VERTICAL : MAX_HORIZONTAL);
-        setImage(ImageAssets.DEFAULT_TILE);
         // TODO Add skills
+//        for (Skill skill : page.getRootSkills().values()) {
+//            GuiSkill guiSkill = new GuiSkill(skill, skillScreen) {
+//                @Override
+//                public void onMouseClicked(double mouseX, double mouseY, int button) {
+//                    onSkillClicked(this, mouseX, mouseY, button);
+//                }
+//            };
+//            addDisplay(guiSkill);
+//        }
+    }
+
+    protected void onSkillClicked(GuiSkill guiSkill, double mouseX, double mouseY, int button) {
+        if (button != 0)
+            return;
+        skillTreeScreen.getClientTracker().onSkillClicked(guiSkill.getSkill());
     }
 
     @Override

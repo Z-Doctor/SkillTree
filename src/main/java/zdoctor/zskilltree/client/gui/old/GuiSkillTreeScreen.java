@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.client.gui;
+package zdoctor.zskilltree.client.gui.old;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -7,20 +7,24 @@ import net.minecraft.client.util.InputMappings;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
+import zdoctor.zskilltree.api.ImageAssets;
 import zdoctor.zskilltree.api.enums.AnchorPoint;
 import zdoctor.zskilltree.api.enums.Layer;
-import zdoctor.zskilltree.api.interfaces.IClientProgressTracker;
+import zdoctor.zskilltree.api.interfaces.IClientSkillTreeTracker;
 import zdoctor.zskilltree.client.KeyBindings;
+import zdoctor.zskilltree.client.gui.ImageDisplayInfo;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class GuiSkillTreeScreen extends AbstractGuiSkillTreeScreen implements IClientProgressTracker.IListener {
-    // TODO Make my own sad_label and empty
+public class GuiSkillTreeScreen extends AbstractGuiSkillTreeScreen implements IClientSkillTreeTracker.IListener {
+    // Have my own label but keeping like this for built in localization
     protected static final ITextComponent SAD_LABEL = new TranslationTextComponent("advancements.sad_label");
     protected static final ITextComponent EMPTY = new TranslationTextComponent("advancements.empty");
     private static int tabPageNumber = 0;
+
+    // TODO Move and clean up, perhaps move this to the json
     protected final ImageDisplayInfo window = new ImageDisplayInfo(ImageAssets.SKILL_TREE_WINDOW) {
         {
             anchorPoint = AnchorPoint.CENTER;
@@ -32,30 +36,32 @@ public class GuiSkillTreeScreen extends AbstractGuiSkillTreeScreen implements IC
             };
         }
     };
-    protected final ImageDisplayInfo background = new ImageDisplayInfo() {
-        {
-            layer = Layer.BACKGROUND;
-            xOffset = 6;
-            yOffset = 6;
-        }
+    protected final ImageDisplayInfo background = null;
+//    = new ImageDisplayInfo() {
+//        {
+//            layer = Layer.BACKGROUND;
+//            xOffset = 6;
+//            yOffset = 6;
+//        }
+//
+//        @Override
+//        public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+//            if (getImage() == null)
+//                return;
+//            background.renderRepeating(matrixStack, 15, 8, partialTicks);
+//        }
+//    };
 
-        @Override
-        public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-            if (getImage() == null)
-                return;
-            background.renderRepeating(matrixStack, 15, 8, partialTicks);
-        }
-    };
     private final HashMap<SkillPage, GuiSkillPage> tabs = new HashMap<>();
-    private final IClientProgressTracker skillTreeHandler;
+    private final IClientSkillTreeTracker skillTreeHandler;
     private int maxPages = 0;
 
     private GuiSkillPage selectedPage;
 
-    public GuiSkillTreeScreen(IClientProgressTracker skillTreeHandler) {
+    public GuiSkillTreeScreen(IClientSkillTreeTracker skillTreeHandler) {
         super(new TranslationTextComponent("zskilltree.skilltree.title"));
         this.skillTreeHandler = skillTreeHandler;
-        window.addChild(background);
+        window.addDisplay(background);
     }
 
     public int getTabPage() {
@@ -85,16 +91,28 @@ public class GuiSkillTreeScreen extends AbstractGuiSkillTreeScreen implements IC
 
     @Override
     public void skillPageAdded(SkillPage page) {
-        GuiSkillPage guiSkillPage = new GuiSkillPage(page, this) {
-            @Override
-            public void onMouseClicked(double mouseX, double mouseY, int button) {
-                if (button == 0)
-                    skillTreeHandler.setSelectedPage(page, true);
-            }
-        };
-        window.addChild(guiSkillPage);
-        guiSkillPage.preRender = (matrixStack, mouseX, mouseY, partialTicks) -> tabPageNumber == guiSkillPage.getPageNumber();
-        tabs.put(page, guiSkillPage);
+//        GuiSkillPage guiSkillPage = new GuiSkillPage(page, this) {
+//            @Override
+//            public void onMouseClicked(double mouseX, double mouseY, int button) {
+//                onSkillPageClicked(this, mouseX, mouseY, button);
+//            }
+//        };
+//        window.addDisplay(guiSkillPage);
+////        guiSkillPage.preRender = (matrixStack, mouseX, mouseY, partialTicks) -> tabPageNumber == guiSkillPage.getPageNumber();
+//        tabs.put(page, guiSkillPage);
+    }
+
+    protected void onSkillPageClicked(GuiSkillPage guiPage, double mouseX, double mouseY, int button) {
+        if (button == 0)
+            skillTreeHandler.setSelectedPage(guiPage.getSkillPage(), true);
+    }
+
+    public GuiSkillPage getSelectedPage() {
+        return selectedPage;
+    }
+
+    public IClientSkillTreeTracker getSkillTreeHandler() {
+        return skillTreeHandler;
     }
 
     @Override
@@ -106,9 +124,9 @@ public class GuiSkillTreeScreen extends AbstractGuiSkillTreeScreen implements IC
 
     @Override
     protected void init() {
-        children.add(window);
-        window.clearChildren();
-        window.addChild(background);
+//        children.add(window);
+        window.dispose();
+        window.addDisplay(background);
         buttons.clear();
         tabs.clear();
         this.selectedPage = null;
@@ -130,7 +148,7 @@ public class GuiSkillTreeScreen extends AbstractGuiSkillTreeScreen implements IC
             addButton(new Button(guiLeft + window.getImage().xSize - 20, guiTop - 50, 20, 20, new StringTextComponent(">"), b -> tabPageNumber = Math.min(tabPageNumber + 1, maxPages)));
         }
 
-        window.init(minecraft, width, height);
+        window.init(getMinecraft(), width, height);
     }
 
     @Override

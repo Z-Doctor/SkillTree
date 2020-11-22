@@ -4,10 +4,11 @@ import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.registries.ObjectHolder;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
-import zdoctor.zskilltree.api.interfaces.IClientProgressTracker;
-import zdoctor.zskilltree.data.handlers.SkillTreeTracker;
+import zdoctor.zskilltree.api.interfaces.IClientSkillTreeTracker;
+import zdoctor.zskilltree.skilltree.data.handlers.SkillTreeTracker;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
 import zdoctor.zskilltree.skilltree.skill.Skill;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
@@ -19,7 +20,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 @OnlyIn(Dist.CLIENT)
-public class ClientPlayerProgressTracker extends SkillTreeTracker implements IClientProgressTracker {
+public class ClientSkillTreeTracker extends SkillTreeTracker implements IClientSkillTreeTracker {
+    @ObjectHolder("zskilltree:player_info")
+    public static final SkillPage playerInfo = null;
+
     private final HashMap<ResourceLocation, SkillPage> pages = new HashMap<>();
     private final HashMap<ResourceLocation, Skill> skills = new HashMap<>();
 
@@ -30,7 +34,7 @@ public class ClientPlayerProgressTracker extends SkillTreeTracker implements ICl
     private int maxVertical;
     private int maxHorizontal;
 
-    public ClientPlayerProgressTracker(ClientPlayerEntity player) {
+    public ClientSkillTreeTracker(ClientPlayerEntity player) {
         super(player);
     }
 
@@ -45,6 +49,7 @@ public class ClientPlayerProgressTracker extends SkillTreeTracker implements ICl
 
         if (packetIn.isFirstSync()) {
             pages.clear();
+            skills.clear();
         }
 
         for (CriterionTracker trackable : packetIn.getToAdd()) {
@@ -117,6 +122,16 @@ public class ClientPlayerProgressTracker extends SkillTreeTracker implements ICl
         this.selectedPage = pageIn;
         if (this.listener != null)
             this.listener.setSelectedPage(pageIn);
+    }
+
+    @Override
+    public void onSkillClicked(Skill skill) {
+        // TODO Send packet to server about the click
+    }
+
+    @Override
+    public SkillPage getDefaultPage() {
+        return playerInfo;
     }
 
     public SkillPage getPageAt(int index, SkillPageAlignment alignment) {

@@ -12,10 +12,10 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import zdoctor.zskilltree.ModMain;
+import zdoctor.zskilltree.api.ImageAsset;
+import zdoctor.zskilltree.api.ImageAssets;
 import zdoctor.zskilltree.api.annotations.ClassNameMapper;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
-import zdoctor.zskilltree.client.gui.ImageAssets;
-import zdoctor.zskilltree.extra.ImageAsset;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import javax.annotation.Nullable;
@@ -26,6 +26,8 @@ import java.util.function.Consumer;
 
 @ClassNameMapper(key = ModMain.MODID + ":skill")
 public class Skill implements CriterionTracker {
+    public static final Skill NONE = new Skill();
+
     private ResourceLocation id;
     private SkillDisplayInfo displayInfo;
 
@@ -134,6 +136,22 @@ public class Skill implements CriterionTracker {
 
     public Builder copy() {
         return new Builder(getId(), getDisplayInfo(), getCriteria(), getRequirements()).onPage(getParentPage());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        else if (!(obj instanceof Skill))
+            return false;
+        else {
+            return getId().equals(((Skill) obj).getId());
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
 
     public static class Builder {

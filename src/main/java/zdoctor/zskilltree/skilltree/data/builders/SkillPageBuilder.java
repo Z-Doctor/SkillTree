@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.data.builders;
+package zdoctor.zskilltree.skilltree.data.builders;
 
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.ICriterionInstance;
@@ -10,7 +10,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
-import zdoctor.zskilltree.extra.ImageAsset;
+import zdoctor.zskilltree.api.ImageAsset;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPageDisplayInfo;
 

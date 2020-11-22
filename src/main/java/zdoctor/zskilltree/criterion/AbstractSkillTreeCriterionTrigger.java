@@ -10,7 +10,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.loot.LootContext;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
-import zdoctor.zskilltree.data.handlers.PlayerSkillTreeTracker;
+import zdoctor.zskilltree.skilltree.data.handlers.PlayerSkillTreeTracker;
 
 import java.util.List;
 import java.util.Optional;

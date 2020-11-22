@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.data.generators;
+package zdoctor.zskilltree.skilltree.data.generators;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;

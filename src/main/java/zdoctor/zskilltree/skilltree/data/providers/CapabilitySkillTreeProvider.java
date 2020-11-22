@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.data.providers;
+package zdoctor.zskilltree.skilltree.data.providers;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -11,8 +11,8 @@ import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
-import zdoctor.zskilltree.data.handlers.PlayerSkillTreeTracker;
-import zdoctor.zskilltree.data.handlers.SkillTreeTracker;
+import zdoctor.zskilltree.skilltree.data.handlers.PlayerSkillTreeTracker;
+import zdoctor.zskilltree.skilltree.data.handlers.SkillTreeTracker;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

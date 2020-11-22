@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.data.managers;
+package zdoctor.zskilltree.skilltree.data.managers;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -9,7 +9,9 @@ import net.minecraft.loot.LootPredicateManager;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.JSONUtils;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
@@ -49,6 +51,11 @@ public class SkillPageManager extends JsonReloadListener {
     protected void apply(Map<ResourceLocation, JsonElement> objectIn, IResourceManager resourceManagerIn, IProfiler profilerIn) {
         reset();
         HashMap<ResourceLocation, SkillPage> newPages = new HashMap<>();
+
+        for (SkillPage page : GameRegistry.findRegistry(SkillPage.class).getValues())
+            newPages.put(page.getRegistryName(), page);
+
+
         objectIn.forEach((location, page) -> {
             try {
                 LOGGER.info("Opened: {}", getPreparedPath(location));

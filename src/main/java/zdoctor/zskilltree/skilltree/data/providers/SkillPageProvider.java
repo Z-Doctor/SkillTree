@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.data.providers;
+package zdoctor.zskilltree.skilltree.data.providers;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
@@ -10,7 +10,7 @@ import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
-import zdoctor.zskilltree.data.generators.SkillPageGenerator;
+import zdoctor.zskilltree.skilltree.data.generators.SkillPageGenerator;
 
 import java.io.IOException;
 import java.nio.file.Path;

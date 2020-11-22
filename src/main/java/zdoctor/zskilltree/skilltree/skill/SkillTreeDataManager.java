@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
-import zdoctor.zskilltree.data.managers.SkillPageManager;
+import zdoctor.zskilltree.skilltree.data.managers.SkillPageManager;
 
 import java.util.HashMap;
 import java.util.Map;
