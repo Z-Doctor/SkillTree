@@ -10,7 +10,6 @@ import net.minecraftforge.fml.client.registry.ClientRegistry;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.IClientSkillTreeTracker;
 import zdoctor.zskilltree.client.gui.SkillTreeScreen;
-import zdoctor.zskilltree.client.gui.old.GuiSkillTreeScreen;
 
 public final class KeyBindings {
     public static final KeyBinding SKILL_TREE = new KeyBinding("key.zskilltree.open", 75, "key.categories.inventory");

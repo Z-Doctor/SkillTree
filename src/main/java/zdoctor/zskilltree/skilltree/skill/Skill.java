@@ -4,13 +4,17 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.advancements.Criterion;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Rarity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.IItemProvider;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.util.text.*;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.ImageAsset;
 import zdoctor.zskilltree.api.ImageAssets;
@@ -19,9 +23,7 @@ import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 @ClassNameMapper(key = ModMain.MODID + ":skill")
@@ -152,6 +154,29 @@ public class Skill implements CriterionTracker {
     @Override
     public int hashCode() {
         return id.hashCode();
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public ITextComponent getSkillName() {
+        return getDisplayInfo().getSkillName();
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public List<? extends ITextProperties> getTooltip(ClientPlayerEntity player, ITooltipFlag.TooltipFlags tooltipFlags) {
+        List<ITextComponent> list = new ArrayList<>();
+        if (displayInfo == null)
+            return Collections.singletonList(new TranslationTextComponent("skillpage." + getId().getPath() + ".title"));
+
+        IFormattableTextComponent title = (new StringTextComponent("")).append(getSkillName()).mergeStyle(Rarity.EPIC.color);
+//        title.mergeStyle(TextFormatting.ITALIC);
+        list.add(title);
+
+        if (tooltipFlags.isAdvanced())
+            list.add(new StringTextComponent(getId().toString()));
+        else
+            list.add(getDisplayInfo().getDescription());
+
+        return list;
     }
 
     public static class Builder {

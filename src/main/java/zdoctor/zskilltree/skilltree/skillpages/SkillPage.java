@@ -344,7 +344,7 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         if (displayInfo == null)
             return Collections.singletonList(new TranslationTextComponent("skillpage." + getId().getPath() + ".title"));
 
-        IFormattableTextComponent title = (new StringTextComponent("")).append(this.getPageName()).mergeStyle(Rarity.EPIC.color);
+        IFormattableTextComponent title = (new StringTextComponent("")).append(getPageName()).mergeStyle(Rarity.EPIC.color);
 //        title.mergeStyle(TextFormatting.ITALIC);
         list.add(title);
 

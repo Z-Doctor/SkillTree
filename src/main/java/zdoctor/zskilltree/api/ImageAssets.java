@@ -29,8 +29,8 @@ public class ImageAssets {
 
     public static final ImageAsset BLACK_WINDOW = registerGui("skill_tree", 176, 140, 51, 72);
 
-    public static final ImageAsset COMMON_FRAME_OWNED = registerGui("skill_tree", 72, 140, 51, 72);
-    public static final ImageAsset COMMON_FRAME_UNOWNED = registerGui("skill_tree", 72, 166, 51, 72);
+    public static final ImageAsset COMMON_FRAME_OWNED = registerGui("skill_tree", 72, 140, 26, 26);
+    public static final ImageAsset COMMON_FRAME_UNOWNED = registerGui("skill_tree", 72, 166, 26, 26);
 
     public static class Tabs {
         public static final ImageAsset TAB_TOP_LEFT = registerGui("tabs", 0, 0, 28, 32);

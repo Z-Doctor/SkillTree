@@ -6,12 +6,13 @@ import net.minecraft.item.ItemStack;
 import zdoctor.zskilltree.api.ImageAsset;
 import zdoctor.zskilltree.api.ImageAssets;
 import zdoctor.zskilltree.api.enums.AnchorPoint;
+import zdoctor.zskilltree.api.enums.Layer;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeScreen;
-import zdoctor.zskilltree.client.gui.old.GuiSkill;
+import zdoctor.zskilltree.skilltree.skill.Skill;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
-public class GuiSkillPage extends ImageDisplayInfo {
+public class GuiSkillPage extends ImageScreen {
     public static final ImageAsset[][] TOP_TABS = {
             {ImageAssets.Tabs.TAB_TOP_LEFT, ImageAssets.Tabs.TAB_TOP_CENTER, ImageAssets.Tabs.TAB_TOP_RIGHT},
             {ImageAssets.Tabs.TAB_TOP_LEFT_SELECTED, ImageAssets.Tabs.TAB_TOP_CENTER_SELECTED, ImageAssets.Tabs.TAB_TOP_RIGHT_SELECTED}
@@ -57,26 +58,38 @@ public class GuiSkillPage extends ImageDisplayInfo {
 
     public GuiSkillPage(SkillPage page, ISkillTreeScreen skillTreeScreen) {
         super(page.getPageName());
+        layer = Layer.BACKGROUND;
         this.skillTreeScreen = skillTreeScreen;
         this.skillPage = page;
         this.pageNumber = page.getIndex() / (page.getAlignment() == SkillPageAlignment.VERTICAL ? MAX_VERTICAL : MAX_HORIZONTAL);
-        setImage(ImageAssets.DEFAULT_TILE);
+//        setImage(ImageAssets.DEFAULT_TILE);
         // TODO Add skills
+        int i = 0;
+        for (Skill skill : page.getRootSkills().values()) {
+            GuiSkill guiSkill = new GuiSkill(skill, skillTreeScreen);
+            guiSkill.setAnchor(skillTreeScreen);
+            guiSkill.setOffsets(28 * i + 9,  18);
+            i++;
+            addDisplay(guiSkill);
+            skillTreeScreen.addListener(guiSkill);
+        }
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        if (skillTreeScreen.getTabPageNumber() != pageNumber)
-            return;
+    public void updateOffsets() {
+        super.updateOffsets();
+    }
 
+    @Override
+    protected void renderMain(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         // Draws title of page
         if (isSelected()) {
             if (getSkillPage().drawInForegroundOfTab())
                 this.font.func_243248_b(matrixStack, getSkillPage().getPageName(), root.getTrueOffsetX() + 8,
                         root.getTrueOffsetY() + 6, getSkillPage().getLabelColor());
         }
-        // Draws children
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        // Draws tab
+        renderAt(matrixStack, getTrueOffsetX(), getTrueOffsetY(), partialTicks);
 
         // Draws page if this page number matches current page number
         RenderSystem.color3f(1F, 1F, 1F); //Forge: Reset color in case Items change it.
@@ -99,7 +112,17 @@ public class GuiSkillPage extends ImageDisplayInfo {
         this.itemRenderer.renderItemAndEffectIntoGuiWithoutEntity(itemstack, x, y);
         this.itemRenderer.renderItemOverlays(this.font, itemstack, x, y);
         this.itemRenderer.zLevel = 0.0F;
+    }
 
+
+    @Override
+    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        if (skillTreeScreen.getTabPageNumber() != pageNumber)
+            return;
+        if(isSelected())
+            super.render(matrixStack, mouseX, mouseY, partialTicks);
+        else
+            renderMain(matrixStack, mouseX, mouseY, partialTicks);
     }
 
     @Override
@@ -132,6 +155,22 @@ public class GuiSkillPage extends ImageDisplayInfo {
     }
 
     @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if(isMouseOver(mouseX, mouseY)) {
+            if (button == 0 && !skillTreeScreen.isMouseOver(mouseX, mouseY)) {
+                onMouseClicked(mouseX, mouseY, button);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void onMouseClicked(double mouseX, double mouseY, int button) {
+        skillTreeScreen.getClientTracker().setSelectedPage(getSkillPage(), true);
+    }
+
+    @Override
     public boolean isMouseOver(double mouseX, double mouseY) {
         return getPageNumber() == skillTreeScreen.getTabPageNumber() && super.isMouseOver(mouseX, mouseY);
     }
@@ -151,8 +190,8 @@ public class GuiSkillPage extends ImageDisplayInfo {
 
             xOffset = index * getImage().xSize + index * SPACING;
             yOffset = pos < (MAX_VERTICAL / 2) ? 4 : -4;
-            pivotPoint = pos < (MAX_VERTICAL / 2) ? AnchorPoint.BOTTOM_LEFT : AnchorPoint.TOP_LEFT;
             anchorPoint = pos < (MAX_VERTICAL / 2) ? AnchorPoint.TOP_LEFT : AnchorPoint.BOTTOM_LEFT;
+            pivotPoint = pos < (MAX_VERTICAL / 2) ? AnchorPoint.BOTTOM_LEFT : AnchorPoint.TOP_LEFT;
         } else if (align == SkillPageAlignment.HORIZONTAL) {
             tabGroup = 1;
             pos = skillPage.getIndex() % MAX_HORIZONTAL;

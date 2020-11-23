@@ -12,5 +12,7 @@
   "commands.skilltree.skillNotFound": "No skill was found by the name '%1$s",
 
   "skilltree.sad_label": ":(",
-  "skilltree.empty": "There doesn't seem to be anything here..."
+  "skilltree.empty": "There doesn't seem to be anything here...",
+  "skillpage.player_info.title": "Player Info",
+  "skillpage.player_info.description": "See you character stats here"
 }

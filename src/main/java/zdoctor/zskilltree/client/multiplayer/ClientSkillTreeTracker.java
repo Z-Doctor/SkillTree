@@ -84,8 +84,8 @@ public class ClientSkillTreeTracker extends SkillTreeTracker implements IClientS
                     "I should make a system for that. {}", orphanedSkills.size(), Arrays.deepToString(orphanedSkills.toArray()));
         }
 
-        maxHorizontal = Integer.min(0, sorted_pages.get(SkillPageAlignment.HORIZONTAL).length - 1);
-        maxVertical = Integer.min(0, sorted_pages.get(SkillPageAlignment.VERTICAL).length - 1);
+        maxHorizontal = Math.max(0, sorted_pages.get(SkillPageAlignment.HORIZONTAL).length - 1);
+        maxVertical = Math.max(0, sorted_pages.get(SkillPageAlignment.VERTICAL).length - 1);
         if (listener != null)
             listener.reload();
 

@@ -1,6 +1,7 @@
 package zdoctor.zskilltree.api.enums;
 
 public enum AnchorPoint {
+    ABSOLUTE,
     TOP_LEFT,
     TOP_CENTER,
     TOP_RIGHT,

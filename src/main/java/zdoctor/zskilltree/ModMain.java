@@ -191,6 +191,7 @@ public final class ModMain {
         LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().gameSettings);
         capabilityProvider = new ClientCapabilityProvider();
         KeyBindings.initBindings();
+        event.getMinecraftSupplier().get().getModelManager().getBlockModelShapes().reloadModels();
     }
 
     private void registerDataSerializers(RegistryEvent.Register<DataSerializerEntry> event) {
