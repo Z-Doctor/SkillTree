@@ -141,8 +141,6 @@ public class SkillTreeScreen extends ImageScreen implements ISkillTreeScreen {
             }
     }
 
-
-
     @Override
     public void setSelectedPage(SkillPage pageIn) {
         if (selectedPage != null)

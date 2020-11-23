@@ -54,9 +54,9 @@ public class ClientSkillTreeTracker extends SkillTreeTracker implements IClientS
 
         for (CriterionTracker trackable : packetIn.getToAdd()) {
             if (trackable instanceof SkillPage)
-                pages.put(trackable.getId(), (SkillPage) trackable);
+                pages.put(trackable.getRegistryName(), (SkillPage) trackable);
             else if (trackable instanceof Skill)
-                skills.put(trackable.getId(), (Skill) trackable);
+                skills.put(trackable.getRegistryName(), (Skill) trackable);
         }
 
 

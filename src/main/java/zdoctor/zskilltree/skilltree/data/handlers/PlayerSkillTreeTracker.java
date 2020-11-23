@@ -60,12 +60,12 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
             completionChanged.removeAll(toAdd);
 
             Set<ResourceLocation> toRemove = new HashSet<>();
-            completionChanged.forEach(page -> toRemove.add(page.getId()));
+            completionChanged.forEach(page -> toRemove.add(page.getRegistryName()));
 
             Map<ResourceLocation, ProgressTracker> progressUpdate = new HashMap<>();
             progressChanged.forEach(progressTracker -> {
                 if (progressTracker.shouldClientTrack())
-                    progressUpdate.put(progressTracker.getId(), getProgress(progressTracker));
+                    progressUpdate.put(progressTracker.getRegistryName(), getProgress(progressTracker));
             });
 
             // TODO Send updates to other players without overriding their skills

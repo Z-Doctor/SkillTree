@@ -9,6 +9,8 @@ import net.minecraft.util.ResourceLocation;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
+import java.util.Objects;
+
 public class SkillPageUnlockedTrigger extends AbstractCriterionTrigger<SkillPageUnlockedTrigger.Instance> {
     private static final ResourceLocation ID = new ResourceLocation(ModMain.MODID, "skill_page_unlocked");
 
@@ -35,7 +37,7 @@ public class SkillPageUnlockedTrigger extends AbstractCriterionTrigger<SkillPage
         }
 
         public boolean test(SkillPage skillPage) {
-            return skillPage.getId().equals(skillPageId);
+            return Objects.equals(skillPage.getRegistryName(), skillPageId);
         }
     }
 }

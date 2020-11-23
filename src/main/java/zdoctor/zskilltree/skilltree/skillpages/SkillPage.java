@@ -35,39 +35,38 @@ import java.util.function.Consumer;
 
 @ClassNameMapper(key = ModMain.MODID + ":skill_page")
 public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPage> implements CriterionTracker, Comparable<SkillPage> {
-    public static final SkillPage NONE = new SkillPage();
     private static final SkillPageDisplayInfo MISSING = new SkillPageDisplayInfo(ItemStack.EMPTY,
             new TranslationTextComponent("skillpage.missing.title"),
             new TranslationTextComponent("skillpage.missing.description")
     ).setHidden();
+
+    public static final SkillPage NONE = new SkillPage();
     private final Map<ResourceLocation, Skill> rootSkills = new HashMap<>();
 
     private int index;
-    private ResourceLocation id;
+//    private ResourceLocation id;
     private SkillPageDisplayInfo displayInfo;
     private Map<String, Criterion> criteria;
     private String[][] requirements;
 
     private SkillPage() {
-        id = new ResourceLocation(ModMain.MODID, "empty");
+        setRegistryName(new ResourceLocation(ModMain.MODID, "page_none"));
         displayInfo = MISSING;
         criteria = ImmutableMap.<String, Criterion>builder().build();
         requirements = new String[0][];
-        setRegistryName(id);
     }
 
     private SkillPage(SkillPage skillPage) {
         index = skillPage.getIndex();
-        id = skillPage.getId();
+        setRegistryName(Objects.requireNonNull(skillPage.getRegistryName()));
         displayInfo = skillPage.getDisplayInfo();
         criteria = skillPage.getCriteria();
         requirements = skillPage.getRequirements();
         rootSkills.putAll(skillPage.getRootSkills());
-        setRegistryName(skillPage.getRegistryName());
     }
 
     public SkillPage(PacketBuffer buf) {
-        id = buf.readResourceLocation();
+        setRegistryName(buf.readResourceLocation());
         index = buf.readVarInt();
         if (buf.readBoolean())
             displayInfo = SkillPageDisplayInfo.read(buf);
@@ -86,12 +85,10 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
             ResourceLocation skillId = buf.readResourceLocation();
             rootSkills.put(skillId, Skill.NONE);
         }
-
-        setRegistryName(id);
     }
 
     public SkillPage(int index, ResourceLocation id, SkillPageDisplayInfo displayInfo, Map<String, Criterion> criteriaIn, String[][] requirementsIn) {
-        this.id = id;
+        setRegistryName(id);
         this.displayInfo = displayInfo == null ? MISSING : displayInfo;
         this.index = index;
 
@@ -102,7 +99,6 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
             else
                 this.requirements = IRequirementsStrategy.AND.createRequirements(this.criteria.keySet());
         }
-        setRegistryName(id);
     }
 
     public static int compare(SkillPage in, SkillPage to) {
@@ -185,10 +181,8 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
     }
 
     public boolean hasRootSkill(Skill skill) {
-        return rootSkills.containsKey(skill.getId());
+        return rootSkills.containsKey(skill.getRegistryName());
     }
-
-
 
     @Override
     public Map<String, Criterion> getCriteria() {
@@ -202,7 +196,7 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
 
     @Override
     public void writeTo(PacketBuffer buf) {
-        buf.writeResourceLocation(id);
+        buf.writeResourceLocation(Objects.requireNonNull(getRegistryName()));
         buf.writeVarInt(index);
         if (displayInfo == null)
             buf.writeBoolean(false);
@@ -226,10 +220,10 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
             buf.writeResourceLocation(id);
     }
 
-    @Override
-    public ResourceLocation getId() {
-        return id;
-    }
+//    @Override
+//    public ResourceLocation getId() {
+//        return id;
+//    }
 
     public SkillPageDisplayInfo getDisplayInfo() {
         return displayInfo;
@@ -308,14 +302,14 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
     public String toString() {
         return "SkillPage{" +
                 "index=" + index +
-                ", id=" + id +
+                ", id=" + getRegistryName() +
                 ", displayInfo=" + displayInfo +
                 '}';
     }
 
     @Override
     public int hashCode() {
-        return getId().hashCode();
+        return Objects.requireNonNull(getRegistryName()).hashCode();
     }
 
     @Override
@@ -325,12 +319,12 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         else if (!(obj instanceof SkillPage))
             return false;
         else {
-            return getId().equals(((SkillPage) obj).getId());
+            return Objects.equals(getRegistryName(), ((SkillPage) obj).getRegistryName());
         }
     }
 
     public void addSkill(Skill skill) {
-        rootSkills.put(skill.getId(), skill);
+        rootSkills.put(skill.getRegistryName(), skill);
     }
 
     public Collection<Skill> getSkills() {
@@ -342,14 +336,14 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
     public List<ITextComponent> getTooltip(ClientPlayerEntity player, ITooltipFlag.TooltipFlags tooltipFlags) {
         List<ITextComponent> list = new ArrayList<>();
         if (displayInfo == null)
-            return Collections.singletonList(new TranslationTextComponent("skillpage." + getId().getPath() + ".title"));
+            return Collections.singletonList(new TranslationTextComponent("skillpage." + Objects.requireNonNull(getRegistryName()).getPath() + ".title"));
 
         IFormattableTextComponent title = (new StringTextComponent("")).append(getPageName()).mergeStyle(Rarity.EPIC.color);
 //        title.mergeStyle(TextFormatting.ITALIC);
         list.add(title);
 
         if (tooltipFlags.isAdvanced())
-            list.add(new StringTextComponent(getId().toString()));
+            list.add(new StringTextComponent(Objects.requireNonNull(getRegistryName()).toString()));
         else
             list.add(getDisplayInfo().getDescription());
 

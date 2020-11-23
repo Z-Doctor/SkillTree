@@ -39,6 +39,8 @@ import net.minecraftforge.registries.RegistryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.advancements.ExtendedCriteriaTriggers;
+import zdoctor.zskilltree.api.ImageAsset;
+import zdoctor.zskilltree.api.ImageAssets;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
@@ -75,7 +77,6 @@ public final class ModMain {
 
     private SkillTreeDataManager skillTreeDataManager;
 
-    private IForgeRegistry<SkillPage> skillPageRegistry;
     private SkillPageManager skillPageManager;
 
     private SkillManager skillManager;
@@ -138,11 +139,17 @@ public final class ModMain {
     }
 
     // Mod Events
-
     private void createRegistries(RegistryEvent.NewRegistry event) {
         LOGGER.info("Creating Registries");
-        skillPageRegistry = new RegistryBuilder<SkillPage>().setType(SkillPage.class).setName(new ResourceLocation(MODID, "skill_page"))
+        new RegistryBuilder<ImageAsset>().setType(ImageAsset.class).setName(new ResourceLocation(MODID, "image_assets"))
+                .setDefaultKey(ImageAssets.MISSING.getRegistryName()).create();
+
+        new RegistryBuilder<SkillPage>().setType(SkillPage.class).setName(new ResourceLocation(MODID, "skill_page"))
                 .setDefaultKey(SkillPage.NONE.getRegistryName()).create();
+
+        new RegistryBuilder<Skill>().setType(Skill.class).setName(new ResourceLocation(MODID, "skill"))
+                .setDefaultKey(Skill.NONE.getRegistryName()).create();
+
     }
 
     private void createSkillPages(RegistryEvent.Register<SkillPage> event) {

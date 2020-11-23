@@ -55,7 +55,7 @@ public class SkillManager extends JsonReloadListener {
             } else {
                 Skill skill = builder.build(id);
                 page.addSkill(skill);
-                LOGGER.info("Built Skill {} and sent to {}", id, page.getId());
+                LOGGER.info("Built Skill {} and sent to {}", id, page.getRegistryName());
                 skills.put(id, skill);
             }
         }

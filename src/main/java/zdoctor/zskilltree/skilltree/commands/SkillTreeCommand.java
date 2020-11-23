@@ -30,11 +30,11 @@ import java.util.function.Predicate;
 public class SkillTreeCommand {
     public static final SuggestionProvider<CommandSource> SUGGEST_SKILLPAGE = (context, builder) -> {
         Collection<SkillPage> pages = ModMain.getInstance().getSkillPageManager().getAllSkillPages();
-        return ISuggestionProvider.func_212476_a(pages.stream().filter(page -> !page.getCriteria().isEmpty()).map(SkillPage::getId), builder);
+        return ISuggestionProvider.func_212476_a(pages.stream().filter(page -> !page.getCriteria().isEmpty()).map(SkillPage::getRegistryName), builder);
     };
     public static final SuggestionProvider<CommandSource> SUGGEST_SKILL = (context, builder) -> {
         Collection<Skill> pages = ModMain.getInstance().getSkillManager().getAllSkills();
-        return ISuggestionProvider.func_212476_a(pages.stream().map(Skill::getId), builder);
+        return ISuggestionProvider.func_212476_a(pages.stream().map(Skill::getRegistryName), builder);
     };
     private static final Logger LOGGER = LogManager.getLogger();
     private static final DynamicCommandExceptionType SKILL_NOT_FOUND =

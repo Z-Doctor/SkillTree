@@ -15,6 +15,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.*;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.registries.ForgeRegistryEntry;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.ImageAsset;
 import zdoctor.zskilltree.api.ImageAssets;
@@ -27,10 +28,9 @@ import java.util.*;
 import java.util.function.Consumer;
 
 @ClassNameMapper(key = ModMain.MODID + ":skill")
-public class Skill implements CriterionTracker {
+public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> implements CriterionTracker {
     public static final Skill NONE = new Skill();
 
-    private ResourceLocation id;
     private SkillDisplayInfo displayInfo;
 
     private Map<String, Criterion> criteria;
@@ -42,17 +42,18 @@ public class Skill implements CriterionTracker {
     private List<Skill> child_skills;
 
     private Skill() {
+        setRegistryName(new ResourceLocation(ModMain.MODID, "skill_none"));
     }
 
     private Skill(Skill skill) {
-        id = skill.getId();
+        setRegistryName(Objects.requireNonNull(skill.getRegistryName()));
         displayInfo = skill.getDisplayInfo();
         criteria = skill.getCriteria();
         requirements = skill.getRequirements();
     }
 
     public Skill(PacketBuffer buf) {
-        id = buf.readResourceLocation();
+        setRegistryName(buf.readResourceLocation());
         if (buf.readBoolean())
             displayInfo = SkillDisplayInfo.read(buf);
 
@@ -74,7 +75,7 @@ public class Skill implements CriterionTracker {
     }
 
     public Skill(ResourceLocation id, SkillDisplayInfo displayInfo, Map<String, Criterion> criteriaIn, String[][] requirementsIn) {
-        this.id = id;
+        setRegistryName(id);
         this.displayInfo = displayInfo;
         this.criteria = ImmutableMap.copyOf(criteriaIn);
         this.requirements = requirementsIn;
@@ -92,7 +93,7 @@ public class Skill implements CriterionTracker {
 
     @Override
     public void writeTo(PacketBuffer buf) {
-        buf.writeResourceLocation(id);
+        buf.writeResourceLocation(Objects.requireNonNull(getRegistryName()));
         if (displayInfo == null)
             buf.writeBoolean(false);
         else {
@@ -116,9 +117,9 @@ public class Skill implements CriterionTracker {
         return this;
     }
 
-    public ResourceLocation getId() {
-        return id;
-    }
+//    public ResourceLocation getRegistryName() {
+//        return id;
+//    }
 
     public SkillDisplayInfo getDisplayInfo() {
         return displayInfo;
@@ -131,13 +132,13 @@ public class Skill implements CriterionTracker {
     @Override
     public String toString() {
         return "Skill{" +
-                "id=" + id +
+                "id=" + getRegistryName() +
                 ", displayInfo=" + displayInfo +
                 '}';
     }
 
     public Builder copy() {
-        return new Builder(getId(), getDisplayInfo(), getCriteria(), getRequirements()).onPage(getParentPage());
+        return new Builder(getRegistryName(), getDisplayInfo(), getCriteria(), getRequirements()).onPage(getParentPage());
     }
 
     @Override
@@ -147,13 +148,13 @@ public class Skill implements CriterionTracker {
         else if (!(obj instanceof Skill))
             return false;
         else {
-            return getId().equals(((Skill) obj).getId());
+            return Objects.equals(getRegistryName(), ((Skill) obj).getRegistryName());
         }
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return Objects.requireNonNull(getRegistryName()).hashCode();
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -165,14 +166,14 @@ public class Skill implements CriterionTracker {
     public List<? extends ITextProperties> getTooltip(ClientPlayerEntity player, ITooltipFlag.TooltipFlags tooltipFlags) {
         List<ITextComponent> list = new ArrayList<>();
         if (displayInfo == null)
-            return Collections.singletonList(new TranslationTextComponent("skillpage." + getId().getPath() + ".title"));
+            return Collections.singletonList(new TranslationTextComponent("skillpage." + getRegistryName().getPath() + ".title"));
 
         IFormattableTextComponent title = (new StringTextComponent("")).append(getSkillName()).mergeStyle(Rarity.EPIC.color);
 //        title.mergeStyle(TextFormatting.ITALIC);
         list.add(title);
 
         if (tooltipFlags.isAdvanced())
-            list.add(new StringTextComponent(getId().toString()));
+            list.add(new StringTextComponent(getRegistryName().toString()));
         else
             list.add(getDisplayInfo().getDescription());
 
@@ -180,7 +181,7 @@ public class Skill implements CriterionTracker {
     }
 
     public static class Builder {
-        ResourceLocation pageId = SkillPage.NONE.getId();
+        ResourceLocation pageId = SkillPage.NONE.getRegistryName();
         SkillDisplayInfo display;
         private Map<String, Criterion> criteria = new HashMap<>();
         private String[][] requirements;
@@ -265,7 +266,7 @@ public class Skill implements CriterionTracker {
         }
 
         public Builder onPage(SkillPage skillPage) {
-            return onPage(skillPage.getId());
+            return onPage(skillPage.getRegistryName());
         }
 
         public Builder onPage(ResourceLocation pageId) {

@@ -35,8 +35,8 @@ public class SkillProvider implements IDataProvider {
         Path path = this.generator.getOutputFolder();
         Set<ResourceLocation> set = new HashSet<>();
         Consumer<Skill> consumer = skill -> {
-            if (!set.add(skill.getId())) {
-                throw new IllegalStateException("Duplicate skill " + skill.getId());
+            if (!set.add(skill.getRegistryName())) {
+                throw new IllegalStateException("Duplicate skill " + skill.getRegistryName());
             } else {
                 LOGGER.info("Added skill: " + skill);
                 Path path1 = getPath(path, skill);
@@ -54,8 +54,8 @@ public class SkillProvider implements IDataProvider {
     }
 
     private static Path getPath(Path pathIn, Skill skillIn) {
-        return pathIn.resolve("data/" + skillIn.getId().getNamespace() + "/skills/" +
-                skillIn.getId().getPath() + "/" + skillIn.getId().getPath() + ".json");
+        return pathIn.resolve("data/" + skillIn.getRegistryName().getNamespace() + "/skills/" +
+                skillIn.getRegistryName().getPath() + "/" + skillIn.getRegistryName().getPath() + ".json");
     }
 
     @Override

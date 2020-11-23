@@ -44,7 +44,7 @@ public class SkillPageManager extends JsonReloadListener {
 
     public void reset() {
         pages.clear();
-        pages.put(SkillPage.NONE.getId(), SkillPage.NONE);
+        pages.put(SkillPage.NONE.getRegistryName(), SkillPage.NONE);
     }
 
     @Override

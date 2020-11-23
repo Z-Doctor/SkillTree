@@ -30,7 +30,7 @@ public class SkillPageProvider implements IDataProvider {
     }
 
     private static Path getPath(Path pathIn, SkillPage pageIn) {
-        return pathIn.resolve("data/" + pageIn.getId().getNamespace() + "/pages/" + pageIn.getId().getPath() + ".json");
+        return pathIn.resolve("data/" + pageIn.getRegistryName().getNamespace() + "/pages/" + pageIn.getRegistryName().getPath() + ".json");
     }
 
     @Override
@@ -38,8 +38,8 @@ public class SkillPageProvider implements IDataProvider {
         Path path = this.generator.getOutputFolder();
         Set<ResourceLocation> set = new HashSet<>();
         Consumer<SkillPage> consumer = page -> {
-            if (!set.add(page.getId())) {
-                throw new IllegalStateException("Duplicate skill page " + page.getId());
+            if (!set.add(page.getRegistryName())) {
+                throw new IllegalStateException("Duplicate skill page " + page.getRegistryName());
             } else {
                 LOGGER.info("Added Page: " + page);
                 Path path1 = getPath(path, page);

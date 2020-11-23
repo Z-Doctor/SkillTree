@@ -186,7 +186,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
             if (!progress.hasProgress())
                 continue;
             CompoundNBT progressNbt = new CompoundNBT();
-            progressNbt.putString("id", entry.getKey().getId().toString());
+            progressNbt.putString("id", entry.getKey().getRegistryName().toString());
             progressNbt.put("criterion", progress.serializeNBT());
 
             progressList.add(progressNbt);
