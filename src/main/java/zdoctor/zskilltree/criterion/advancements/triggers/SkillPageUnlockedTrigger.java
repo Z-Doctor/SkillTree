@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.advancements.criterion;
+package zdoctor.zskilltree.criterion.advancements.triggers;
 
 import com.google.gson.JsonObject;
 import net.minecraft.advancements.criterion.AbstractCriterionTrigger;

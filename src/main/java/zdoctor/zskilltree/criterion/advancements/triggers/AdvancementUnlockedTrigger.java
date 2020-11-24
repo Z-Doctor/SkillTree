@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.advancements.criterion;
+package zdoctor.zskilltree.criterion.advancements.triggers;
 
 import com.google.gson.JsonObject;
 import net.minecraft.advancements.criterion.CriterionInstance;
@@ -11,7 +11,7 @@ import net.minecraftforge.event.entity.player.AdvancementEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import zdoctor.zskilltree.ModMain;
-import zdoctor.zskilltree.advancements.ExtendedCriteriaTriggers;
+import zdoctor.zskilltree.criterion.advancements.ExtendedCriteriaTriggers;
 import zdoctor.zskilltree.criterion.AbstractSkillTreeCriterionTrigger;
 import zdoctor.zskilltree.skilltree.events.CriterionTrackerEvent;
 import zdoctor.zskilltree.skilltree.events.SkillTreeEvent;

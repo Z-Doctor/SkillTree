@@ -1,8 +1,8 @@
-package zdoctor.zskilltree.advancements;
+package zdoctor.zskilltree.criterion.advancements;
 
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.ICriterionTrigger;
-import zdoctor.zskilltree.advancements.criterion.AdvancementUnlockedTrigger;
+import zdoctor.zskilltree.criterion.advancements.triggers.AdvancementUnlockedTrigger;
 
 public class ExtendedCriteriaTriggers {
     public static final AdvancementUnlockedTrigger Advancement_Unlocked = register(new AdvancementUnlockedTrigger());

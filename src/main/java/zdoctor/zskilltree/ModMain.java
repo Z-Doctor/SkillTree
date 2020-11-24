@@ -34,11 +34,9 @@ import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DataSerializerEntry;
-import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import zdoctor.zskilltree.advancements.ExtendedCriteriaTriggers;
 import zdoctor.zskilltree.api.ImageAsset;
 import zdoctor.zskilltree.api.ImageAssets;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
@@ -46,6 +44,7 @@ import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.client.ClientCapabilityProvider;
 import zdoctor.zskilltree.client.KeyBindings;
+import zdoctor.zskilltree.criterion.advancements.ExtendedCriteriaTriggers;
 import zdoctor.zskilltree.network.NetworkSerializationRegistry;
 import zdoctor.zskilltree.network.SkillTreePacketHandler;
 import zdoctor.zskilltree.skilltree.commands.SkillTreeCommand;
@@ -160,6 +159,7 @@ public final class ModMain {
                         new TranslationTextComponent("skillpage.player_info.description"),
                         SkillPageAlignment.HORIZONTAL))
                 .build(new ResourceLocation(MODID, "player_info")));
+
     }
 
     private void createProviders(GatherDataEvent event) {
