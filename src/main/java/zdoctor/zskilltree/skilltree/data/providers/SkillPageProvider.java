@@ -45,7 +45,7 @@ public class SkillPageProvider implements IDataProvider {
                 Path path1 = getPath(path, page);
 
                 try {
-                    IDataProvider.save(GSON, cache, page.copy().serialize(), path1);
+                    IDataProvider.save(GSON, cache, page.serialize(), path1);
                 } catch (IOException ioexception) {
                     LOGGER.error("Couldn't save skill page {}", path1, ioexception);
                 }
@@ -53,9 +53,7 @@ public class SkillPageProvider implements IDataProvider {
             }
         };
 
-        for (Consumer<Consumer<SkillPage>> consumer1 : this.pages) {
-            consumer1.accept(consumer);
-        }
+        pages.forEach(consumerConsumer -> consumerConsumer.accept(consumer));
     }
 
     @Override

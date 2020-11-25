@@ -5,7 +5,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.IRequirementsStrategy;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
@@ -32,7 +31,6 @@ import zdoctor.zskilltree.skilltree.skill.Skill;
 
 import javax.annotation.Nonnull;
 import java.util.*;
-import java.util.function.Consumer;
 
 @ClassNameMapper(key = ModMain.MODID + ":skill_page")
 public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPage> implements CriterionTracker, Comparable<SkillPage> {
@@ -103,6 +101,7 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         return Integer.compareUnsigned(in.getIndex(), to.getIndex());
     }
 
+    // TODO Move to builder(?)
     public static SkillPage deserialize(ResourceLocation id, JsonObject json, ConditionArrayParser conditionParser) {
         int index = -1;
         if (JSONUtils.hasField(json, "index"))

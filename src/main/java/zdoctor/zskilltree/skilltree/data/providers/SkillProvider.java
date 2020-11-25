@@ -9,8 +9,8 @@ import net.minecraft.data.IDataProvider;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import zdoctor.zskilltree.skilltree.skill.Skill;
 import zdoctor.zskilltree.skilltree.data.generators.SkillGenerator;
+import zdoctor.zskilltree.skilltree.skill.Skill;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -29,9 +29,13 @@ public class SkillProvider implements IDataProvider {
         this.generator = generator;
     }
 
+    private static Path getPath(Path pathIn, Skill skillIn) {
+        return pathIn.resolve("data/" + skillIn.getRegistryName().getNamespace() + "/skills/" +
+                skillIn.getParentPage().getPath() + "/" + skillIn.getRegistryName().getPath() + ".json");
+    }
 
     @Override
-    public void act(DirectoryCache cache) throws IOException {
+    public void act(DirectoryCache cache) {
         Path path = this.generator.getOutputFolder();
         Set<ResourceLocation> set = new HashSet<>();
         Consumer<Skill> consumer = skill -> {
@@ -40,22 +44,15 @@ public class SkillProvider implements IDataProvider {
             } else {
                 LOGGER.info("Added skill: " + skill);
                 Path path1 = getPath(path, skill);
-// TODO Fix
-//                try {
-//                    IDataProvider.save(GSON, cache, skill.copy(), path1);
-//                } catch (IOException ioexception) {
-//                    LOGGER.error("Couldn't save skill page {}", path1, ioexception);
-//                }
-
+                try {
+                    IDataProvider.save(GSON, cache, skill.serialize(), path1);
+                } catch (IOException ioexception) {
+                    LOGGER.error("Couldn't save skill page {}", path1, ioexception);
+                }
             }
         };
 
         skills.forEach(skillConsumer -> skillConsumer.accept(consumer));
-    }
-
-    private static Path getPath(Path pathIn, Skill skillIn) {
-        return pathIn.resolve("data/" + skillIn.getRegistryName().getNamespace() + "/skills/" +
-                skillIn.getRegistryName().getPath() + "/" + skillIn.getRegistryName().getPath() + ".json");
     }
 
     @Override

@@ -8,7 +8,9 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.LazyOptional;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
+import zdoctor.zskilltree.criterion.ProgressTracker;
 import zdoctor.zskilltree.skilltree.skill.Skill;
+import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -42,10 +44,10 @@ public class SkillTreeApi {
     }
 
     public static <R> Supplier<R> of(Supplier<Entity> entity, Function<ISkillTreeTracker, R> function) {
-        if(entity == null)
+        if (entity == null)
             return null;
         return () -> {
-            if(entity.get() == null)
+            if (entity.get() == null)
                 return null;
             Optional<ISkillTreeTracker> optional = entity.get().getCapability(ModMain.SKILL_TREE_CAPABILITY).resolve();
             return optional.map(function).orElse(null);
@@ -53,10 +55,21 @@ public class SkillTreeApi {
     }
 
     public static <R> Supplier<R> of(Entity entity, Function<ISkillTreeTracker, R> function) {
-        if(entity == null)
+        if (entity == null)
             return null;
         Optional<ISkillTreeTracker> optional = entity.getCapability(ModMain.SKILL_TREE_CAPABILITY).resolve();
         return optional.<Supplier<R>>map(tracker -> () -> function.apply(tracker)).orElse(null);
+    }
+
+    public static SkillPage getPage(ResourceLocation skillPageId) {
+        return ModMain.getInstance().getSkillPageManager().getPage(skillPageId);
+    }
+
+    public static boolean hasPage(Entity entity, SkillPage page) {
+        return perform(entity, tracker -> {
+            ProgressTracker progress = tracker.getProgress(page);
+            return progress != null && progress.isDone();
+        });
     }
 
     public interface SkillTreeOperation {

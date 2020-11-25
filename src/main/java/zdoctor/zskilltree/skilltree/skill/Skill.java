@@ -2,9 +2,7 @@ package zdoctor.zskilltree.skilltree.skill;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.util.ITooltipFlag;
@@ -12,20 +10,19 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Rarity;
 import net.minecraft.loot.ConditionArrayParser;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.*;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.registries.ForgeRegistryEntry;
-import org.apache.commons.lang3.ArrayUtils;
+import org.lwjgl.system.NonnullDefault;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.annotations.ClassNameMapper;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.skilltree.data.builders.SkillBuilder;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
-import zdoctor.zskilltree.skilltree.skillpages.SkillPageDisplayInfo;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 
 @ClassNameMapper(key = ModMain.MODID + ":skill")
@@ -39,7 +36,7 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
 
     // Skills should only have a parent page or a parent skill, not both
     //  The parent page should be inferred from the root skill to save bandwidth
-    private SkillPage parentPage;
+    private ResourceLocation parentPage;
     private List<Skill> child_skills;
 
     private Skill() {
@@ -53,7 +50,7 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
         requirements = skill.getRequirements();
     }
 
-    public Skill(PacketBuffer buf) {
+    public Skill(@Nonnull PacketBuffer buf) {
         setRegistryName(buf.readResourceLocation());
         if (buf.readBoolean())
             displayInfo = SkillDisplayInfo.read(buf);
@@ -69,11 +66,13 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
         }
     }
 
+    @NonnullDefault
     public Skill(ItemStack icon, String name, Map<String, Criterion> criteriaIn, String[][] requirementsIn) {
         this(new ResourceLocation(name), new SkillDisplayInfo(icon, new TranslationTextComponent("skill." + name + ".title"),
                 new TranslationTextComponent("skill." + name + ".description")), criteriaIn, requirementsIn);
     }
 
+    @NonnullDefault
     public Skill(ResourceLocation id, SkillDisplayInfo displayInfo, Map<String, Criterion> criteriaIn, String[][] requirementsIn) {
         setRegistryName(id);
         this.displayInfo = displayInfo;
@@ -82,68 +81,8 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
     }
 
     public static Skill deserialize(ResourceLocation id, JsonObject json, ConditionArrayParser conditionParser) {
-        SkillDisplayInfo displayInfo = null;
-        if (JSONUtils.hasField(json, "display")) {
-            displayInfo = SkillDisplayInfo.deserialize(JSONUtils.getJsonObject(json, "display"));
-        }
-
-        Map<String, Criterion> criterion = new HashMap<>();
-        String[][] requirements = null;
-
-        if (json.has("criteria")) {
-            criterion = Criterion.deserializeAll(JSONUtils.getJsonObject(json, "criteria"), conditionParser);
-            if (!criterion.isEmpty()) {
-                JsonArray jsonRequirements = JSONUtils.getJsonArray(json, "requirements", new JsonArray());
-                requirements = new String[jsonRequirements.size()][];
-
-                for (int i = 0; i < jsonRequirements.size(); ++i) {
-                    JsonArray requirement = JSONUtils.getJsonArray(jsonRequirements.get(i), "requirements[" + i + "]");
-                    requirements[i] = new String[requirement.size()];
-
-                    for (int j = 0; j < requirement.size(); ++j) {
-                        requirements[i][j] = JSONUtils.getString(requirement.get(j), "requirements[" + i + "][" + j + "]");
-                    }
-                }
-
-                if (requirements.length == 0) {
-                    requirements = new String[criterion.size()][];
-                    int k = 0;
-
-                    for (String s2 : criterion.keySet()) {
-                        requirements[k++] = new String[]{s2};
-                    }
-                }
-
-                for (String[] requirement : requirements) {
-                    if (requirement.length == 0 && criterion.isEmpty()) {
-                        throw new JsonSyntaxException("Requirement entry cannot be empty");
-                    }
-
-                    for (String s : requirement) {
-                        if (!criterion.containsKey(s)) {
-                            throw new JsonSyntaxException("Unknown required criterion '" + s + "'");
-                        }
-                    }
-                }
-
-                for (String s1 : criterion.keySet()) {
-                    boolean flag = false;
-
-                    for (String[] astring2 : requirements) {
-                        if (ArrayUtils.contains(astring2, s1)) {
-                            flag = true;
-                            break;
-                        }
-                    }
-
-                    if (!flag) {
-                        throw new JsonSyntaxException("Criterion '" + s1 + "' isn't a requirement for completion. This isn't supported behaviour, all criteria must be required.");
-                    }
-                }
-            }
-        }
-
-        return new Skill(id, displayInfo, criterion, requirements);
+        SkillBuilder builder = Builder.deserialize(json, conditionParser);
+        return builder.build(id);
     }
 
     @Override
@@ -182,7 +121,7 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
             }
     }
 
-    public Skill setPage(SkillPage skillPage) {
+    public Skill setPage(ResourceLocation skillPage) {
         this.parentPage = skillPage;
         return this;
     }
@@ -191,7 +130,7 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
         return displayInfo;
     }
 
-    public SkillPage getParentPage() {
+    public ResourceLocation getParentPage() {
         return parentPage;
     }
 
@@ -201,10 +140,6 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
                 "id=" + getRegistryName() +
                 ", displayInfo=" + displayInfo +
                 '}';
-    }
-
-    public Skill copy() {
-        return new Skill(getRegistryName(), getDisplayInfo(), getCriteria(), getRequirements());
     }
 
     @Override
@@ -246,8 +181,31 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
         return list;
     }
 
+    public JsonObject serialize() {
+        JsonObject jsonobject = new JsonObject();
 
+        if (getParentPage() != null)
+            jsonobject.addProperty("parent-page", getParentPage().toString());
 
+        jsonobject.add("display", getDisplayInfo().serialize());
+
+        JsonObject criteriaObject = new JsonObject();
+        for (Map.Entry<String, Criterion> entry : getCriteria().entrySet())
+            criteriaObject.add(entry.getKey(), entry.getValue().serialize());
+        jsonobject.add("criteria", criteriaObject);
+
+        JsonArray requirementArray = new JsonArray();
+        for (String[] requirements : getRequirements()) {
+            JsonArray array = new JsonArray();
+            for (String requirement : requirements)
+                array.add(requirement);
+
+            requirementArray.add(array);
+        }
+        jsonobject.add("requirements", requirementArray);
+
+        return jsonobject;
+    }
 
     public static class Builder extends SkillBuilder {
         public static Builder builder() {
