@@ -4,10 +4,8 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.client.util.InputMappings;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.ITextProperties;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import zdoctor.zskilltree.api.ImageAssets;
@@ -18,8 +16,8 @@ import zdoctor.zskilltree.client.KeyBindings;
 import zdoctor.zskilltree.skilltree.skill.Skill;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class SkillTreeScreen extends ImageScreen implements ISkillTreeScreen {
@@ -126,9 +124,13 @@ public class SkillTreeScreen extends ImageScreen implements ISkillTreeScreen {
         }
         RenderSystem.enableBlend();
         super.render(matrixStack, mouseX, mouseY, partialTicks);
+        drawWindowTooltips(matrixStack, mouseX, mouseY);
 
+    }
+
+    private void drawWindowTooltips(MatrixStack matrixStack, int mouseX, int mouseY) {
         // Renders the tooltip of a skill page
-        if (!isMouseOver(mouseX, mouseY))
+        if (!isMouseOver(mouseX, mouseY)) {
             for (Map.Entry<SkillPage, GuiSkillPage> entry : tabs.entrySet()) {
                 GuiSkillPage tab = entry.getValue();
                 if (tab.isSelected() || tab.getPageNumber() != tabPageNumber)
@@ -139,10 +141,23 @@ public class SkillTreeScreen extends ImageScreen implements ISkillTreeScreen {
                     break;
                 }
             }
+        }
+//        else {
+//            RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+//            if (selectedPage != null) {
+//                selectedPage.drawToolTips(matrixStack, mouseX, mouseY);
+////                RenderSystem.pushMatrix();
+////                RenderSystem.enableDepthTest();
+////                RenderSystem.translatef((float)(offsetX + 9), (float)(offsetY + 18), 400.0F);
+////                selectedPage.drawTabTooltips(matrixStack, mouseX - offsetX - 9, mouseY - offsetY - 18, offsetX, offsetY);
+////                RenderSystem.disableDepthTest();
+////                RenderSystem.popMatrix();
+//            }
+//        }
     }
 
     @Override
-    public void setSelectedPage(SkillPage pageIn) {
+    public void setSelectedPage(@Nullable SkillPage pageIn) {
         if (selectedPage != null)
             selectedPage.setSelected(false);
 
@@ -152,6 +167,11 @@ public class SkillTreeScreen extends ImageScreen implements ISkillTreeScreen {
             tabPageNumber = selectedPage.getPageNumber();
             sortChildren();
         }
+    }
+
+    @Override
+    public void setSelectedSkill(@Nullable Skill skillIn) {
+
     }
 
     @Override

@@ -70,7 +70,7 @@ public class SkillPageManager extends JsonReloadListener {
         });
 
         pages = newPages;
-        skillManager.build(this);
+//        skillManager.build(this);
     }
 
     public Collection<SkillPage> getAllSkillPages() {

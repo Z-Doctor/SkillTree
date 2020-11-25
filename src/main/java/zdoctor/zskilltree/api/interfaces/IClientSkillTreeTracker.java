@@ -14,7 +14,7 @@ public interface IClientSkillTreeTracker extends ISkillTreeTracker {
 
     void setSelectedPage(@Nullable SkillPage pageIn, boolean tellServer);
 
-    void onSkillClicked(Skill skill);
+    void setSelectedSkill(@Nullable Skill skillIn, boolean tellServer);
 
     SkillPage getDefaultPage();
 
@@ -23,6 +23,8 @@ public interface IClientSkillTreeTracker extends ISkillTreeTracker {
         //  that way I can have another window pop up to display their info
 
         void setSelectedPage(@Nullable SkillPage pageIn);
+
+        void setSelectedSkill(@Nullable Skill skillIn);
 
         void skillPageAdded(SkillPage page);
 

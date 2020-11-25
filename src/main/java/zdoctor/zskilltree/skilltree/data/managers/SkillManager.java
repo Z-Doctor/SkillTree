@@ -7,6 +7,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.client.resources.JsonReloadListener;
+import net.minecraft.loot.ConditionArrayParser;
+import net.minecraft.loot.LootPredicateManager;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.JSONUtils;
@@ -26,9 +28,11 @@ public class SkillManager extends JsonReloadListener {
     private static final Gson GSON = (new GsonBuilder()).create();
     private final HashMap<ResourceLocation, Skill.Builder> toBuild = new HashMap<>();
     private final HashMap<ResourceLocation, Skill> skills = new HashMap<>();
+    private final LootPredicateManager lootPredicateManager;
 
-    public SkillManager() {
+    public SkillManager(LootPredicateManager lootPredicateManager) {
         super(GSON, "skills");
+        this.lootPredicateManager = lootPredicateManager;
     }
 
     @Override
@@ -36,30 +40,31 @@ public class SkillManager extends JsonReloadListener {
         objectIn.forEach((location, page) -> {
             LOGGER.info("Opened: " + getPreparedPath(location));
             JsonObject jsonobject = JSONUtils.getJsonObject(page, location.toString());
-            Skill.Builder builder = Skill.Builder.deserialize(jsonobject);
-            toBuild.put(location, builder);
+            // TODO Get parent from location(?)
+            Skill skill = Skill.deserialize(location, jsonobject, new ConditionArrayParser(location, this.lootPredicateManager));
+//            toBuild.put(location, skill);
             LOGGER.info("Created Skill {}", location);
         });
     }
 
     public void build(SkillPageManager skillPageManager) {
-        for (Map.Entry<ResourceLocation, Skill.Builder> entry : toBuild.entrySet()) {
-            ResourceLocation id = entry.getKey();
-            Skill.Builder builder = entry.getValue();
-            SkillPage page = skillPageManager.getPage(builder.getPageId());
-            if (page == null)
-                page = resolveParent(id, skillPageManager);
-
-            if (page == null) {
-                LOGGER.info("Skipping: Unable to find parent {} for skill {}", builder.getPageId(), id);
-            } else {
-                Skill skill = builder.build(id);
-                page.addSkill(skill);
-                LOGGER.info("Built Skill {} and sent to {}", id, page.getRegistryName());
-                skills.put(id, skill);
-            }
-        }
-        toBuild.clear();
+//        for (Map.Entry<ResourceLocation, Skill.Builder> entry : toBuild.entrySet()) {
+//            ResourceLocation id = entry.getKey();
+//            Skill.Builder builder = entry.getValue();
+//            SkillPage page = skillPageManager.getPage(builder.getPageId());
+//            if (page == null)
+//                page = resolveParent(id, skillPageManager);
+//
+//            if (page == null) {
+//                LOGGER.info("Skipping: Unable to find parent {} for skill {}", builder.getPageId(), id);
+//            } else {
+//                Skill skill = builder.build(id);
+//                page.addSkill(skill);
+//                LOGGER.info("Built Skill {} and sent to {}", id, page.getRegistryName());
+//                skills.put(id, skill);
+//            }
+//        }
+//        toBuild.clear();
     }
 
     public SkillPage resolveParent(ResourceLocation location, SkillPageManager skillPageManager) {

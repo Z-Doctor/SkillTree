@@ -22,6 +22,7 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
     private final Map<String, CriterionProgress> criteria = new HashMap<>();
     private String[][] requirements;
     private boolean sendUpdatesToClient;
+    private boolean cachedDone;
 
     public ProgressTracker() {
         requirements = EMPTY;
@@ -31,9 +32,10 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
         ProgressTracker progressTracker = new ProgressTracker();
         int i = buffer.readVarInt();
 
-        for (int j = 0; j < i; ++j) {
+        for (int j = 0; j < i; ++j)
             progressTracker.criteria.put(buffer.readString(), CriterionProgress.read(buffer));
-        }
+
+        progressTracker.isDone();
 
         return progressTracker;
     }
@@ -74,16 +76,21 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
             // TODO Make progress without criteria auto completed
             this.requirements = IRequirementsStrategy.AND.createRequirements(criteria.keySet());
         }
+
+        cachedDone = isDone();
     }
 
     public boolean grant() {
         if (isDone())
             return false;
         criteria.values().forEach(CriterionProgress::obtain);
-        return true;
+        return isDone();
     }
 
+
     public boolean revoke() {
+        if(!isDone())
+            return false;
         boolean flag = false;
         for (CriterionProgress progress : this.criteria.values())
             if (progress.isObtained()) {
@@ -91,6 +98,21 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
                 progress.reset();
             }
         return flag;
+    }
+
+    public boolean resetProgress() {
+        boolean flag = false;
+        for (CriterionProgress progress : this.criteria.values())
+            if (progress.isObtained()) {
+                flag = true;
+                cachedDone = false;
+                progress.reset();
+            }
+        return flag;
+    }
+
+    public boolean lazyIsDone() {
+        return cachedDone;
     }
 
     public boolean isDone() {
@@ -105,9 +127,9 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
             }
 
             if (!flag)
-                return false;
+                return cachedDone = false;
         }
-        return true;
+        return cachedDone = true;
     }
 
     public boolean hasProgress() {

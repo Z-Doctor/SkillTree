@@ -28,6 +28,8 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     protected final Set<CriterionTracker> progressChanged = new HashSet<>();
     protected final HashMap<CriterionTracker, ProgressTracker> progressTracker = new HashMap<>();
 
+    protected final HashMap<ResourceLocation, CriterionTracker> trackableMap = new HashMap<>();
+
     protected boolean firstSync = true;
     protected LivingEntity owner;
 
@@ -45,16 +47,16 @@ public class SkillTreeTracker implements ISkillTreeTracker {
      * Checks to see if the trackable exists without registering one if missing
      */
     @Override
-    public boolean contains(CriterionTracker trackable) {
-        return progressTracker.get(trackable) != null;
+    public boolean contains(CriterionTracker tracker) {
+        return progressTracker.get(tracker) != null;
     }
 
     /**
      * Checks to see if the trackable exists and has progress
      */
     @Override
-    public boolean hasProgress(CriterionTracker trackable) {
-        ProgressTracker progress = progressTracker.get(trackable);
+    public boolean hasProgress(CriterionTracker tracker) {
+        ProgressTracker progress = progressTracker.get(tracker);
         return progress != null && progress.hasProgress();
     }
 
@@ -64,23 +66,23 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     }
 
     @Override
-    public boolean startProgress(CriterionTracker trackable) {
-        ProgressTracker progress = getProgress(trackable);
+    public boolean startProgress(CriterionTracker tracker) {
+        ProgressTracker progress = getProgress(tracker);
         if (progress != null)
             return false;
-        startProgress(trackable, new ProgressTracker());
+        startProgress(tracker, new ProgressTracker());
         return true;
     }
 
-    protected void startProgress(CriterionTracker trackable, ProgressTracker progress) {
-        progress.update(trackable.getCriteria(), trackable.getRequirements());
-        if (trackable.shouldClientTrack())
+    protected void startProgress(CriterionTracker tracker, ProgressTracker progress) {
+        progress.update(tracker.getCriteria(), tracker.getRequirements());
+        if (tracker.shouldClientTrack())
             progress.enableUpdates();
         else
             progress.disableUpdates();
 
-        progressTracker.put(trackable, progress);
-        progressChanged.add(trackable);
+        progressTracker.put(tracker, progress);
+        progressChanged.add(tracker);
     }
 
     @Override
@@ -92,48 +94,59 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     }
 
     @Override
-    public ProgressTracker getProgress(CriterionTracker trackable) {
-        return progressTracker.get(trackable);
+    public ProgressTracker getProgress(CriterionTracker tracker) {
+        return progressTracker.get(tracker);
     }
 
     @Override
-    public boolean grant(CriterionTracker trackable) {
-        ProgressTracker progress = getProgress(trackable);
+    public boolean grant(CriterionTracker tracker) {
+        ProgressTracker progress = getProgress(tracker);
         if (progress.isDone())
             return false;
         progress.grant();
-        progressChanged.add(trackable);
+        progressChanged.add(tracker);
         if (progress.isDone())
-            onProgressCompleted(trackable);
+            onProgressCompleted(tracker);
         else {
-            LOGGER.error("Unable to grant {}", trackable);
+            LOGGER.error("Unable to grant {}", tracker);
             return false;
         }
         return true;
     }
 
     @Override
-    public boolean revoke(CriterionTracker trackable) {
-        ProgressTracker progress = getProgress(trackable);
-        boolean flag = progress.isDone();
-        if (!progress.hasProgress())
+    public boolean revoke(CriterionTracker tracker) {
+        ProgressTracker progress = getProgress(tracker);
+        if (progress == null || !progress.isDone() || !progress.revoke())
             return false;
-        progress.revoke();
-        progressChanged.add(trackable);
-        if (flag)
-            onProgressRevoked(trackable);
+        progressChanged.add(tracker);
+        onProgressRevoked(tracker);
         return true;
     }
 
     @Override
-    public boolean grantCriterion(CriterionTracker trackable, String criterionKey) {
-        ProgressTracker progress = getProgress(trackable);
+    public boolean reset(CriterionTracker tracker) {
+        ProgressTracker progress = getProgress(tracker);
+        if (progress == null || !progress.hasProgress())
+            return false;
+        boolean flag = progress.isDone();
+        if (!progress.resetProgress())
+            return false;
+        progressChanged.add(tracker);
+        if (flag)
+            onProgressRevoked(tracker);
+        return true;
+    }
+
+    @Override
+    public boolean grantCriterion(CriterionTracker tracker, String criterionKey) {
+        ProgressTracker progress = getProgress(tracker);
         if (progress.isDone())
             return false;
         if (progress.grantCriterion(criterionKey)) {
-            progressChanged.add(trackable);
+            progressChanged.add(tracker);
             if (progress.isDone())
-                onProgressCompleted(trackable);
+                onProgressCompleted(tracker);
         }
         return true;
     }
@@ -221,7 +234,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         completed.clear();
         completionChanged.clear();
         progressChanged.clear();
-
+        trackableMap.clear();
         firstSync = true;
     }
 
@@ -229,7 +242,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     public void read(SCriterionTrackerSyncPacket packetIn) {
         if (packetIn == null)
             LOGGER.trace("Server-Sided Skill Tree Tracker tried to read a null packet");
-        else if (getOwner() == null)
+        if (getOwner() == null)
             LOGGER.trace("Server-Sided Skill Tree Tracker has a null owner");
         else
             LOGGER.info("Server-Sided Skill Tracker owned by {} was fed a packet", getOwner().getDisplayName().getString());
@@ -260,6 +273,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         reset();
         HashSet<CriterionTracker> missingTrackers = new HashSet<>(progressTracker.keySet());
         for (CriterionTracker trackable : SkillTreeDataManager.getAllTrackers().values()) {
+            trackableMap.put(trackable.getRegistryName(), trackable);
             missingTrackers.remove(trackable);
             ProgressTracker progress = getProgress(trackable);
             if (progress == null)
@@ -277,9 +291,6 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         if (owner == null)
             return;
 
-        // TODO Send data to clients about what pages and skills the owner of this has but only if
-        //  the skill or skill page is specified as one that should be tracked by other players
-        //  (Default: false)
         if (firstSync || !progressChanged.isEmpty()) {
             LOGGER.info("Syncing data from {} to players", owner);
             checkPageVisibility();

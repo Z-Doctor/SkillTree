@@ -2,32 +2,35 @@ package zdoctor.zskilltree.api.interfaces;
 
 import net.minecraft.advancements.Criterion;
 import net.minecraft.nbt.INBT;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.INBTSerializable;
 import zdoctor.zskilltree.criterion.ProgressTracker;
 
 import java.util.Map;
 
 public interface IProgressTracker<T extends INBT> extends INBTSerializable<T> {
-    boolean grant(CriterionTracker page);
+    boolean grant(CriterionTracker tracker);
 
-    boolean revoke(CriterionTracker page);
+    boolean revoke(CriterionTracker tracker);
 
-    boolean grantCriterion(CriterionTracker trackable, String criterionKey);
+    boolean reset(CriterionTracker tracker);
 
-    boolean revokeCriterion(CriterionTracker page, String criterionKey);
+    boolean grantCriterion(CriterionTracker tracker, String criterionKey);
 
-    boolean startProgress(CriterionTracker trackable);
+    boolean revokeCriterion(CriterionTracker tracker, String criterionKey);
+
+    boolean startProgress(CriterionTracker tracker);
 
     void update(CriterionTracker trackable, Map<String, Criterion> criterion, String[][] requirements);
 
-    boolean hasProgress(CriterionTracker trackable);
+    boolean hasProgress(CriterionTracker tracker);
 
-    ProgressTracker getProgress(CriterionTracker trackable);
+    ProgressTracker getProgress(CriterionTracker tracker);
 
     Iterable<CriterionTracker> getTrackers();
 
     Iterable<ProgressTracker> getAllProgress();
 
-    boolean contains(CriterionTracker trackable);
+    boolean contains(CriterionTracker tracker);
 
 }

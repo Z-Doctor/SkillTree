@@ -19,6 +19,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
+import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.skilltree.skill.Skill;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
@@ -26,6 +27,8 @@ import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public class SkillTreeCommand {
     public static final SuggestionProvider<CommandSource> SUGGEST_SKILLPAGE = (context, builder) -> {
@@ -57,16 +60,24 @@ public class SkillTreeCommand {
                 .then(buildRevokeCommand());
     }
 
+    private static RequiredArgumentBuilder<CommandSource, ResourceLocation> buildSkillPageArg() {
+        return Commands.argument("page", ResourceLocationArgument.resourceLocation()).suggests(SUGGEST_SKILLPAGE);
+    }
+
+    private static RequiredArgumentBuilder<CommandSource, ResourceLocation> buildSkillArg() {
+        return Commands.argument("skill", ResourceLocationArgument.resourceLocation()).suggests(SUGGEST_SKILL);
+    }
+
     private static LiteralArgumentBuilder<CommandSource> buildGrantCommand() {
         return Commands.literal("grant").then(Commands.argument("targets", EntityArgument.entities())
-                .then(buildSkillPageArg().executes(SkillTreeCommand::grantPage)));
-//                .then(buildSkillArg());
+                .then(buildSkillPageArg().executes(SkillTreeCommand::grantPage)))
+                .then(buildSkillArg()).executes(SkillTreeCommand::grantSkill);
     }
 
     private static LiteralArgumentBuilder<CommandSource> buildRevokeCommand() {
         return Commands.literal("revoke").then(Commands.argument("targets", EntityArgument.entities())
-                .then(buildSkillPageArg().executes(SkillTreeCommand::revokePage)));
-//                .then(buildSkillArg());
+                .then(buildSkillPageArg().executes(SkillTreeCommand::revokePage)))
+                .then(buildSkillArg().executes(SkillTreeCommand::revokeSkill));
     }
 
     private static ISkillTreeTracker[] processCommand(CommandContext<CommandSource> context) throws CommandSyntaxException {
@@ -102,6 +113,32 @@ public class SkillTreeCommand {
 
     }
 
+    private static int grantSkill(CommandContext<CommandSource> context) throws CommandSyntaxException {
+        int i = 0;
+        CommandSource source = context.getSource();
+        ResourceLocation skillId = ResourceLocationArgument.getResourceLocation(context, "skill");
+        Skill skill = ModMain.getInstance().getSkillManager().getSkill(skillId);
+
+        if (skill == null)
+            throw SKILL_NOT_FOUND.create(skillId);
+
+        ISkillTreeTracker[] handlers = processCommand(context);
+
+        for (ISkillTreeTracker handler : handlers) {
+            if (handler.grant(skill))
+                i++;
+        }
+
+        if (handlers.length == 1 && i == 1)
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.grant.skill.success.single", skill.getDisplayInfo().getSkillName(), handlers[0].getOwner().getDisplayName()), true);
+        else if (i > 1)
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.grant.skill.success.many", skill.getDisplayInfo().getSkillName(), i), true);
+        else
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.grant.skill.fail.none", skill.getDisplayInfo().getSkillName()), true);
+        return i;
+
+    }
+
     private static int revokePage(CommandContext<CommandSource> context) throws CommandSyntaxException {
         int i = 0;
         CommandSource source = context.getSource();
@@ -127,14 +164,31 @@ public class SkillTreeCommand {
 
     }
 
+    private static int revokeSkill(CommandContext<CommandSource> context) throws CommandSyntaxException {
+        int i = 0;
+        CommandSource source = context.getSource();
+        ResourceLocation skillId = ResourceLocationArgument.getResourceLocation(context, "skill");
+        Skill skill = ModMain.getInstance().getSkillManager().getSkill(skillId);
 
-    private static RequiredArgumentBuilder<CommandSource, ResourceLocation> buildSkillPageArg() {
-        return Commands.argument("page", ResourceLocationArgument.resourceLocation()).suggests(SUGGEST_SKILLPAGE);
+        if (skill == null)
+            throw SKILL_NOT_FOUND.create(skillId);
+
+        ISkillTreeTracker[] handlers = processCommand(context);
+        for (ISkillTreeTracker handler : handlers) {
+            if (handler.revoke(skill))
+                i++;
+        }
+
+        if (handlers.length == 1 && i == 1)
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.revoke.skill.success.single", skill.getSkillName(), handlers[0].getOwner().getDisplayName()), true);
+        else if (i > 1)
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.revoke.skill.success.many", skill.getSkillName(), i), true);
+        else
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.revoke.skill.fail.any", skill.getSkillName()), true);
+        return i;
+
     }
 
-    private static RequiredArgumentBuilder<CommandSource, ResourceLocation> buildSkillArg() {
-        return Commands.argument("skill", ResourceLocationArgument.resourceLocation()).suggests(SUGGEST_SKILL);
-    }
 
 
 }

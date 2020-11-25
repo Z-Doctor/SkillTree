@@ -29,9 +29,9 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
     }
 
     @Override
-    protected void startProgress(CriterionTracker trackable, ProgressTracker progress) {
-        super.startProgress(trackable, progress);
-        registerListeners(trackable);
+    protected void startProgress(CriterionTracker tracker, ProgressTracker progress) {
+        super.startProgress(tracker, progress);
+        registerListeners(tracker);
     }
 
     @Override

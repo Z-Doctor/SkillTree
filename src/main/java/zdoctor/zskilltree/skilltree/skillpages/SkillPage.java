@@ -30,6 +30,7 @@ import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.skilltree.data.builders.SkillPageBuilder;
 import zdoctor.zskilltree.skilltree.skill.Skill;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -44,7 +45,6 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
     private final Map<ResourceLocation, Skill> rootSkills = new HashMap<>();
 
     private int index;
-//    private ResourceLocation id;
     private SkillPageDisplayInfo displayInfo;
     private Map<String, Criterion> criteria;
     private String[][] requirements;
@@ -87,18 +87,13 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         }
     }
 
-    public SkillPage(int index, ResourceLocation id, SkillPageDisplayInfo displayInfo, Map<String, Criterion> criteriaIn, String[][] requirementsIn) {
+    public SkillPage(int index, ResourceLocation id, SkillPageDisplayInfo displayInfo, @Nonnull Map<String, Criterion> criteriaIn, @Nonnull String[][] requirementsIn) {
         setRegistryName(id);
         this.displayInfo = displayInfo == null ? MISSING : displayInfo;
         this.index = index;
 
         this.criteria = ImmutableMap.copyOf(criteriaIn);
-        if (requirementsIn == null) {
-            if (this.criteria.isEmpty())
-                this.requirements = new String[0][];
-            else
-                this.requirements = IRequirementsStrategy.AND.createRequirements(this.criteria.keySet());
-        }
+        this.requirements = requirementsIn;
     }
 
     public static int compare(SkillPage in, SkillPage to) {
@@ -175,11 +170,6 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         return new SkillPage(index, id, displayInfo, criterion, requirements);
     }
 
-    // Used for generators
-    public void register(Consumer<SkillPage> consumer) {
-        consumer.accept(this);
-    }
-
     public boolean hasRootSkill(Skill skill) {
         return rootSkills.containsKey(skill.getRegistryName());
     }
@@ -219,11 +209,6 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         for (ResourceLocation id : rootSkills.keySet())
             buf.writeResourceLocation(id);
     }
-
-//    @Override
-//    public ResourceLocation getId() {
-//        return id;
-//    }
 
     public SkillPageDisplayInfo getDisplayInfo() {
         return displayInfo;

@@ -2,13 +2,16 @@ package zdoctor.zskilltree.client.gui;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gui.advancements.AdvancementEntryGui;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.MathHelper;
 import zdoctor.zskilltree.api.ImageAsset;
 import zdoctor.zskilltree.api.ImageAssets;
 import zdoctor.zskilltree.api.enums.AnchorPoint;
 import zdoctor.zskilltree.api.enums.Layer;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeScreen;
+import zdoctor.zskilltree.api.interfaces.ImageDisplayInfo;
 import zdoctor.zskilltree.skilltree.skill.Skill;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
@@ -49,7 +52,8 @@ public class GuiSkillPage extends ImageScreen {
 
     private boolean isSelected;
 
-    private boolean hasDisplay;
+    private float fade;
+
     private int index;
     private int style;
     private int pageNumber;
@@ -68,7 +72,7 @@ public class GuiSkillPage extends ImageScreen {
         for (Skill skill : page.getRootSkills().values()) {
             GuiSkill guiSkill = new GuiSkill(skill, skillTreeScreen);
             guiSkill.setAnchor(skillTreeScreen);
-            guiSkill.setOffsets(28 * i + 9,  18);
+            guiSkill.setOffsets(28 * i + 9, 18);
             i++;
             addDisplay(guiSkill);
             skillTreeScreen.addListener(guiSkill);
@@ -114,15 +118,26 @@ public class GuiSkillPage extends ImageScreen {
         this.itemRenderer.zLevel = 0.0F;
     }
 
-
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         if (skillTreeScreen.getTabPageNumber() != pageNumber)
             return;
-        if(isSelected())
-            super.render(matrixStack, mouseX, mouseY, partialTicks);
-        else
+        if (!isSelected()) {
             renderMain(matrixStack, mouseX, mouseY, partialTicks);
+            return;
+        }
+        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        for (ImageDisplayInfo child : childScreens) {
+            if (child instanceof GuiSkill && child.isMouseOver(mouseX, mouseY)) {
+                GuiSkill skillGui = (GuiSkill) child;
+//                skillGui.drawSkillHover(matrixStack, mouseX, mouseY);
+//                if (flag) {
+//                    this.fade = MathHelper.clamp(this.fade + 0.02F, 0.0F, 0.3F);
+//                } else {
+//                    this.fade = MathHelper.clamp(this.fade - 0.04F, 0.0F, 1.0F);
+//                }
+            }
+        }
     }
 
     @Override
@@ -156,13 +171,13 @@ public class GuiSkillPage extends ImageScreen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if(isMouseOver(mouseX, mouseY)) {
+        if (isMouseOver(mouseX, mouseY)) {
             if (button == 0 && !skillTreeScreen.isMouseOver(mouseX, mouseY)) {
                 onMouseClicked(mouseX, mouseY, button);
                 return true;
             }
         }
-        return false;
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
@@ -214,4 +229,32 @@ public class GuiSkillPage extends ImageScreen {
     }
 
 
+    public void drawToolTips(MatrixStack matrixStack, int mouseX, int mouseY) {
+        RenderSystem.pushMatrix();
+        RenderSystem.translatef(0.0F, 0.0F, 200.0F);
+
+        fill(matrixStack, skillTreeScreen.getTrueOffsetX(), skillTreeScreen.getTrueOffsetY(),
+                skillTreeScreen.getImage().xSize, skillTreeScreen.getImage().ySize, MathHelper.floor(this.fade * 255.0F) << 24);
+
+        boolean flag = skillTreeScreen.isMouseOver(mouseX, mouseY);
+//        int i = MathHelper.floor(this.scrollX);
+//        int j = MathHelper.floor(this.scrollY);
+//        if (mouseX > 0 && mouseX < 234 && mouseY > 0 && mouseY < 113) {
+//            for (AdvancementEntryGui advancemententrygui : this.guis.values()) {
+//                if (advancemententrygui.isMouseOver(i, j, mouseX, mouseY)) {
+//                    flag = true;
+//                    advancemententrygui.drawAdvancementHover(matrixStack, i, j, this.fade, width, height);
+//                    break;
+//                }
+//            }
+//        }
+
+        RenderSystem.popMatrix();
+        if (flag)
+            this.fade = MathHelper.clamp(this.fade + 0.02F, 0.0F, 0.3F);
+        else
+            this.fade = MathHelper.clamp(this.fade - 0.04F, 0.0F, 1.0F);
+
+
+    }
 }

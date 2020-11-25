@@ -5,19 +5,19 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.registries.ObjectHolder;
+import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.IClientSkillTreeTracker;
-import zdoctor.zskilltree.skilltree.data.handlers.SkillTreeTracker;
+import zdoctor.zskilltree.criterion.ProgressTracker;
+import zdoctor.zskilltree.network.play.SkillInteractionPacket;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
+import zdoctor.zskilltree.skilltree.data.handlers.SkillTreeTracker;
 import zdoctor.zskilltree.skilltree.skill.Skill;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientSkillTreeTracker extends SkillTreeTracker implements IClientSkillTreeTracker {
@@ -31,6 +31,7 @@ public class ClientSkillTreeTracker extends SkillTreeTracker implements IClientS
 
     private IListener listener;
     private SkillPage selectedPage;
+    private Skill selectedSkill;
     private int maxVertical;
     private int maxHorizontal;
 
@@ -47,21 +48,31 @@ public class ClientSkillTreeTracker extends SkillTreeTracker implements IClientS
 
         completed.clear();
 
-        if (packetIn.isFirstSync()) {
-            pages.clear();
-            skills.clear();
-        }
+        if (packetIn.isFirstSync())
+            reset();
 
         for (CriterionTracker trackable : packetIn.getToAdd()) {
             if (trackable instanceof SkillPage)
                 pages.put(trackable.getRegistryName(), (SkillPage) trackable);
             else if (trackable instanceof Skill)
                 skills.put(trackable.getRegistryName(), (Skill) trackable);
+            trackableMap.put(trackable.getRegistryName(), trackable);
         }
 
 
-        packetIn.getToRemove().forEach(pages::remove);
-        packetIn.getToRemove().forEach(skills::remove);
+        for (ResourceLocation id : packetIn.getToRemove()) {
+            pages.remove(id);
+            skills.remove(id);
+            trackableMap.remove(id);
+        }
+
+        for (Map.Entry<ResourceLocation, ProgressTracker> entry : packetIn.getProgressChanged().entrySet()) {
+            CriterionTracker trackable = trackableMap.get(entry.getKey());
+            if (trackable != null)
+                progressTracker.put(trackable, entry.getValue());
+            else
+                LOGGER.error("Unable to update progress of {}", entry.getKey());
+        }
 
         Set<ResourceLocation> orphanedSkills = new HashSet<>(skills.keySet());
 
@@ -89,6 +100,19 @@ public class ClientSkillTreeTracker extends SkillTreeTracker implements IClientS
         if (listener != null)
             listener.reload();
 
+    }
+
+    @Override
+    public void flushDirty() {
+        // TODO Should I change this maybe some kind of listener(?)
+        //  I don't think this is even called
+    }
+
+    @Override
+    protected void reset() {
+        super.reset();
+        pages.clear();
+        skills.clear();
     }
 
     @Override
@@ -125,8 +149,15 @@ public class ClientSkillTreeTracker extends SkillTreeTracker implements IClientS
     }
 
     @Override
-    public void onSkillClicked(Skill skill) {
-        // TODO Send packet to server about the click
+    public void setSelectedSkill(@Nullable Skill skillIn, boolean tellServer) {
+        if (skillIn != null && tellServer) {
+            SkillInteractionPacket packet = new SkillInteractionPacket(skillIn, SkillInteractionPacket.Type.BUY);
+            ModMain.getInstance().getPacketChannel().sendToServer(packet);
+        }
+
+        this.selectedSkill = skillIn;
+        if (this.listener != null)
+            this.listener.setSelectedSkill(skillIn);
     }
 
     @Override
@@ -172,8 +203,7 @@ public class ClientSkillTreeTracker extends SkillTreeTracker implements IClientS
         return index;
     }
 
-
-    protected synchronized SkillPage setPageAt(int index, SkillPage page) {
+    public synchronized SkillPage setPageAt(int index, SkillPage page) {
         SkillPage[] tabs = sorted_pages.get(page.getAlignment());
 
         if (index >= tabs.length) {

@@ -213,7 +213,7 @@ public final class ModMain {
 
     private void onAddReloadListeners(AddReloadListenerEvent event) {
         LootPredicateManager lootPredicateManager = event.getDataPackRegistries().getLootPredicateManager();
-        event.addListener(skillManager = new SkillManager());
+        event.addListener(skillManager = new SkillManager(lootPredicateManager));
         event.addListener(skillPageManager = new SkillPageManager(skillManager, lootPredicateManager));
         event.addListener(new ReloadListener<Void>() {
             @Override

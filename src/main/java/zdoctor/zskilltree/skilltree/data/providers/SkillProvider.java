@@ -40,12 +40,12 @@ public class SkillProvider implements IDataProvider {
             } else {
                 LOGGER.info("Added skill: " + skill);
                 Path path1 = getPath(path, skill);
-
-                try {
-                    IDataProvider.save(GSON, cache, skill.copy().serialize(), path1);
-                } catch (IOException ioexception) {
-                    LOGGER.error("Couldn't save skill page {}", path1, ioexception);
-                }
+// TODO Fix
+//                try {
+//                    IDataProvider.save(GSON, cache, skill.copy(), path1);
+//                } catch (IOException ioexception) {
+//                    LOGGER.error("Couldn't save skill page {}", path1, ioexception);
+//                }
 
             }
         };

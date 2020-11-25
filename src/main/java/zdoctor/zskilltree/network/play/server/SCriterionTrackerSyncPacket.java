@@ -10,9 +10,9 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
+import zdoctor.zskilltree.api.SkillTreeApi;
 import zdoctor.zskilltree.api.annotations.ClassNameMapper;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
-import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.criterion.ProgressTracker;
 
 import java.util.*;
@@ -21,57 +21,13 @@ import java.util.function.Supplier;
 
 public class SCriterionTrackerSyncPacket {
     private static final Logger LOGGER = LogManager.getLogger();
-    private Collection<CriterionTracker> toAdd;
-    private Map<String, List<CriterionTracker>> trackableTypes;
-    private boolean firstSync;
-    private Set<ResourceLocation> toRemove;
-    private Map<ResourceLocation, ProgressTracker> progressChanged;
+    private final Collection<CriterionTracker> toAdd;
+    private final Map<String, List<CriterionTracker>> trackableTypes;
+    private final boolean firstSync;
+    private final Set<ResourceLocation> toRemove;
+    private final Map<ResourceLocation, ProgressTracker> progressChanged;
 
-    public SCriterionTrackerSyncPacket() {
-    }
-
-    public SCriterionTrackerSyncPacket(boolean firstSync, Collection<CriterionTracker> toAdd, Set<ResourceLocation> toRemove, Map<ResourceLocation, ProgressTracker> progressChanged) {
-        this.firstSync = firstSync;
-        this.trackableTypes = new HashMap<>();
-
-        String key;
-        for (CriterionTracker trackable : toAdd) {
-            ClassNameMapper mapping = trackable.getClass().getAnnotation(ClassNameMapper.class);
-            if (mapping == null)
-                key = trackable.getClass().getSimpleName();
-            else
-                key = mapping.key();
-            this.trackableTypes.putIfAbsent(key, new ArrayList<>());
-            this.trackableTypes.get(key).add(trackable);
-        }
-
-        this.toAdd = toAdd;
-        this.toRemove = toRemove;
-        this.progressChanged = progressChanged;
-    }
-
-    public static SCriterionTrackerSyncPacket readFrom(PacketBuffer buf) {
-        SCriterionTrackerSyncPacket infoPacket = new SCriterionTrackerSyncPacket();
-        infoPacket.readPacketData(buf);
-        return infoPacket;
-    }
-
-    public static void handle(SCriterionTrackerSyncPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        if (ctx.get().getDirection() == NetworkDirection.PLAY_TO_SERVER) {
-            LOGGER.error("Client sent Packet to Server");
-        } else if (ctx.get().getDirection() == NetworkDirection.PLAY_TO_CLIENT) {
-            LOGGER.debug("Server sent packet to client: " + Minecraft.getInstance().player);
-            Optional<ISkillTreeTracker> cap = Minecraft.getInstance().player.getCapability(ModMain.SKILL_TREE_CAPABILITY).resolve();
-            if (cap.isPresent())
-                cap.get().read(msg);
-            else
-                LOGGER.fatal("Handler for player {} not found", Minecraft.getInstance().player);
-        }
-
-        ctx.get().setPacketHandled(true);
-    }
-
-    public void readPacketData(PacketBuffer buf) {
+    public SCriterionTrackerSyncPacket(PacketBuffer buf) {
         this.firstSync = buf.readBoolean();
         this.toAdd = new HashSet<>();
         this.trackableTypes = new HashMap<>();
@@ -113,7 +69,44 @@ public class SCriterionTrackerSyncPacket {
         }
     }
 
-    public void writePacketData(PacketBuffer buf) {
+    public SCriterionTrackerSyncPacket(boolean firstSync, Collection<CriterionTracker> toAdd,
+                                       Set<ResourceLocation> toRemove, Map<ResourceLocation, ProgressTracker> progressChanged) {
+        this.firstSync = firstSync;
+        this.trackableTypes = new HashMap<>();
+
+        String key;
+        for (CriterionTracker trackable : toAdd) {
+            ClassNameMapper mapping = trackable.getClass().getAnnotation(ClassNameMapper.class);
+            if (mapping == null)
+                key = trackable.getClass().getSimpleName();
+            else
+                key = mapping.key();
+            this.trackableTypes.putIfAbsent(key, new ArrayList<>());
+            this.trackableTypes.get(key).add(trackable);
+        }
+
+        this.toAdd = toAdd;
+        this.toRemove = toRemove;
+        this.progressChanged = progressChanged;
+    }
+
+    public static void handle(SCriterionTrackerSyncPacket msg, Supplier<NetworkEvent.Context> ctx) {
+        if (ctx.get().getDirection() == NetworkDirection.PLAY_TO_SERVER) {
+            LOGGER.error("Client sent Packet to Server");
+        } else if (ctx.get().getDirection() == NetworkDirection.PLAY_TO_CLIENT) {
+            LOGGER.debug("Server sent packet to client: " + Minecraft.getInstance().player);
+            boolean flag = SkillTreeApi.perform(Minecraft.getInstance().player, tracker -> {
+                tracker.read(msg);
+                return true;
+            });
+            if (!flag)
+                LOGGER.fatal("Handler for player {} not found", Minecraft.getInstance().player);
+        }
+
+        ctx.get().setPacketHandled(true);
+    }
+
+    public void writeTo(PacketBuffer buf) {
         buf.writeBoolean(firstSync);
         buf.writeVarInt(trackableTypes.size());
 
@@ -161,6 +154,11 @@ public class SCriterionTrackerSyncPacket {
     @OnlyIn(Dist.CLIENT)
     public Set<ResourceLocation> getToRemove() {
         return toRemove;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public Map<ResourceLocation, ProgressTracker> getProgressChanged() {
+        return progressChanged;
     }
 
     @OnlyIn(Dist.CLIENT)

@@ -9,8 +9,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import zdoctor.zskilltree.ModMain;
-import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.api.ImageAsset;
+import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPageDisplayInfo;
 
@@ -23,14 +23,13 @@ public class SkillPageBuilder {
     private int index = -1;
     private SkillPageDisplayInfo display;
     private Map<String, Criterion> criteria = new HashMap<>();
-    private String[][] requirements;
     private IRequirementsStrategy requirementsStrategy = IRequirementsStrategy.AND;
 
-    protected SkillPageBuilder(int index, @Nullable SkillPageDisplayInfo displayIn, Map<String, Criterion> criteriaIn, String[][] requirementsIn) {
+    protected SkillPageBuilder(int index, @Nullable SkillPageDisplayInfo displayIn, Map<String, Criterion> criteriaIn, IRequirementsStrategy requirementsStrategyIn) {
         this.index = index;
         this.display = displayIn;
         this.criteria = criteriaIn;
-        this.requirements = requirementsIn;
+        this.requirementsStrategy = requirementsStrategyIn;
     }
 
     protected SkillPageBuilder() {
@@ -82,7 +81,17 @@ public class SkillPageBuilder {
         return this;
     }
 
+    public SkillPageBuilder atIndex(int i) {
+        index = i;
+        return this;
+    }
+
+    public SkillPageBuilder copy() {
+        return new SkillPageBuilder(index, display, criteria, requirementsStrategy);
+    }
+
     public SkillPage build(ResourceLocation id) {
+        String[][] requirements = requirementsStrategy.createRequirements(criteria.keySet());
         return new SkillPage(index, id, display, criteria, requirements);
     }
 
@@ -90,10 +99,5 @@ public class SkillPageBuilder {
         SkillPage page = this.build(new ResourceLocation(ModMain.MODID, id));
         consumer.accept(page);
         return page;
-    }
-
-    public SkillPageBuilder atIndex(int i) {
-        index = i;
-        return this;
     }
 }
