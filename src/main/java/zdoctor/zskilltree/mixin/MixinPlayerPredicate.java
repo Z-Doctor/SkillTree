@@ -10,19 +10,21 @@ import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import zdoctor.zskilltree.api.SkillTreeApi;
-import zdoctor.zskilltree.api.interfaces.*;
+import zdoctor.zskilltree.api.interfaces.CriterionTracker;
+import zdoctor.zskilltree.api.interfaces.Deserializable;
+import zdoctor.zskilltree.api.interfaces.ICriteriaPredicate;
+import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 
 import java.util.HashMap;
 import java.util.Map;
 
 // TODO Do something similar for non-player entities
 @Mixin(PlayerPredicate.class)
-@Implements(@Interface(iface = EntityPredicate.class, prefix = "extra$"))
 public abstract class MixinPlayerPredicate implements Deserializable {
 
     public Logger logger = LogManager.getLogger();
@@ -61,25 +63,23 @@ public abstract class MixinPlayerPredicate implements Deserializable {
         }
     }
 
-    @Shadow
-    public abstract boolean test(Entity player);
+    @Inject(method = "test", remap = false, at = @At("RETURN"))
+    public void extraTest(Entity player, CallbackInfoReturnable<Boolean> cir) {
+        if (!cir.getReturnValue())
+            return;
 
-    @Intrinsic(displace = true)
-    public boolean extra$test(Entity entity) {
-        if (!this.test(entity))
-            return false;
-        ISkillTreeTracker tracker = SkillTreeApi.getTracker(entity);
-        if (tracker == null)
-            return false;
-
-        if (!criteriaTrackers.isEmpty()) {
+        ISkillTreeTracker tracker = SkillTreeApi.getTracker(player);
+        if (tracker == null) {
+            cir.setReturnValue(false);
+        } else if (!criteriaTrackers.isEmpty()) {
             for (Map.Entry<ResourceLocation, ICriteriaPredicate> entry : criteriaTrackers.entrySet()) {
                 CriterionTracker trackable = tracker.getTracker(entry.getKey());
-                if (trackable == null || entry.getValue().test(tracker.getProgress(trackable)))
-                    return false;
+                if (trackable == null || entry.getValue().test(tracker.getProgress(trackable))) {
+                    cir.setReturnValue(false);
+                    return;
+                }
             }
         }
-        return true;
     }
 
     @Override

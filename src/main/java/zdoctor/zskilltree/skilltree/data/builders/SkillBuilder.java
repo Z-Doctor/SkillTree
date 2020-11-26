@@ -63,7 +63,7 @@ public class SkillBuilder implements Cloneable {
         SkillBuilder builder = builder();
 
         if (JSONUtils.hasField(json, "page"))
-            builder.onPage(ResourceLocation.tryCreate(JSONUtils.getString(json, "parent-page")));
+            builder.onPage(ResourceLocation.tryCreate(JSONUtils.getString(json, "page")));
 
         if (!JSONUtils.hasField(json, "display"))
             throw new JsonSyntaxException("Skill display cannot be empty");
