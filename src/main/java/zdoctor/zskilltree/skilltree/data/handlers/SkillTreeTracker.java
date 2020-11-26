@@ -51,6 +51,11 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         return progressTracker.get(tracker) != null;
     }
 
+    @Override
+    public CriterionTracker getTracker(ResourceLocation key) {
+        return trackableMap.get(key);
+    }
+
     /**
      * Checks to see if the trackable exists and has progress
      */

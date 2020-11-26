@@ -185,7 +185,7 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
         JsonObject jsonobject = new JsonObject();
 
         if (getParentPage() != null)
-            jsonobject.addProperty("parent-page", getParentPage().toString());
+            jsonobject.addProperty("page", getParentPage().toString());
 
         jsonobject.add("display", getDisplayInfo().serialize());
 

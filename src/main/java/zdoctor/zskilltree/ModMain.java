@@ -37,6 +37,7 @@ import net.minecraftforge.registries.DataSerializerEntry;
 import net.minecraftforge.registries.RegistryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.spongepowered.asm.mixin.Mixins;
 import zdoctor.zskilltree.api.ImageAsset;
 import zdoctor.zskilltree.api.ImageAssets;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
@@ -115,6 +116,7 @@ public final class ModMain {
 
     private static void initBootstrap() {
         SkillTreeEntityOptions.register();
+        Mixins.addConfiguration("META-INF/mixin_config.json");
     }
 
     public SkillPageManager getSkillPageManager() {

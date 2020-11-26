@@ -1,29 +1,23 @@
 package zdoctor.zskilltree.criterion.advancements.triggers;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.minecraft.advancements.criterion.AbstractCriterionTrigger;
 import net.minecraft.advancements.criterion.CriterionInstance;
 import net.minecraft.advancements.criterion.EntityPredicate;
-import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.loot.ConditionArrayParser;
-import net.minecraft.loot.ConditionArraySerializer;
-import net.minecraft.util.JSONUtils;
+import net.minecraft.loot.LootContext;
 import net.minecraft.util.ResourceLocation;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
-import zdoctor.zskilltree.api.SkillTreeApi;
-import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 public class SkillPageUnlockedTrigger extends AbstractCriterionTrigger<SkillPageUnlockedTrigger.Instance> {
-    private static final Logger LOGGER = LogManager.getLogger();
     private static final ResourceLocation ID = new ResourceLocation(ModMain.MODID, "skill_page_unlocked");
 
     @Override
     protected Instance deserializeTrigger(JsonObject json, EntityPredicate.AndPredicate entityPredicate, ConditionArrayParser conditionsParser) {
-        ResourceLocation skillPage = new ResourceLocation(JSONUtils.getString(json, "skillPageId"));
-        boolean hasPage = JSONUtils.getBoolean(json, "hasSkill");
-        return new Instance(entityPredicate, skillPage, hasPage);
+        return new Instance(entityPredicate);
     }
 
     @Override
@@ -31,39 +25,26 @@ public class SkillPageUnlockedTrigger extends AbstractCriterionTrigger<SkillPage
         return ID;
     }
 
-    public void trigger() {
-
+    public void triggerListeners(ServerPlayerEntity player) {
+        triggerListeners(player, instance -> instance.test(player));
     }
 
     public static class Instance extends CriterionInstance {
-        private final ResourceLocation skillPageId;
-        private final boolean hasPage;
+        private static final String template = "{\"player\":{\"pages\":{\"%s\":%s}}}";
 
-        public Instance(EntityPredicate.AndPredicate player, ResourceLocation skillPageId, boolean hasPage) {
+        public Instance(EntityPredicate.AndPredicate player) {
             super(ID, player);
-            this.skillPageId = skillPageId;
-            this.hasPage = hasPage;
         }
 
         public static Instance with(ResourceLocation skillPageId, boolean hasPage) {
-            return new Instance(EntityPredicate.AndPredicate.ANY_AND, skillPageId, hasPage);
+            JsonElement element = new JsonParser().parse(String.format(template, skillPageId, hasPage));
+            return new Instance(EntityPredicate.AndPredicate.createAndFromEntityCondition(EntityPredicate.deserialize(element)));
         }
 
-        @Override
-        public JsonObject serialize(ConditionArraySerializer conditions) {
-            JsonObject jsonObject = super.serialize(conditions);
-            jsonObject.addProperty("skillPageId", skillPageId.toString());
-            jsonObject.addProperty("hasSkill", hasPage);
-            return jsonObject;
-        }
-
-        public boolean test(Entity entity) {
-            SkillPage page = SkillTreeApi.getPage(skillPageId);
-            if (page == null) {
-                LOGGER.error("Skill page {} not found when testing for it.", hasPage);
-                return !hasPage;
-            }
-            return SkillTreeApi.hasPage(entity, page) == hasPage;
+        public boolean test(ServerPlayerEntity player) {
+            // TODO Make one for non-player entities?
+            LootContext lootcontext = EntityPredicate.getLootContext(player, player);
+            return getPlayerCondition().testContext(lootcontext);
         }
     }
 }

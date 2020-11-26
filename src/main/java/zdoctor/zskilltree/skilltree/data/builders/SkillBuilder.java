@@ -1,7 +1,6 @@
 package zdoctor.zskilltree.skilltree.data.builders;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.advancements.Criterion;
@@ -63,7 +62,7 @@ public class SkillBuilder implements Cloneable {
     public static SkillBuilder deserialize(JsonObject json, ConditionArrayParser conditionParser) {
         SkillBuilder builder = builder();
 
-        if (JSONUtils.hasField(json, "parent-page"))
+        if (JSONUtils.hasField(json, "page"))
             builder.onPage(ResourceLocation.tryCreate(JSONUtils.getString(json, "parent-page")));
 
         if (!JSONUtils.hasField(json, "display"))
@@ -96,9 +95,13 @@ public class SkillBuilder implements Cloneable {
         return onPage(page.getRegistryName());
     }
 
-    public SkillBuilder onPage(ResourceLocation skillPage) {
-        this.skillPage = skillPage;
-        this.criteria.compute("parent-page", (key, old) -> new Criterion(SkillPageUnlockedTrigger.Instance.with(skillPage, true)));
+    public SkillBuilder onPage(String page) {
+        return onPage(new ResourceLocation(ModMain.MODID, page));
+    }
+
+    public SkillBuilder onPage(ResourceLocation page) {
+        this.skillPage = page;
+        this.criteria.compute("parent-page", (key, old) -> new Criterion(SkillPageUnlockedTrigger.Instance.with(page, true)));
         return this;
     }
 
@@ -106,18 +109,12 @@ public class SkillBuilder implements Cloneable {
         return skillPage;
     }
 
-    public JsonElement serialize() {
-        JsonObject jsonobject = new JsonObject();
-//        if (pageId != null)
-//            jsonobject.addProperty("page", pageId.toString());
-//        if (this.display == null)
-//            throw new NullPointerException("Tried to serialize Skill Builder with no display");
-//        jsonobject.add("display", this.display.serialize());
-        return jsonobject;
+    public Skill register(Consumer<Skill> consumer, String id) {
+        return register(consumer, new ResourceLocation(ModMain.MODID, id));
     }
 
-    public Skill register(Consumer<Skill> consumer, String id) {
-        Skill skill = this.build(new ResourceLocation(ModMain.MODID, id));
+    public Skill register(Consumer<Skill> consumer, ResourceLocation id) {
+        Skill skill = this.build(id);
         consumer.accept(skill);
         return skill;
     }
@@ -203,7 +200,7 @@ public class SkillBuilder implements Cloneable {
             }
         } else if (requirements.length != 0)
             throw new JsonSyntaxException("Requirements defined but not criteria detected");
-        if(skillPage == null)
+        if (skillPage == null)
             throw new JsonSyntaxException("Parent page is null");
         return new Skill(id, display, criteria, requirements).setPage(skillPage);
     }

@@ -72,6 +72,10 @@ public class SkillTreeApi {
         });
     }
 
+    public static ISkillTreeTracker getTracker(Entity entity) {
+        return of(entity, skillTreeTracker -> skillTreeTracker).get();
+    }
+
     public interface SkillTreeOperation {
         default boolean apply(LazyOptional<ISkillTreeTracker> lazyOptional) {
             Optional<ISkillTreeTracker> optional = lazyOptional.resolve();

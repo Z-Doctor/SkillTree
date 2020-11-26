@@ -11,6 +11,7 @@ import net.minecraftforge.fml.network.PacketDistributor;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.criterion.ProgressTracker;
+import zdoctor.zskilltree.criterion.advancements.ExtendedCriteriaTriggers;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
 import zdoctor.zskilltree.skilltree.events.SkillTreeEvent;
 import zdoctor.zskilltree.skilltree.skill.SkillTreeDataManager;
@@ -38,12 +39,16 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
     protected void onProgressCompleted(CriterionTracker trackable) {
         unregisterListeners(trackable);
         super.onProgressCompleted(trackable);
+        // TODO Make a proper event
+        ExtendedCriteriaTriggers.SkillPage_Unlocked.triggerListeners(getPlayer());
     }
 
     @Override
     protected void onProgressRevoked(CriterionTracker trackable) {
         registerListeners(trackable);
         super.onProgressRevoked(trackable);
+        // TODO Make a proper event
+        ExtendedCriteriaTriggers.SkillPage_Unlocked.triggerListeners(getPlayer());
     }
 
     public ServerPlayerEntity getPlayer() {

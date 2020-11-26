@@ -33,4 +33,6 @@ public interface IProgressTracker<T extends INBT> extends INBTSerializable<T> {
 
     boolean contains(CriterionTracker tracker);
 
+    CriterionTracker getTracker(ResourceLocation key);
+
 }

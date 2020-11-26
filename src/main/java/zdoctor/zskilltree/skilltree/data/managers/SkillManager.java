@@ -41,8 +41,6 @@ public class SkillManager extends JsonReloadListener {
         objectIn.forEach((location, page) -> {
             LOGGER.info("Opened: " + getPreparedPath(location));
             JsonObject jsonobject = JSONUtils.getJsonObject(page, location.toString());
-            // TODO Get parent from location(?)
-//            Skill skill = Skill.deserialize(location, jsonobject, new ConditionArrayParser(location, this.lootPredicateManager));
             SkillBuilder builder = Skill.Builder.deserialize(jsonobject, new ConditionArrayParser(location, this.lootPredicateManager));
             toBuild.put(location, builder);
             LOGGER.info("Created Skill {}", location);

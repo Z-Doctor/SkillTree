@@ -17,5 +17,8 @@ public class SkillGenerator implements Consumer<Consumer<Skill>> {
 
         Skill.Builder.builder().withDisplay(new ItemStack(Items.SHEARS), "utility_skill")
                 .onPage(SkillPageGenerator.miscPage).register(consumer, "utility_skill");
+
+        Skill.Builder.builder().withDisplay(new ItemStack(Items.BOOK), "beginner_enchanter")
+                .onPage("enchanting_branch").register(consumer, "beginner_enchanter");
     }
 }
