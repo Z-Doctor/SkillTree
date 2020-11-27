@@ -29,5 +29,4 @@ public class SkillPageGenerator implements Consumer<Consumer<SkillPage>> {
                 withCriterion("unlocked_advancement", AdvancementUnlockedTrigger.Instance.with("minecraft:story/enchant_item", true)).
                 register(consumer, "enchanting_branch");
     }
-
 }

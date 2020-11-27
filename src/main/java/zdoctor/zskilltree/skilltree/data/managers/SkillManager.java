@@ -52,7 +52,7 @@ public class SkillManager extends JsonReloadListener {
             ResourceLocation id = entry.getKey();
             SkillBuilder builder = entry.getValue();
             SkillPage page = skillPageManager.getPage(builder.getPageId());
-            if (page == null && (page = resolveParent(id, skillPageManager)) != null)
+            if (page != null || (page = resolveParent(id, skillPageManager)) != null)
                 builder.onPage(page);
             else {
                 LOGGER.info("Skipping: Unable to find parent {} for skill {}", builder.getPageId(), id);

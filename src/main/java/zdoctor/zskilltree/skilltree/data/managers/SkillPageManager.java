@@ -9,7 +9,6 @@ import net.minecraft.loot.LootPredicateManager;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.JSONUtils;
-import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.LogManager;
@@ -70,7 +69,7 @@ public class SkillPageManager extends JsonReloadListener {
         });
 
         pages = newPages;
-//        skillManager.build(this);
+        skillManager.build(this);
     }
 
     public Collection<SkillPage> getAllSkillPages() {

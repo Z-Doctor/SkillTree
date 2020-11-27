@@ -11,7 +11,6 @@ import net.minecraftforge.fml.network.PacketDistributor;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.criterion.ProgressTracker;
-import zdoctor.zskilltree.criterion.advancements.ExtendedCriteriaTriggers;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
 import zdoctor.zskilltree.skilltree.events.SkillTreeEvent;
 import zdoctor.zskilltree.skilltree.skill.SkillTreeDataManager;
@@ -40,7 +39,8 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
         unregisterListeners(trackable);
         super.onProgressCompleted(trackable);
         // TODO Make a proper event
-        ExtendedCriteriaTriggers.SkillPage_Unlocked.triggerListeners(getPlayer());
+//        ExtendedCriteriaTriggers.SKILL_PAGE_TRIGGER.triggerListeners(getPlayer(), trackable.getRegistryName(), true);
+//        ExtendedCriteriaTriggers.ANY_SKILL_PAGE_TRIGGER.triggerListeners(getPlayer(), trackable.getRegistryName(), true);
     }
 
     @Override
@@ -48,7 +48,8 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
         registerListeners(trackable);
         super.onProgressRevoked(trackable);
         // TODO Make a proper event
-        ExtendedCriteriaTriggers.SkillPage_Unlocked.triggerListeners(getPlayer());
+//        ExtendedCriteriaTriggers.SKILL_PAGE_TRIGGER.triggerListeners(getPlayer(), trackable.getRegistryName(), false);
+//        ExtendedCriteriaTriggers.ANY_SKILL_PAGE_TRIGGER.triggerListeners(getPlayer(), trackable.getRegistryName(), false);
     }
 
     public ServerPlayerEntity getPlayer() {
@@ -60,6 +61,8 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
         if (firstSync || !progressChanged.isEmpty()) {
             checkPageVisibility();
             LOGGER.debug("Syncing player data to client {}", getPlayer().getDisplayName().getString());
+            // TODO Send over data off all skills and pages the player should be able to see
+            // TODO Add a visibility predicate/condition that can be added in the json
             Set<CriterionTracker> toAdd = new HashSet<>(completionChanged);
             toAdd.retainAll(completed);
             completionChanged.removeAll(toAdd);

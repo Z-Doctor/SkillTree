@@ -16,7 +16,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 public class SkillInteractionPacket {
-    private static Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
 
     private final ResourceLocation skillId;
     private final Type type;

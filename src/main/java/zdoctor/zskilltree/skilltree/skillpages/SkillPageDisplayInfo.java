@@ -81,6 +81,7 @@ public class SkillPageDisplayInfo {
         return drawTitle;
     }
 
+    // TODO Replace with visibility predicate
     public boolean isHidden() {
         return isHidden;
     }

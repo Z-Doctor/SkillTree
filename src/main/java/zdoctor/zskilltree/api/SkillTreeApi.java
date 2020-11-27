@@ -7,6 +7,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.LazyOptional;
 import zdoctor.zskilltree.ModMain;
+import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.criterion.ProgressTracker;
 import zdoctor.zskilltree.skilltree.skill.Skill;
@@ -68,6 +69,16 @@ public class SkillTreeApi {
     public static boolean hasPage(Entity entity, SkillPage page) {
         return perform(entity, tracker -> {
             ProgressTracker progress = tracker.getProgress(page);
+            return progress != null && progress.isDone();
+        });
+    }
+
+    public static boolean hasPage(Entity entity, ResourceLocation pageId) {
+        return perform(entity, tracker -> {
+            CriterionTracker trackable = tracker.getTracker(pageId);
+            if (!(trackable instanceof SkillPage))
+                return false;
+            ProgressTracker progress = tracker.getProgress(trackable);
             return progress != null && progress.isDone();
         });
     }

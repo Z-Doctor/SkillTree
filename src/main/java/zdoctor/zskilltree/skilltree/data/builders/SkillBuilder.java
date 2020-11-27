@@ -1,13 +1,19 @@
 package zdoctor.zskilltree.skilltree.data.builders;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.ICriterionInstance;
 import net.minecraft.advancements.IRequirementsStrategy;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.PlayerPredicate;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.ConditionArrayParser;
+import net.minecraft.loot.LootContext;
+import net.minecraft.loot.conditions.EntityHasProperty;
+import net.minecraft.loot.conditions.ILootCondition;
 import net.minecraft.util.IItemProvider;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
@@ -18,19 +24,20 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.ImageAsset;
-import zdoctor.zskilltree.criterion.advancements.triggers.SkillPageUnlockedTrigger;
+import zdoctor.zskilltree.api.interfaces.ICriteriaPredicate;
+import zdoctor.zskilltree.skilltree.loot.conditions.HasSkillPage;
 import zdoctor.zskilltree.skilltree.skill.Skill;
 import zdoctor.zskilltree.skilltree.skill.SkillDisplayInfo;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.triggers.SkillUnlockedTrigger;
 
 import java.util.*;
 import java.util.function.Consumer;
 
-public class SkillBuilder implements Cloneable {
+public class SkillBuilder {
     private static final Logger LOGGER = LogManager.getLogger();
-    Set<ResourceLocation> parents = new HashSet<>();
-    Set<ResourceLocation> child = new HashSet<>();
-
+    private final Map<ResourceLocation, ICriteriaPredicate> conditions = new LinkedHashMap<>();
+    private PlayerPredicate playerPredicate = PlayerPredicate.ANY;
     private SkillDisplayInfo display;
     private Map<String, Criterion> criteria = new HashMap<>();
     private String[][] requirements;
@@ -91,6 +98,36 @@ public class SkillBuilder implements Cloneable {
         return builder;
     }
 
+    public static JsonElement serialize(Skill skill) {
+        JsonObject jsonobject = new JsonObject();
+
+        if (skill.getParentPage() != null)
+            jsonobject.addProperty("page", skill.getParentPage().toString());
+
+        jsonobject.add("display", skill.getDisplayInfo().serialize());
+
+        JsonObject criteriaObject = new JsonObject();
+        for (Map.Entry<String, Criterion> entry : skill.getCriteria().entrySet())
+            criteriaObject.add(entry.getKey(), entry.getValue().serialize());
+        jsonobject.add("criteria", criteriaObject);
+
+        JsonArray requirementArray = new JsonArray();
+        for (String[] requirements : skill.getRequirements()) {
+            JsonArray array = new JsonArray();
+            for (String requirement : requirements)
+                array.add(requirement);
+
+            requirementArray.add(array);
+        }
+        jsonobject.add("requirements", requirementArray);
+        return jsonobject;
+    }
+
+    public SkillBuilder setPlayerPredicate(PlayerPredicate playerPredicate) {
+        this.playerPredicate = playerPredicate;
+        return this;
+    }
+
     public SkillBuilder onPage(SkillPage page) {
         return onPage(page.getRegistryName());
     }
@@ -100,23 +137,17 @@ public class SkillBuilder implements Cloneable {
     }
 
     public SkillBuilder onPage(ResourceLocation page) {
-        this.skillPage = page;
-        this.criteria.compute("parent-page", (key, old) -> new Criterion(SkillPageUnlockedTrigger.Instance.with(page, true)));
+        if (skillPage != null)
+            conditions.remove(skillPage);
+        skillPage = page;
+        conditions.put(skillPage, new ICriteriaPredicate.CompletedCriteriaPredicate(true));
+//        this.criteria.compute("onPage", (key, old) -> new Criterion(SkillUnlockedTrigger.Instance.with(page)));
+//        this.criteria.compute("onPage", (key, old) -> new Criterion(SkillPageTrigger.Instance.with(page)));
         return this;
     }
 
     public ResourceLocation getPageId() {
         return skillPage;
-    }
-
-    public Skill register(Consumer<Skill> consumer, String id) {
-        return register(consumer, new ResourceLocation(ModMain.MODID, id));
-    }
-
-    public Skill register(Consumer<Skill> consumer, ResourceLocation id) {
-        Skill skill = this.build(id);
-        consumer.accept(skill);
-        return skill;
     }
 
     public SkillBuilder withCriterion(String key, ICriterionInstance criterionIn) {
@@ -154,11 +185,6 @@ public class SkillBuilder implements Cloneable {
     public SkillBuilder withDisplay(SkillDisplayInfo displayIn) {
         this.display = displayIn;
         return this;
-    }
-
-    @Override
-    protected Object clone() {
-        return copy();
     }
 
     public SkillBuilder copy() {
@@ -203,6 +229,32 @@ public class SkillBuilder implements Cloneable {
         if (skillPage == null)
             throw new JsonSyntaxException("Parent page is null");
         return new Skill(id, display, criteria, requirements).setPage(skillPage);
+    }
+
+    public Skill register(Consumer<Skill> consumer, String id) {
+        return register(consumer, new ResourceLocation(ModMain.MODID, id));
+    }
+
+    public Skill register(Consumer<Skill> consumer, ResourceLocation id) {
+        Skill skill = this.buildGenerator(id);
+        consumer.accept(skill);
+        return skill;
+    }
+
+    private Skill buildGenerator(ResourceLocation id) {
+        List<ILootCondition> conditionsList = new ArrayList<>();
+        // Gets player
+        if (playerPredicate != PlayerPredicate.ANY) {
+            EntityPredicate player = EntityPredicate.Builder.create().player(playerPredicate).build();
+            conditionsList.add(EntityHasProperty.func_237477_a_(LootContext.EntityTarget.THIS, player).build());
+        }
+        // Gets skill
+        if (!conditions.isEmpty()) {
+            conditionsList.add(HasSkillPage.builder(LootContext.EntityTarget.THIS, this.conditions).build());
+        }
+        EntityPredicate.AndPredicate prerequisites = EntityPredicate.AndPredicate.serializePredicate(conditionsList.toArray(new ILootCondition[0]));
+        withCriterion("prerequisites", SkillUnlockedTrigger.Instance.of(prerequisites, id));
+        return build(id);
     }
 
 }

@@ -32,6 +32,13 @@ public class SkillTreeListener<T extends ICriterionInstance> extends ICriterionT
             super.grantCriterion(playerAdvancementsIn);
     }
 
+    public void revokeCriterion(PlayerAdvancements playerAdvancementsIn) {
+        if (playerAdvancementsIn instanceof PlayerSkillTreeTracker.SkillTreeAdvancementWrapper) {
+            PlayerSkillTreeTracker handler = ((PlayerSkillTreeTracker.SkillTreeAdvancementWrapper) playerAdvancementsIn).getSkillTreeHandler();
+            handler.revokeCriterion(trackable, criterionName);
+        }
+    }
+
 
     @Override
     public boolean equals(Object other) {

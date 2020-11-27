@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+@SuppressWarnings({"unchecked", "unused"})
 public class NetworkSerializationRegistry {
     private static final Map<Class<?>, Map<String, Function<PacketBuffer, ?>>> CLASS_MAPPER = new HashMap<>();
 

@@ -25,19 +25,19 @@ public class AdvancementUnlockedTrigger extends AbstractSkillTreeCriterionTrigge
     @SubscribeEvent
     public static void onAdvancementUnlocked(AdvancementEvent event) {
         if (event.getPlayer() instanceof ServerPlayerEntity)
-            ExtendedCriteriaTriggers.Advancement_Unlocked.triggerListeners((ServerPlayerEntity) event.getPlayer());
+            ExtendedCriteriaTriggers.ADVANCEMENT_UNLOCKED.triggerListeners((ServerPlayerEntity) event.getPlayer());
     }
 
     @SubscribeEvent
     public static void onProgressRevoked(CriterionTrackerEvent.ProgressRevokedEvent event) {
         if (event.getOwner() instanceof ServerPlayerEntity) {
-            ExtendedCriteriaTriggers.Advancement_Unlocked.triggerListeners((ServerPlayerEntity) event.getOwner());
+            ExtendedCriteriaTriggers.ADVANCEMENT_UNLOCKED.triggerListeners((ServerPlayerEntity) event.getOwner());
         }
     }
 
     @SubscribeEvent
     public static void onSkillTreeReloaded(SkillTreeEvent.PlayerReloadedEvent event) {
-        ExtendedCriteriaTriggers.Advancement_Unlocked.triggerListeners(event.getPlayer());
+        ExtendedCriteriaTriggers.ADVANCEMENT_UNLOCKED.triggerListeners(event.getPlayer());
     }
 
     public void triggerListeners(ServerPlayerEntity player) {

@@ -4,9 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
-import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.CriterionProgress;
-import net.minecraft.advancements.criterion.PlayerPredicate;
 import zdoctor.zskilltree.criterion.ProgressTracker;
 
 import java.util.function.Predicate;
@@ -26,8 +24,9 @@ public interface ICriteriaPredicate extends Predicate<ProgressTracker> {
             return new JsonPrimitive(this.completion);
         }
 
-        public boolean test(ProgressTracker preogress) {
-            return preogress.isDone() == this.completion;
+        @Override
+        public boolean test(ProgressTracker progress) {
+            return progress != null && progress.isDone() == this.completion;
         }
     }
 
@@ -45,7 +44,7 @@ public interface ICriteriaPredicate extends Predicate<ProgressTracker> {
         }
 
         public boolean test(ProgressTracker progress) {
-            for(it.unimi.dsi.fastutil.objects.Object2BooleanMap.Entry<String> entry : this.completion.object2BooleanEntrySet()) {
+            for (it.unimi.dsi.fastutil.objects.Object2BooleanMap.Entry<String> entry : this.completion.object2BooleanEntrySet()) {
                 CriterionProgress criterionprogress = progress.getCriterionProgress(entry.getKey());
                 if (criterionprogress == null || criterionprogress.isObtained() != entry.getBooleanValue()) {
                     return false;

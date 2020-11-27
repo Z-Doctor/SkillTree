@@ -35,7 +35,7 @@ public class SkillTreeDataManager {
         trackers = ImmutableMap.copyOf(temp);
     }
 
-    public void playerLoggedIn(ServerPlayerEntity player, SkillPageManager manager) {
+    public void playerLoggedIn(ServerPlayerEntity player) {
         if (playerData.containsKey(player.getUniqueID()))
             LOGGER.error("Duplicate player UUID {}: {}", player.getDisplayName(), player.getUniqueID());
         else {

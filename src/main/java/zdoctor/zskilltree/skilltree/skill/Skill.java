@@ -1,7 +1,7 @@
 package zdoctor.zskilltree.skilltree.skill;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
@@ -20,7 +20,6 @@ import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.annotations.ClassNameMapper;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.skilltree.data.builders.SkillBuilder;
-import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -181,30 +180,8 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
         return list;
     }
 
-    public JsonObject serialize() {
-        JsonObject jsonobject = new JsonObject();
-
-        if (getParentPage() != null)
-            jsonobject.addProperty("page", getParentPage().toString());
-
-        jsonobject.add("display", getDisplayInfo().serialize());
-
-        JsonObject criteriaObject = new JsonObject();
-        for (Map.Entry<String, Criterion> entry : getCriteria().entrySet())
-            criteriaObject.add(entry.getKey(), entry.getValue().serialize());
-        jsonobject.add("criteria", criteriaObject);
-
-        JsonArray requirementArray = new JsonArray();
-        for (String[] requirements : getRequirements()) {
-            JsonArray array = new JsonArray();
-            for (String requirement : requirements)
-                array.add(requirement);
-
-            requirementArray.add(array);
-        }
-        jsonobject.add("requirements", requirementArray);
-
-        return jsonobject;
+    public JsonElement serialize() {
+        return Builder.serialize(this);
     }
 
     public static class Builder extends SkillBuilder {

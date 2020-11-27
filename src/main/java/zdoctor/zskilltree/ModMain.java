@@ -37,7 +37,6 @@ import net.minecraftforge.registries.DataSerializerEntry;
 import net.minecraftforge.registries.RegistryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.spongepowered.asm.mixin.Mixins;
 import zdoctor.zskilltree.api.ImageAsset;
 import zdoctor.zskilltree.api.ImageAssets;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
@@ -56,6 +55,7 @@ import zdoctor.zskilltree.skilltree.data.managers.SkillPageManager;
 import zdoctor.zskilltree.skilltree.data.providers.CapabilitySkillTreeProvider;
 import zdoctor.zskilltree.skilltree.data.providers.SkillPageProvider;
 import zdoctor.zskilltree.skilltree.data.providers.SkillProvider;
+import zdoctor.zskilltree.skilltree.loot.conditions.AdditionalConditions;
 import zdoctor.zskilltree.skilltree.skill.Skill;
 import zdoctor.zskilltree.skilltree.skill.SkillTreeDataManager;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
@@ -70,7 +70,7 @@ public final class ModMain {
     public static final ResourceLocation SKILL_TREE_CAPABILITY_ID = new ResourceLocation(ModMain.MODID, "skill_capability");
     private static final Logger LOGGER = LogManager.getLogger();
     @CapabilityInject(ISkillTreeTracker.class)
-    public static Capability<ISkillTreeTracker> SKILL_TREE_CAPABILITY = null;
+    public static final Capability<ISkillTreeTracker> SKILL_TREE_CAPABILITY = null;
     private static ModMain INSTANCE = null;
 
     private CapabilitySkillTreeProvider capabilityProvider;
@@ -116,7 +116,7 @@ public final class ModMain {
 
     private static void initBootstrap() {
         SkillTreeEntityOptions.register();
-        Mixins.addConfiguration("META-INF/mixin_config.json");
+        AdditionalConditions.init();
     }
 
     public SkillPageManager getSkillPageManager() {
@@ -174,7 +174,6 @@ public final class ModMain {
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-        // Figure out what calls this
         CapabilityManager.INSTANCE.register(ISkillTreeTracker.class, new Capability.IStorage<ISkillTreeTracker>() {
             @Override
             public INBT writeNBT(Capability<ISkillTreeTracker> capability, ISkillTreeTracker instance, Direction side) {
@@ -240,7 +239,7 @@ public final class ModMain {
 
     private void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getPlayer() instanceof ServerPlayerEntity && INSTANCE != null)
-            skillTreeDataManager.playerLoggedIn((ServerPlayerEntity) event.getPlayer(), skillPageManager);
+            skillTreeDataManager.playerLoggedIn((ServerPlayerEntity) event.getPlayer());
     }
 
     private void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {

@@ -10,8 +10,6 @@ import zdoctor.zskilltree.api.interfaces.ISkillTreeScreen;
 import zdoctor.zskilltree.skilltree.skill.Skill;
 import zdoctor.zskilltree.skilltree.skill.SkillDisplayInfo;
 
-import java.util.function.Supplier;
-
 public class GuiSkill extends ImageScreen {
     protected static final float xSpacing = 28f;
     protected static final float ySpacing = 27f;

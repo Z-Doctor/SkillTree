@@ -179,10 +179,6 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         MinecraftForge.EVENT_BUS.post(new CriterionTrackerEvent.ProgressRevokedEvent(owner, trackable));
     }
 
-    public <T> List<T> get(Class<T> filter) {
-        return completed.stream().filter(filter::isInstance).map(filter::cast).collect(Collectors.toList());
-    }
-
     @Override
     public Iterable<CriterionTracker> getTrackers() {
         return progressTracker.keySet();

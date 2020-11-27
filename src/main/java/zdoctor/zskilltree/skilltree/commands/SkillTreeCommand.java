@@ -19,7 +19,6 @@ import net.minecraftforge.common.util.LazyOptional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
-import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.skilltree.skill.Skill;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
@@ -27,9 +26,10 @@ import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 
+// TODO Add grantAll and revokeAll command
+// TODO Add command to list all the skills a entity has, doesn't have and have, and a list of all skills marked as such
+// Command to make new skill pages and trees?
 public class SkillTreeCommand {
     public static final SuggestionProvider<CommandSource> SUGGEST_SKILLPAGE = (context, builder) -> {
         Collection<SkillPage> pages = ModMain.getInstance().getSkillPageManager().getAllSkillPages();

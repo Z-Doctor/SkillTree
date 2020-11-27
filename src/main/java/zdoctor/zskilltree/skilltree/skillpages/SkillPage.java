@@ -44,8 +44,8 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
 
     private int index;
     private SkillPageDisplayInfo displayInfo;
-    private Map<String, Criterion> criteria;
-    private String[][] requirements;
+    private final Map<String, Criterion> criteria;
+    private final String[][] requirements;
 
     private SkillPage() {
         setRegistryName(new ResourceLocation(ModMain.MODID, "page_none"));
