@@ -5,11 +5,15 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.criterion.EntityPredicate;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Rarity;
 import net.minecraft.loot.ConditionArrayParser;
+import net.minecraft.loot.ConditionArraySerializer;
+import net.minecraft.loot.LootContext;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
@@ -23,6 +27,7 @@ import net.minecraftforge.registries.ForgeRegistryEntry;
 import org.apache.commons.lang3.ArrayUtils;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.ImageAsset;
+import zdoctor.zskilltree.api.SkillTreeApi;
 import zdoctor.zskilltree.api.annotations.ClassNameMapper;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
@@ -34,18 +39,18 @@ import java.util.*;
 
 @ClassNameMapper(key = ModMain.MODID + ":skill_page")
 public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPage> implements CriterionTracker, Comparable<SkillPage> {
+    public static final SkillPage NONE = new SkillPage();
     private static final SkillPageDisplayInfo MISSING = new SkillPageDisplayInfo(ItemStack.EMPTY,
             new TranslationTextComponent("skillpage.missing.title"),
             new TranslationTextComponent("skillpage.missing.description")
     ).setHidden();
-
-    public static final SkillPage NONE = new SkillPage();
     private final Map<ResourceLocation, Skill> rootSkills = new HashMap<>();
-
-    private int index;
-    private SkillPageDisplayInfo displayInfo;
     private final Map<String, Criterion> criteria;
     private final String[][] requirements;
+    private int index;
+    private SkillPageDisplayInfo displayInfo;
+
+    private EntityPredicate.AndPredicate visibilityPredicate = EntityPredicate.AndPredicate.ANY_AND;
 
     private SkillPage() {
         setRegistryName(new ResourceLocation(ModMain.MODID, "page_none"));
@@ -61,6 +66,7 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         criteria = skillPage.getCriteria();
         requirements = skillPage.getRequirements();
         rootSkills.putAll(skillPage.getRootSkills());
+        visibilityPredicate = skillPage.visibilityPredicate;
     }
 
     public SkillPage(PacketBuffer buf) {
@@ -101,7 +107,6 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         return Integer.compareUnsigned(in.getIndex(), to.getIndex());
     }
 
-    // TODO Move to builder(?)
     public static SkillPage deserialize(ResourceLocation id, JsonObject json, ConditionArrayParser conditionParser) {
         int index = -1;
         if (JSONUtils.hasField(json, "index"))
@@ -110,6 +115,12 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         if (JSONUtils.hasField(json, "display")) {
             displayInfo = SkillPageDisplayInfo.deserialize(JSONUtils.getJsonObject(json, "display"));
         }
+
+        EntityPredicate.AndPredicate visibilityPredicate = EntityPredicate.AndPredicate.ANY_AND;
+        if (JSONUtils.hasField(json, "visibility")) {
+            visibilityPredicate = EntityPredicate.AndPredicate.deserializeJSONObject(json, "visibility", conditionParser);
+        }
+
 
         Map<String, Criterion> criterion = new HashMap<>();
         String[][] requirements = null;
@@ -166,7 +177,56 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
                 }
             }
         }
-        return new SkillPage(index, id, displayInfo, criterion, requirements);
+        return new SkillPage(index, id, displayInfo, criterion, requirements).setVisibilityContext(visibilityPredicate);
+    }
+
+    public static SkillPageBuilder builder() {
+        return SkillPageBuilder.builder();
+    }
+
+    public JsonObject serialize() {
+        JsonObject jsonobject = new JsonObject();
+        jsonobject.addProperty("index", index);
+
+        if (getDisplayInfo() != null)
+            jsonobject.add("display", getDisplayInfo().serialize());
+
+        if (visibilityPredicate != EntityPredicate.AndPredicate.ANY_AND) {
+            jsonobject.add("visibility", visibilityPredicate.serializeConditions(ConditionArraySerializer.field_235679_a_));
+        }
+
+        JsonObject criteriaObject = new JsonObject();
+        for (Map.Entry<String, Criterion> entry : getCriteria().entrySet())
+            criteriaObject.add(entry.getKey(), entry.getValue().serialize());
+        jsonobject.add("criteria", criteriaObject);
+
+        JsonArray requirementArray = new JsonArray();
+        for (String[] requirements : getRequirements()) {
+            JsonArray array = new JsonArray();
+            for (String requirement : requirements)
+                array.add(requirement);
+
+            requirementArray.add(array);
+        }
+        jsonobject.add("requirements", requirementArray);
+
+        return jsonobject;
+    }
+
+    public SkillPage setVisibilityContext(EntityPredicate.AndPredicate visibilityContext) {
+        this.visibilityPredicate = visibilityContext;
+        return this;
+    }
+
+    @Override
+    public boolean isVisibleTo(Entity entity) {
+        LootContext lootContext = SkillTreeApi.getLootContext(entity);
+        return lootContext != null && visibilityPredicate.testContext(lootContext);
+    }
+
+    @Override
+    public boolean isConditionallyVisible() {
+        return visibilityPredicate != EntityPredicate.AndPredicate.ANY_AND;
     }
 
     public boolean hasRootSkill(Skill skill) {
@@ -253,31 +313,6 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         return 4210752;
     }
 
-    public JsonObject serialize() {
-        JsonObject jsonobject = new JsonObject();
-        jsonobject.addProperty("index", index);
-
-        if (getDisplayInfo() != null)
-            jsonobject.add("display", getDisplayInfo().serialize());
-
-        JsonObject criteriaObject = new JsonObject();
-        for (Map.Entry<String, Criterion> entry : getCriteria().entrySet())
-            criteriaObject.add(entry.getKey(), entry.getValue().serialize());
-        jsonobject.add("criteria", criteriaObject);
-
-        JsonArray requirementArray = new JsonArray();
-        for (String[] requirements : getRequirements()) {
-            JsonArray array = new JsonArray();
-            for (String requirement : requirements)
-                array.add(requirement);
-
-            requirementArray.add(array);
-        }
-        jsonobject.add("requirements", requirementArray);
-
-        return jsonobject;
-    }
-
     public SkillPage copy() {
         return new SkillPage(this);
     }
@@ -347,9 +382,4 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         return rootSkills.put(key, skill);
     }
 
-    public static class Builder extends SkillPageBuilder {
-        public static Builder builder() {
-            return new Builder();
-        }
-    }
 }

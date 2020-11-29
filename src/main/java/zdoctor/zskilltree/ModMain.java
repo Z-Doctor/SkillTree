@@ -44,12 +44,12 @@ import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.client.ClientCapabilityProvider;
 import zdoctor.zskilltree.client.KeyBindings;
-import zdoctor.zskilltree.criterion.advancements.ExtendedCriteriaTriggers;
+import zdoctor.zskilltree.skilltree.data.criterion.ExtendedCriteriaTriggers;
 import zdoctor.zskilltree.network.NetworkSerializationRegistry;
 import zdoctor.zskilltree.network.SkillTreePacketHandler;
 import zdoctor.zskilltree.skilltree.commands.SkillTreeCommand;
 import zdoctor.zskilltree.skilltree.commands.SkillTreeEntityOptions;
-import zdoctor.zskilltree.skilltree.data.handlers.SkillTreeTracker;
+import zdoctor.zskilltree.skilltree.data.trackers.SkillTreeTracker;
 import zdoctor.zskilltree.skilltree.data.managers.SkillManager;
 import zdoctor.zskilltree.skilltree.data.managers.SkillPageManager;
 import zdoctor.zskilltree.skilltree.data.providers.CapabilitySkillTreeProvider;
@@ -155,7 +155,7 @@ public final class ModMain {
 
     private void createSkillPages(RegistryEvent.Register<SkillPage> event) {
         LOGGER.info("Registering Skill Pages");
-        event.getRegistry().register(SkillPage.Builder.builder().atIndex(0)
+        event.getRegistry().register(SkillPage.builder().atIndex(0)
                 .withDisplay(new SkillPageDisplayInfo(Items.WRITABLE_BOOK.getDefaultInstance(),
                         new TranslationTextComponent("skillpage.player_info.title"),
                         new TranslationTextComponent("skillpage.player_info.description"),

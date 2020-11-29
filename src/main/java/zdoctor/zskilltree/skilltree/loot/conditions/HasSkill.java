@@ -2,9 +2,11 @@ package zdoctor.zskilltree.skilltree.loot.conditions;
 
 import net.minecraft.loot.LootConditionType;
 import net.minecraft.loot.LootContext;
+import net.minecraft.loot.conditions.ILootCondition;
 import net.minecraft.util.ResourceLocation;
 import zdoctor.zskilltree.api.interfaces.ICriteriaPredicate;
 
+import java.util.Collections;
 import java.util.Map;
 
 public class HasSkill extends HasCriteriaTracker {
@@ -15,6 +17,10 @@ public class HasSkill extends HasCriteriaTracker {
 
     public static IBuilder builder(LootContext.EntityTarget target, Map<ResourceLocation, ICriteriaPredicate> criteriaTrackers) {
         return () -> new HasSkill(target, criteriaTrackers);
+    }
+
+    public static ILootCondition.IBuilder builder(LootContext.EntityTarget target, ResourceLocation skillId, boolean isObtained) {
+        return () -> new HasSkill(target, Collections.singletonMap(skillId, new ICriteriaPredicate.CompletedCriteriaPredicate(isObtained)));
     }
 
     @Override

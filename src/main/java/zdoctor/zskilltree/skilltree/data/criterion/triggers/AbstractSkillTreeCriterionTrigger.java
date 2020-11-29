@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.criterion;
+package zdoctor.zskilltree.skilltree.data.criterion.triggers;
 
 import net.minecraft.advancements.ICriterionTrigger;
 import net.minecraft.advancements.PlayerAdvancements;
@@ -9,7 +9,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.loot.LootContext;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
-import zdoctor.zskilltree.skilltree.data.handlers.PlayerSkillTreeTracker;
+import zdoctor.zskilltree.skilltree.data.trackers.PlayerSkillTreeTracker;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -4,7 +4,7 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.nbt.INBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.INBTSerializable;
-import zdoctor.zskilltree.criterion.ProgressTracker;
+import zdoctor.zskilltree.skilltree.data.criterion.ProgressTracker;
 
 import java.util.Map;
 

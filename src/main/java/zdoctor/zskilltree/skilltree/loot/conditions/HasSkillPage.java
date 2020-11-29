@@ -6,6 +6,7 @@ import net.minecraft.loot.conditions.ILootCondition;
 import net.minecraft.util.ResourceLocation;
 import zdoctor.zskilltree.api.interfaces.ICriteriaPredicate;
 
+import java.util.Collections;
 import java.util.Map;
 
 public class HasSkillPage extends HasCriteriaTracker {
@@ -16,6 +17,10 @@ public class HasSkillPage extends HasCriteriaTracker {
 
     public static ILootCondition.IBuilder builder(LootContext.EntityTarget target, Map<ResourceLocation, ICriteriaPredicate> criteriaTrackers) {
         return () -> new HasSkillPage(target, criteriaTrackers);
+    }
+
+    public static ILootCondition.IBuilder builder(LootContext.EntityTarget target, ResourceLocation pageId) {
+        return () -> new HasSkillPage(target, Collections.singletonMap(pageId, new ICriteriaPredicate.CompletedCriteriaPredicate(true)));
     }
 
     @Override

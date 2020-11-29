@@ -1,5 +1,6 @@
-package zdoctor.zskilltree.skilltree.data.handlers;
+package zdoctor.zskilltree.skilltree.data.trackers;
 
+import com.google.common.collect.ImmutableSet;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -12,26 +13,30 @@ import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
-import zdoctor.zskilltree.criterion.ProgressTracker;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
+import zdoctor.zskilltree.skilltree.data.criterion.ProgressTracker;
 import zdoctor.zskilltree.skilltree.events.CriterionTrackerEvent;
 import zdoctor.zskilltree.skilltree.skill.SkillTreeDataManager;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class SkillTreeTracker implements ISkillTreeTracker {
     protected static final Logger LOGGER = LogManager.getLogger();
 
-    protected final Set<CriterionTracker> completed = new HashSet<>();
-    protected final Set<CriterionTracker> completionChanged = new HashSet<>();
-    protected final Set<CriterionTracker> progressChanged = new HashSet<>();
-    protected final HashMap<CriterionTracker, ProgressTracker> progressTracker = new HashMap<>();
+    private final Set<CriterionTracker> visible = new HashSet<>();
+    private final Set<CriterionTracker> visibilityChanged = new HashSet<>();
+    private final Set<CriterionTracker> conditionallyVisible = new HashSet<>();
 
-    protected final HashMap<ResourceLocation, CriterionTracker> trackableMap = new HashMap<>();
+    private final Set<CriterionTracker> progressChanged = new HashSet<>();
+    private final HashMap<CriterionTracker, ProgressTracker> progressTracker = new HashMap<>();
 
-    protected boolean firstSync = true;
-    protected LivingEntity owner;
+    private final HashMap<ResourceLocation, CriterionTracker> trackableMap = new HashMap<>();
+
+    private boolean firstSync = true;
+    private LivingEntity owner;
 
     public SkillTreeTracker() {
     }
@@ -41,6 +46,10 @@ public class SkillTreeTracker implements ISkillTreeTracker {
             throw new NullPointerException("Entity is null");
         owner = entity;
         LOGGER.debug("Attached Skill Tree to {}", owner);
+    }
+
+    public Set<CriterionTracker> getVisible() {
+        return ImmutableSet.copyOf(visible);
     }
 
     /**
@@ -81,7 +90,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
 
     protected void startProgress(CriterionTracker tracker, ProgressTracker progress) {
         progress.update(tracker.getCriteria(), tracker.getRequirements());
-        if (tracker.shouldClientTrack())
+        if (tracker.isConditionallyVisible())
             progress.enableUpdates();
         else
             progress.disableUpdates();
@@ -232,9 +241,10 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     }
 
     protected void reset() {
-        completed.clear();
-        completionChanged.clear();
+        visible.clear();
+        visibilityChanged.clear();
         progressChanged.clear();
+        conditionallyVisible.clear();
         trackableMap.clear();
         firstSync = true;
     }
@@ -243,28 +253,47 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     public void read(SCriterionTrackerSyncPacket packetIn) {
         if (packetIn == null)
             LOGGER.trace("Server-Sided Skill Tree Tracker tried to read a null packet");
-        if (getOwner() == null)
+        else if (getOwner() == null)
             LOGGER.trace("Server-Sided Skill Tree Tracker has a null owner");
-        else
+        else if (packetIn.fromServer)
             LOGGER.info("Server-Sided Skill Tracker owned by {} was fed a packet", getOwner().getDisplayName().getString());
+        else {
+            // Client Side Processing
+            if (packetIn.isFirstSync())
+                reset();
+
+            for (CriterionTracker trackable : packetIn.getToAdd()) {
+                visible.add(trackableMap.compute(trackable.getRegistryName(), (key, old) -> trackable));
+            }
+
+            for (ResourceLocation id : packetIn.getToRemove()) {
+                progressTracker.keySet().removeIf(key -> key.getRegistryName().equals(id));
+                visible.remove(trackableMap.remove(id));
+            }
+
+            for (Map.Entry<ResourceLocation, ProgressTracker> entry : packetIn.getProgressChanged().entrySet()) {
+                CriterionTracker trackable = trackableMap.get(entry.getKey());
+                if (trackable != null)
+                    progressTracker.put(trackable, entry.getValue());
+                else
+                    LOGGER.error("Unable to update progress of {}", entry.getKey());
+            }
+        }
     }
 
-    protected void checkPageVisibility() {
+    private void checkVisibility() {
         boolean visibleFlag;
-        boolean doneFlag;
-        ProgressTracker progress;
+        boolean shouldBeVisible;
+        for (CriterionTracker trackable : conditionallyVisible) {
+            visibleFlag = visible.contains(trackable);
+            shouldBeVisible = trackable.isVisibleTo(getOwner());
 
-        for (CriterionTracker trackable : progressChanged) {
-            visibleFlag = completed.contains(trackable);
-            progress = getProgress(trackable);
-            doneFlag = progress != null && progress.isDone();
-
-            if (visibleFlag && !doneFlag) {
-                completed.remove(trackable);
-                completionChanged.add(trackable);
-            } else if (!visibleFlag && doneFlag) {
-                completed.add(trackable);
-                completionChanged.add(trackable);
+            if (visibleFlag && !shouldBeVisible) {
+                visible.remove(trackable);
+                visibilityChanged.add(trackable);
+            } else if (!visibleFlag && shouldBeVisible) {
+                visible.add(trackable);
+                visibilityChanged.add(trackable);
             }
         }
     }
@@ -283,23 +312,43 @@ public class SkillTreeTracker implements ISkillTreeTracker {
                 progress.update(trackable.getCriteria(), trackable.getRequirements());
                 progressChanged.add(trackable);
             }
+            if (trackable.isConditionallyVisible())
+                conditionallyVisible.add(trackable);
+            else
+                visible.add(trackable);
+            visibilityChanged.add(trackable);
         }
-        completionChanged.addAll(missingTrackers);
+        visibilityChanged.addAll(missingTrackers);
         missingTrackers.forEach(progressTracker::remove);
     }
 
     public void flushDirty() {
-        if (owner == null)
-            return;
-
-        if (firstSync || !progressChanged.isEmpty()) {
+        checkVisibility();
+        if (firstSync || !visibilityChanged.isEmpty() || !progressChanged.isEmpty()) {
             LOGGER.info("Syncing data from {} to players", owner);
-            checkPageVisibility();
+
+            Set<CriterionTracker> toAdd = new HashSet<>(visibilityChanged);
+            toAdd.retainAll(visible);
+            visibilityChanged.removeAll(toAdd);
+
+            Set<ResourceLocation> toRemove = new HashSet<>();
+            visibilityChanged.forEach(page -> toRemove.add(page.getRegistryName()));
+
+            Map<ResourceLocation, ProgressTracker> progressUpdate = new HashMap<>();
+            progressChanged.forEach(progressTracker -> {
+                if (visible.contains(progressTracker))
+                    progressUpdate.put(progressTracker.getRegistryName(), getProgress(progressTracker));
+            });
+
+            process(firstSync, toAdd, toRemove, progressUpdate);
 
             firstSync = false;
             progressChanged.clear();
-            completionChanged.clear();
+            visibilityChanged.clear();
         }
+    }
+
+    protected void process(boolean firstSync, Set<CriterionTracker> toAdd, Set<ResourceLocation> toRemove, Map<ResourceLocation, ProgressTracker> progressUpdate) {
     }
 
 }

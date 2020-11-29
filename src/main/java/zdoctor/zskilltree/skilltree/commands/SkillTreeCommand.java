@@ -70,14 +70,17 @@ public class SkillTreeCommand {
 
     private static LiteralArgumentBuilder<CommandSource> buildGrantCommand() {
         return Commands.literal("grant").then(Commands.argument("targets", EntityArgument.entities())
-                .then(buildSkillPageArg().executes(SkillTreeCommand::grantPage)))
-                .then(buildSkillArg()).executes(SkillTreeCommand::grantSkill);
+                .then(Commands.literal("page").then(buildSkillPageArg().executes(SkillTreeCommand::grantPage)))
+                .then(Commands.literal("skill").then(buildSkillArg()).executes(SkillTreeCommand::grantSkill)));
     }
 
     private static LiteralArgumentBuilder<CommandSource> buildRevokeCommand() {
         return Commands.literal("revoke").then(Commands.argument("targets", EntityArgument.entities())
-                .then(buildSkillPageArg().executes(SkillTreeCommand::revokePage)))
-                .then(buildSkillArg().executes(SkillTreeCommand::revokeSkill));
+                .then(Commands.literal("page").then(buildSkillPageArg().executes(SkillTreeCommand::revokePage)))
+                .then(Commands.literal("skill").then(buildSkillArg()).executes(SkillTreeCommand::revokeSkill)));
+//        return Commands.literal("revoke").then(Commands.argument("targets", EntityArgument.entities())
+//                .then(buildSkillPageArg().executes(SkillTreeCommand::revokePage)))
+//                .then(buildSkillArg().executes(SkillTreeCommand::revokeSkill));
     }
 
     private static ISkillTreeTracker[] processCommand(CommandContext<CommandSource> context) throws CommandSyntaxException {
@@ -188,7 +191,6 @@ public class SkillTreeCommand {
         return i;
 
     }
-
 
 
 }

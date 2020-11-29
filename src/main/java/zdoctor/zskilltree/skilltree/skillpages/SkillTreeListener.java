@@ -4,7 +4,7 @@ import net.minecraft.advancements.ICriterionInstance;
 import net.minecraft.advancements.ICriterionTrigger;
 import net.minecraft.advancements.PlayerAdvancements;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
-import zdoctor.zskilltree.skilltree.data.handlers.PlayerSkillTreeTracker;
+import zdoctor.zskilltree.skilltree.data.trackers.PlayerSkillTreeTracker;
 
 public class SkillTreeListener<T extends ICriterionInstance> extends ICriterionTrigger.Listener<T> {
     private final T criterionInstance;

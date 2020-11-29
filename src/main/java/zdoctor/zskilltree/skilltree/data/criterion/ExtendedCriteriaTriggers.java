@@ -1,15 +1,15 @@
-package zdoctor.zskilltree.criterion.advancements;
+package zdoctor.zskilltree.skilltree.data.criterion;
 
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.ICriterionTrigger;
-import zdoctor.zskilltree.criterion.advancements.triggers.AdvancementUnlockedTrigger;
-import zdoctor.zskilltree.skilltree.triggers.SkillUnlockedTrigger;
+import zdoctor.zskilltree.skilltree.data.criterion.triggers.AdvancementUnlockedTrigger;
+import zdoctor.zskilltree.skilltree.data.criterion.triggers.SkillUnlockedTrigger;
 
 public class ExtendedCriteriaTriggers {
     public static final AdvancementUnlockedTrigger ADVANCEMENT_UNLOCKED = register(new AdvancementUnlockedTrigger());
 //    public static final SkillPageTrigger SKILL_PAGE_TRIGGER = register(new SkillPageTrigger(false));
 //    public static final SkillPageTrigger ANY_SKILL_PAGE_TRIGGER = register(new SkillPageTrigger(true));
-    public static final SkillUnlockedTrigger ANY_SKILL_PAGE_TRIGGER = register(new SkillUnlockedTrigger());
+    public static final SkillUnlockedTrigger SKILL_UNLOCKED = register(new SkillUnlockedTrigger());
 
     public static <T extends ICriterionTrigger<?>> T register(T criterion) {
         return CriteriaTriggers.register(criterion);

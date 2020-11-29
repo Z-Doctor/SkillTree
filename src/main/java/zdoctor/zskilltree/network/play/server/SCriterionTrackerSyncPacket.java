@@ -13,7 +13,7 @@ import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.SkillTreeApi;
 import zdoctor.zskilltree.api.annotations.ClassNameMapper;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
-import zdoctor.zskilltree.criterion.ProgressTracker;
+import zdoctor.zskilltree.skilltree.data.criterion.ProgressTracker;
 
 import java.util.*;
 import java.util.function.Function;
@@ -27,7 +27,11 @@ public class SCriterionTrackerSyncPacket {
     private final Set<ResourceLocation> toRemove;
     private final Map<ResourceLocation, ProgressTracker> progressChanged;
 
+    public final boolean fromServer;
+
     public SCriterionTrackerSyncPacket(PacketBuffer buf) {
+        fromServer = false;
+
         this.firstSync = buf.readBoolean();
         this.toAdd = new HashSet<>();
         this.trackableTypes = new HashMap<>();
@@ -71,6 +75,7 @@ public class SCriterionTrackerSyncPacket {
 
     public SCriterionTrackerSyncPacket(boolean firstSync, Collection<CriterionTracker> toAdd,
                                        Set<ResourceLocation> toRemove, Map<ResourceLocation, ProgressTracker> progressChanged) {
+        fromServer = true;
         this.firstSync = firstSync;
         this.trackableTypes = new HashMap<>();
 

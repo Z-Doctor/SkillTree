@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.skilltree.data.handlers;
+package zdoctor.zskilltree.skilltree.data.trackers;
 
 import com.google.gson.JsonElement;
 import net.minecraft.advancements.*;
@@ -10,7 +10,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.network.PacketDistributor;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
-import zdoctor.zskilltree.criterion.ProgressTracker;
+import zdoctor.zskilltree.skilltree.data.criterion.ProgressTracker;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
 import zdoctor.zskilltree.skilltree.events.SkillTreeEvent;
 import zdoctor.zskilltree.skilltree.skill.SkillTreeDataManager;
@@ -57,34 +57,9 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
     }
 
     @Override
-    public void flushDirty() {
-        if (firstSync || !progressChanged.isEmpty()) {
-            checkPageVisibility();
-            LOGGER.debug("Syncing player data to client {}", getPlayer().getDisplayName().getString());
-            // TODO Send over data off all skills and pages the player should be able to see
-            // TODO Add a visibility predicate/condition that can be added in the json
-            Set<CriterionTracker> toAdd = new HashSet<>(completionChanged);
-            toAdd.retainAll(completed);
-            completionChanged.removeAll(toAdd);
-
-            Set<ResourceLocation> toRemove = new HashSet<>();
-            completionChanged.forEach(page -> toRemove.add(page.getRegistryName()));
-
-            Map<ResourceLocation, ProgressTracker> progressUpdate = new HashMap<>();
-            progressChanged.forEach(progressTracker -> {
-                if (progressTracker.shouldClientTrack())
-                    progressUpdate.put(progressTracker.getRegistryName(), getProgress(progressTracker));
-            });
-
-            // TODO Send updates to other players without overriding their skills
-            //  so I'll need to make another packet
-            ModMain.getInstance().getPacketChannel().send(PacketDistributor.PLAYER.with(this::getPlayer),
-                    new SCriterionTrackerSyncPacket(firstSync, toAdd, toRemove, progressUpdate));
-
-            firstSync = false;
-            progressChanged.clear();
-            completionChanged.clear();
-        }
+    protected void process(boolean firstSync, Set<CriterionTracker> toAdd, Set<ResourceLocation> toRemove, Map<ResourceLocation, ProgressTracker> progressUpdate) {
+        ModMain.getInstance().getPacketChannel().send(PacketDistributor.PLAYER.with(this::getPlayer),
+                new SCriterionTrackerSyncPacket(firstSync, toAdd, toRemove, progressUpdate));
     }
 
     @Override

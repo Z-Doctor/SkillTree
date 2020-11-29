@@ -15,6 +15,7 @@ public class SkillTreePacketHandler {
 
     private static int id = 0;
 
+    // TODO Add packet where players can request data about another entity's skills. Server will determine if valid request
     private static void registerPackets() {
         INSTANCE.registerMessage(id++, SCriterionTrackerSyncPacket.class, SCriterionTrackerSyncPacket::writeTo,
                 SCriterionTrackerSyncPacket::new, SCriterionTrackerSyncPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));

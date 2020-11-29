@@ -1,14 +1,19 @@
 package zdoctor.zskilltree.skilltree.skill;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.criterion.EntityPredicate;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Rarity;
 import net.minecraft.loot.ConditionArrayParser;
+import net.minecraft.loot.ConditionArraySerializer;
+import net.minecraft.loot.LootContext;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.*;
@@ -17,6 +22,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 import org.lwjgl.system.NonnullDefault;
 import zdoctor.zskilltree.ModMain;
+import zdoctor.zskilltree.api.SkillTreeApi;
 import zdoctor.zskilltree.api.annotations.ClassNameMapper;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.skilltree.data.builders.SkillBuilder;
@@ -37,6 +43,8 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
     //  The parent page should be inferred from the root skill to save bandwidth
     private ResourceLocation parentPage;
     private List<Skill> child_skills;
+
+    private EntityPredicate.AndPredicate visibilityPredicate = EntityPredicate.AndPredicate.ANY_AND;
 
     private Skill() {
         setRegistryName(new ResourceLocation(ModMain.MODID, "skill_none"));
@@ -84,9 +92,59 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
         return builder.build(id);
     }
 
+    public JsonElement serialize() {
+        JsonObject jsonobject = new JsonObject();
+
+        if (getParentPage() != null)
+            jsonobject.addProperty("page", getParentPage().toString());
+
+        jsonobject.add("display", getDisplayInfo().serialize());
+
+        if (getVisibilityPredicate() != EntityPredicate.AndPredicate.ANY_AND)
+            jsonobject.add("visibility", getVisibilityPredicate().serializeConditions(ConditionArraySerializer.field_235679_a_));
+
+        JsonObject criteriaObject = new JsonObject();
+        for (Map.Entry<String, Criterion> entry : getCriteria().entrySet())
+            criteriaObject.add(entry.getKey(), entry.getValue().serialize());
+        jsonobject.add("criteria", criteriaObject);
+
+        JsonArray requirementArray = new JsonArray();
+        for (String[] requirements : getRequirements()) {
+            JsonArray array = new JsonArray();
+            for (String requirement : requirements)
+                array.add(requirement);
+
+            requirementArray.add(array);
+        }
+        jsonobject.add("requirements", requirementArray);
+        return jsonobject;
+    }
+
+    public EntityPredicate.AndPredicate getVisibilityPredicate() {
+        return visibilityPredicate;
+    }
+
+    public Skill setVisibilityContext(EntityPredicate.AndPredicate visibilityContext) {
+        this.visibilityPredicate = visibilityContext;
+        return this;
+    }
+
+    public Skill setParentPage(ResourceLocation parentPage) {
+        this.parentPage = parentPage;
+        return this;
+    }
+
     @Override
-    public boolean shouldClientTrack() {
+    public boolean isConditionallyVisible() {
         return true;
+    }
+
+    @Override
+    public boolean isVisibleTo(Entity entity) {
+        if (visibilityPredicate == EntityPredicate.AndPredicate.ANY_AND)
+            return true;
+        LootContext lootContext = SkillTreeApi.getLootContext(entity);
+        return lootContext != null && visibilityPredicate.testContext(lootContext);
     }
 
     @Override
@@ -118,11 +176,6 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
                     buf.writeString(requirement);
                 }
             }
-    }
-
-    public Skill setPage(ResourceLocation skillPage) {
-        this.parentPage = skillPage;
-        return this;
     }
 
     public SkillDisplayInfo getDisplayInfo() {
@@ -178,10 +231,6 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
             list.add(getDisplayInfo().getDescription());
 
         return list;
-    }
-
-    public JsonElement serialize() {
-        return Builder.serialize(this);
     }
 
     public static class Builder extends SkillBuilder {

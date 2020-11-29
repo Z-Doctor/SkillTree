@@ -1,14 +1,14 @@
 package zdoctor.zskilltree.skilltree.data.builders;
 
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.ICriterionInstance;
 import net.minecraft.advancements.IRequirementsStrategy;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IItemProvider;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
-import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.ImageAsset;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
@@ -17,13 +17,23 @@ import zdoctor.zskilltree.skilltree.skillpages.SkillPageDisplayInfo;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
-public class SkillPageBuilder {
+public class SkillPageBuilder extends Builder<SkillPageBuilder, SkillPage> {
     private int index = -1;
     private SkillPageDisplayInfo display;
-    private Map<String, Criterion> criteria = new HashMap<>();
-    private IRequirementsStrategy requirementsStrategy = IRequirementsStrategy.AND;
+    private EntityPredicate.AndPredicate visibility = EntityPredicate.AndPredicate.ANY_AND;
+
+    private boolean unlockable;
+
+    protected SkillPageBuilder() {
+    }
+
+    protected SkillPageBuilder(SkillPageBuilder builder) {
+        criteria = new HashMap<>(builder.criteria);
+        requirementsStrategy = builder.requirementsStrategy;
+        index = builder.index;
+        display = builder.display.copy();
+    }
 
     protected SkillPageBuilder(int index, @Nullable SkillPageDisplayInfo displayIn, Map<String, Criterion> criteriaIn, IRequirementsStrategy requirementsStrategyIn) {
         this.index = index;
@@ -32,29 +42,12 @@ public class SkillPageBuilder {
         this.requirementsStrategy = requirementsStrategyIn;
     }
 
-    protected SkillPageBuilder() {
-    }
-
     public static SkillPageBuilder builder() {
         return new SkillPageBuilder();
     }
 
-    public SkillPageBuilder withCriterion(String key, ICriterionInstance criterionIn) {
-        return this.withCriterion(key, new Criterion(criterionIn));
-    }
-
-    public SkillPageBuilder withCriterion(String key, Criterion criterionIn) {
-        if (this.criteria.containsKey(key)) {
-            throw new IllegalArgumentException("Duplicate criterion " + key);
-        } else {
-            this.criteria.put(key, criterionIn);
-            return this;
-        }
-    }
-
-    public SkillPageBuilder withRequirementsStrategy(IRequirementsStrategy strategy) {
-        this.requirementsStrategy = strategy;
-        return this;
+    public void createVisibility() {
+//        private final Map<String, ILootCondition> visibility = new LinkedHashMap<>();
     }
 
     public SkillPageBuilder withDisplay(ItemStack icon, ITextComponent title, ITextComponent description, SkillPageAlignment alignment, ImageAsset background) {
@@ -86,18 +79,24 @@ public class SkillPageBuilder {
         return this;
     }
 
+    @Override
     public SkillPageBuilder copy() {
-        return new SkillPageBuilder(index, display, criteria, requirementsStrategy);
+        return new SkillPageBuilder(this);
     }
 
+    @Override
     public SkillPage build(ResourceLocation id) {
+        if (unlockable) {
+//            visibility = LootConditionBuilder.create().withPlayer().withBounds(MinMaxBounds.IntBound.atLeast(15)).buildEntityAnd();
+            visibility = LootConditionBuilder.create().build(PlayerPredicateBuilder.Builder.create().withBounds(MinMaxBounds.IntBound.atLeast(15)).buildEntity());
+        }
+
         String[][] requirements = requirementsStrategy.createRequirements(criteria.keySet());
-        return new SkillPage(index, id, display, criteria, requirements);
+        return new SkillPage(index, id, display, criteria, requirements).setVisibilityContext(visibility);
     }
 
-    public SkillPage register(Consumer<SkillPage> consumer, String id) {
-        SkillPage page = this.build(new ResourceLocation(ModMain.MODID, id));
-        consumer.accept(page);
-        return page;
+    public SkillPageBuilder unlockable() {
+        unlockable = true;
+        return this;
     }
 }

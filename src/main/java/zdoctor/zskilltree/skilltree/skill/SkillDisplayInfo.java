@@ -35,6 +35,15 @@ public class SkillDisplayInfo {
         this.frame = frame;
     }
 
+    private SkillDisplayInfo(SkillDisplayInfo displayInfo) {
+        skillName = displayInfo.getSkillName();
+        description = displayInfo.getDescription();
+        icon = displayInfo.getIcon();
+        frame = displayInfo.getFrame();
+        x = displayInfo.getX();
+        y = displayInfo.getY();
+    }
+
     public ITextComponent getSkillName() {
         return skillName;
     }
@@ -151,5 +160,9 @@ public class SkillDisplayInfo {
         }
 
         return jsonobject;
+    }
+
+    public SkillDisplayInfo copy() {
+        return new SkillDisplayInfo(this);
     }
 }

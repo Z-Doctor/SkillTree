@@ -8,7 +8,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TranslationTextComponent;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
-import zdoctor.zskilltree.criterion.ProgressTracker;
+import zdoctor.zskilltree.skilltree.data.criterion.ProgressTracker;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import java.util.HashMap;

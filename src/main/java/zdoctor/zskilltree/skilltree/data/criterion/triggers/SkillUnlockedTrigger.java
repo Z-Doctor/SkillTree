@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.skilltree.triggers;
+package zdoctor.zskilltree.skilltree.data.criterion.triggers;
 
 import com.google.gson.JsonObject;
 import net.minecraft.advancements.criterion.AbstractCriterionTrigger;
@@ -11,7 +11,7 @@ import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 import zdoctor.zskilltree.ModMain;
 
-
+// TODO Make one for skill pages, perhaps also make a underlying base class
 public class SkillUnlockedTrigger extends AbstractCriterionTrigger<SkillUnlockedTrigger.Instance> {
     private static final ResourceLocation ID = new ResourceLocation(ModMain.MODID, "skill_unlocked");
 

@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.CriterionProgress;
+import net.minecraft.advancements.criterion.EntityPredicate;
 import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.advancements.criterion.PlayerPredicate;
 import net.minecraft.stats.Stat;
@@ -20,19 +21,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 
-public class PlayerPredicateBuilder {
-    private MinMaxBounds.IntBound level = MinMaxBounds.IntBound.UNBOUNDED;
-    private GameType gamemode = GameType.NOT_SET;
+public class PlayerPredicateBuilder<T extends PlayerPredicateBuilder<T>> {
     private final Map<Stat<?>, MinMaxBounds.IntBound> stats = new HashMap<>();
     private final Object2BooleanMap<ResourceLocation> recipes = new Object2BooleanOpenHashMap<>();
     private final Map<ResourceLocation, IAdvancementPredicate> advancements = new HashMap<>();
+    private MinMaxBounds.IntBound level = MinMaxBounds.IntBound.UNBOUNDED;
+    private GameType gamemode = GameType.NOT_SET;
 
-
-    private PlayerPredicateBuilder() {
-    }
-
-    public static PlayerPredicateBuilder create() {
-        return new PlayerPredicateBuilder();
+    protected PlayerPredicateBuilder() {
     }
 
     public static IAdvancementPredicate deserializeAdvancementPredicate(JsonElement element) {
@@ -54,58 +50,58 @@ public class PlayerPredicateBuilder {
         return stat.getType().getRegistry().getKey(stat.getValue());
     }
 
-    public PlayerPredicateBuilder withBounds(MinMaxBounds.IntBound level) {
+    public static PlayerPredicate build(PlayerPredicateBuilder<?> builder) {
+        return PlayerPredicate.deserialize(builder.serialize());
+    }
+
+    public T withBounds(MinMaxBounds.IntBound level) {
         this.level = level;
-        return this;
+        return (T) this;
     }
 
-    public PlayerPredicateBuilder withMode(GameType gamemode) {
+    public T withMode(GameType gamemode) {
         this.gamemode = gamemode;
-        return this;
+        return (T) this;
     }
 
-    public PlayerPredicateBuilder addStat(Stat<?> stat, MinMaxBounds.IntBound bound) {
+    public T addStat(Stat<?> stat, MinMaxBounds.IntBound bound) {
         this.stats.put(stat, bound);
-        return this;
+        return (T) this;
     }
 
-    public PlayerPredicateBuilder addAllStats(Map<Stat<?>, MinMaxBounds.IntBound> stats) {
+    public T addAllStats(Map<Stat<?>, MinMaxBounds.IntBound> stats) {
         this.stats.putAll(stats);
-        return this;
+        return (T) this;
     }
 
-    public PlayerPredicateBuilder hasRecipe(ResourceLocation recipe) {
+    public T hasRecipe(ResourceLocation recipe) {
         return putRecipe(recipe, true);
     }
 
-    public PlayerPredicateBuilder withoutRecipe(ResourceLocation recipe) {
+    public T withoutRecipe(ResourceLocation recipe) {
         return putRecipe(recipe, false);
     }
 
-    private PlayerPredicateBuilder putRecipe(ResourceLocation recipe, boolean hasRecipe) {
+    private T putRecipe(ResourceLocation recipe, boolean hasRecipe) {
         this.recipes.put(recipe, hasRecipe);
-        return this;
+        return (T) this;
     }
 
-    public PlayerPredicateBuilder hasAdvancement(ResourceLocation advancementId) {
+    public T hasAdvancement(ResourceLocation advancementId) {
         return putAdvancement(advancementId, true);
     }
 
-    public PlayerPredicateBuilder withoutAdvancement(ResourceLocation advancementId) {
+    public T withoutAdvancement(ResourceLocation advancementId) {
         return putAdvancement(advancementId, false);
     }
 
-    private PlayerPredicateBuilder putAdvancement(ResourceLocation recipe, boolean hasAdvancement) {
+    private T putAdvancement(ResourceLocation recipe, boolean hasAdvancement) {
         this.advancements.put(recipe, new CompletedAdvancementPredicate(hasAdvancement));
-        return this;
+        return (T) this;
     }
 
     public CriterionBuilder withCriteria(ResourceLocation advancementId) {
         return new CriterionBuilder(this, advancementId);
-    }
-
-    public PlayerPredicate build() {
-        return PlayerPredicate.deserialize(serialize());
     }
 
     public JsonElement serialize() {
@@ -176,6 +172,24 @@ public class PlayerPredicateBuilder {
         }
     }
 
+    public static class Builder extends PlayerPredicateBuilder<Builder> {
+        public static Builder create() {
+            return new Builder();
+        }
+
+        public PlayerPredicate build() {
+            return build(this);
+        }
+
+        public EntityPredicate buildEntity() {
+            return EntityPredicate.Builder.create().player(build()).build();
+        }
+
+        public EntityPredicate.AndPredicate buildEntityAnd() {
+            return EntityPredicate.AndPredicate.createAndFromEntityCondition(buildEntity());
+        }
+    }
+
     public static class CriteriaPredicate implements IAdvancementPredicate {
         private final Object2BooleanMap<String> completion;
 
@@ -216,8 +230,8 @@ public class PlayerPredicateBuilder {
         }
 
         @Override
-        public boolean test(AdvancementProgress p_test_1_) {
-            return p_test_1_.isDone() == this.completion;
+        public boolean test(AdvancementProgress progress) {
+            return progress.isDone() == this.completion;
         }
     }
 }

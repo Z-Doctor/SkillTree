@@ -1,1 +1,3 @@
-+ Fix Skills not being rendered (perhaps not being parsed correctly)
++ Revoke and grant commands broken or pages not being told to be removed due to my coding
++ Make sure commands are working and make it possible for skills and skill pages to be shown even if conditions
+   aren't met if it is owned (alternative conditions?)

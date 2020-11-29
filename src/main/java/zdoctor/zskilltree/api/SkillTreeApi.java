@@ -2,14 +2,18 @@ package zdoctor.zskilltree.api;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
+import net.minecraft.loot.LootContext;
+import net.minecraft.loot.LootParameterSets;
+import net.minecraft.loot.LootParameters;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.LazyOptional;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
-import zdoctor.zskilltree.criterion.ProgressTracker;
+import zdoctor.zskilltree.skilltree.data.criterion.ProgressTracker;
 import zdoctor.zskilltree.skilltree.skill.Skill;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
@@ -18,8 +22,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class SkillTreeApi {
+
     public static Skill skillFrom(ResourceLocation skillId) {
-        // TODO A way for client side testing and converting
         return ModMain.getInstance().getSkillManager().getSkill(skillId);
     }
 
@@ -85,6 +89,17 @@ public class SkillTreeApi {
 
     public static ISkillTreeTracker getTracker(Entity entity) {
         return of(entity, skillTreeTracker -> skillTreeTracker).get();
+    }
+
+    public static LootContext getLootContext(Entity entity) {
+        LootContext lootContext = null;
+        if (entity.getEntityWorld() instanceof ServerWorld) {
+            ServerWorld world = (ServerWorld) entity.getEntityWorld();
+            lootContext = new LootContext.Builder(world).withParameter(LootParameters.THIS_ENTITY, entity)
+                    .withParameter(LootParameters.field_237457_g_, entity.getPositionVec())
+                    .withRandom(world.getRandom()).build(LootParameterSets.field_237454_j_);
+        }
+        return lootContext;
     }
 
     public interface SkillTreeOperation {

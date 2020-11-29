@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 public class SkillGenerator implements Consumer<Consumer<Skill>> {
     @Override
     public void accept(Consumer<Skill> consumer) {
+        // TODO Make it so that you can add an alternative condition of them already having it unlocked
         Skill.Builder.builder().withDisplay(new ItemStack(Items.DIAMOND_SWORD), "attack_skill")
                 .onPage(SkillPageGenerator.miscPage).register(consumer, "attack_skill");
 

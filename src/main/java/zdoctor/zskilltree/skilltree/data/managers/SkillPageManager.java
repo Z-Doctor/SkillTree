@@ -22,7 +22,7 @@ import java.util.Map;
 // TODO Add hard coded way to add more(?) perhaps through an event
 // TODO Make it so new pages don't override the last page for values not defined by default
 // TODO Make a registry for skill pages for hard coded ones
-//  as well as support for the perhaps also make it so new ones will be registered sing deferred
+//  as well as support for the perhaps also make it so new ones will be registered using deferred
 public class SkillPageManager extends JsonReloadListener {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Gson GSON = (new GsonBuilder()).create();

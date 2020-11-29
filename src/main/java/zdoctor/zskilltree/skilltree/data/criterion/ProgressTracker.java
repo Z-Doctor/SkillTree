@@ -1,4 +1,4 @@
-package zdoctor.zskilltree.criterion;
+package zdoctor.zskilltree.skilltree.data.criterion;
 
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.CriterionProgress;
@@ -63,7 +63,6 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
             }
         }
 
-        // TODO Make serializer not let this be null(?)
         requirements = requirements == null ? EMPTY : requirements;
 
         this.requirements = requirements;
@@ -72,8 +71,7 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
             LOGGER.error("Correcting: Empty Criterion with non-empty requirements: {}", Arrays.deepToString(this.requirements));
             this.requirements = EMPTY;
         } else {
-            // TODO Make sure that the current deserializer doesn't allow this to happen
-            // TODO Make progress without criteria auto completed
+            LOGGER.trace("requirements are null, is this intended? Creating from requirements");
             this.requirements = IRequirementsStrategy.AND.createRequirements(criteria.keySet());
         }
 

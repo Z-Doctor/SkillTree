@@ -13,15 +13,16 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.registries.ForgeRegistries;
-import zdoctor.zskilltree.api.enums.SkillPageAlignment;
-import zdoctor.zskilltree.api.ImageAssets;
 import zdoctor.zskilltree.api.ImageAsset;
+import zdoctor.zskilltree.api.ImageAssets;
+import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 
 public class SkillPageDisplayInfo {
     private final ITextComponent pageName;
     private final ITextComponent description;
     private final ItemStack icon;
     private final SkillPageAlignment alignment;
+
     private ImageAsset background;
     private boolean drawTitle = true;
     private boolean isHidden = false;
@@ -43,47 +44,15 @@ public class SkillPageDisplayInfo {
         this.background = background;
     }
 
-    public ITextComponent getPageName() {
-        return pageName;
-    }
+    private SkillPageDisplayInfo(SkillPageDisplayInfo displayInfo) {
+        this.pageName = displayInfo.pageName;
+        this.description = displayInfo.description;
+        this.icon = displayInfo.icon;
+        this.alignment = displayInfo.alignment;
 
-    public ITextComponent getDescription() {
-        return description;
-    }
-
-    public ItemStack getIcon() {
-        return icon;
-    }
-
-    public SkillPageAlignment getAlignment() {
-        return alignment;
-    }
-
-    public ImageAsset getBackground() {
-        return background;
-    }
-
-    public void setBackground(ImageAsset background) {
-        this.background = background;
-    }
-
-    public SkillPageDisplayInfo setNoTitle() {
-        drawTitle = false;
-        return this;
-    }
-
-    public SkillPageDisplayInfo setHidden() {
-        isHidden = true;
-        return this;
-    }
-
-    public boolean drawTitle() {
-        return drawTitle;
-    }
-
-    // TODO Replace with visibility predicate
-    public boolean isHidden() {
-        return isHidden;
+        this.background = displayInfo.background;
+        this.drawTitle = displayInfo.drawTitle;
+        this.isHidden = displayInfo.isHidden;
     }
 
     public static SkillPageDisplayInfo deserialize(JsonObject object) {
@@ -130,6 +99,59 @@ public class SkillPageDisplayInfo {
         }
     }
 
+    public static SkillPageDisplayInfo read(PacketBuffer buf) {
+        ITextComponent pageName = buf.readTextComponent();
+        ITextComponent description = buf.readTextComponent();
+        ItemStack icon = buf.readItemStack();
+        SkillPageAlignment alignment = buf.readEnumValue(SkillPageAlignment.class);
+        boolean flag = buf.readBoolean();
+        ImageAsset background = flag ? ImageAsset.read(buf) : null;
+        return new SkillPageDisplayInfo(icon, pageName, description, background, alignment);
+    }
+
+    public ITextComponent getPageName() {
+        return pageName;
+    }
+
+    public ITextComponent getDescription() {
+        return description;
+    }
+
+    public ItemStack getIcon() {
+        return icon;
+    }
+
+    public SkillPageAlignment getAlignment() {
+        return alignment;
+    }
+
+    public ImageAsset getBackground() {
+        return background;
+    }
+
+    public void setBackground(ImageAsset background) {
+        this.background = background;
+    }
+
+    public SkillPageDisplayInfo setNoTitle() {
+        drawTitle = false;
+        return this;
+    }
+
+    public SkillPageDisplayInfo setHidden() {
+        isHidden = true;
+        return this;
+    }
+
+    public boolean drawTitle() {
+        return drawTitle;
+    }
+
+    // TODO Replace with visibility predicate
+    public boolean isHidden() {
+        return isHidden;
+    }
+
     public void write(PacketBuffer buf) {
         buf.writeTextComponent(this.pageName);
         buf.writeTextComponent(this.description);
@@ -140,16 +162,6 @@ public class SkillPageDisplayInfo {
             this.background.write(buf);
         } else
             buf.writeBoolean(false);
-    }
-
-    public static SkillPageDisplayInfo read(PacketBuffer buf) {
-        ITextComponent pageName = buf.readTextComponent();
-        ITextComponent description = buf.readTextComponent();
-        ItemStack icon = buf.readItemStack();
-        SkillPageAlignment alignment = buf.readEnumValue(SkillPageAlignment.class);
-        boolean flag = buf.readBoolean();
-        ImageAsset background = flag ? ImageAsset.read(buf) : null;
-        return new SkillPageDisplayInfo(icon, pageName, description, background, alignment);
     }
 
     public JsonElement serialize() {
@@ -173,5 +185,9 @@ public class SkillPageDisplayInfo {
         }
 
         return jsonobject;
+    }
+
+    public SkillPageDisplayInfo copy() {
+        return new SkillPageDisplayInfo(this);
     }
 }

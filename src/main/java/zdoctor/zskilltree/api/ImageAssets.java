@@ -8,7 +8,7 @@ import zdoctor.zskilltree.ModMain;
 
 @Mod.EventBusSubscriber
 public class ImageAssets {
-    // TODO Make ImageAsset registry to make using them in json easier
+    // TODO Add some kind of reader to find an ImageAsset from a resource location
     public static final ImageAsset MISSING = ImageAsset.builder("missing").setDimensions(16, 16).build("missing");
 
     private static ImageAsset.Builder builder = ImageAsset.builder("skill_tree").setFolder("gui");
