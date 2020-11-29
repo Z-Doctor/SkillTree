@@ -59,7 +59,7 @@ public class SkillManager extends JsonReloadListener {
                 continue;
             }
             Skill skill = builder.build(id);
-            page.addSkill(skill);
+            page.add(skill);
             LOGGER.info("Built Skill {} and sent to {}", id, page.getRegistryName());
             skills.put(id, skill);
         }

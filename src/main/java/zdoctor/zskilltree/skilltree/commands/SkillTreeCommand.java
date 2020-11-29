@@ -30,6 +30,7 @@ import java.util.function.Predicate;
 // TODO Add grantAll and revokeAll command
 // TODO Add command to list all the skills a entity has, doesn't have and have, and a list of all skills marked as such
 // Command to make new skill pages and trees?
+// TODO Fix commands for skills
 public class SkillTreeCommand {
     public static final SuggestionProvider<CommandSource> SUGGEST_SKILLPAGE = (context, builder) -> {
         Collection<SkillPage> pages = ModMain.getInstance().getSkillPageManager().getAllSkillPages();

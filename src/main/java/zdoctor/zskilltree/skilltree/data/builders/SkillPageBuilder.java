@@ -5,12 +5,14 @@ import net.minecraft.advancements.IRequirementsStrategy;
 import net.minecraft.advancements.criterion.EntityPredicate;
 import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.item.ItemStack;
+import net.minecraft.loot.LootContext;
 import net.minecraft.util.IItemProvider;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import zdoctor.zskilltree.api.ImageAsset;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
+import zdoctor.zskilltree.skilltree.loot.conditions.HasSkillPage;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPageDisplayInfo;
 
@@ -87,8 +89,7 @@ public class SkillPageBuilder extends Builder<SkillPageBuilder, SkillPage> {
     @Override
     public SkillPage build(ResourceLocation id) {
         if (unlockable) {
-//            visibility = LootConditionBuilder.create().withPlayer().withBounds(MinMaxBounds.IntBound.atLeast(15)).buildEntityAnd();
-            visibility = LootConditionBuilder.create().build(PlayerPredicateBuilder.Builder.create().withBounds(MinMaxBounds.IntBound.atLeast(15)).buildEntity());
+            visibility = LootConditionBuilder.create().withCondition(HasSkillPage.builder(LootContext.EntityTarget.THIS, id).build()).build();
         }
 
         String[][] requirements = requirementsStrategy.createRequirements(criteria.keySet());

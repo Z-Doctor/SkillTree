@@ -44,7 +44,9 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
             new TranslationTextComponent("skillpage.missing.title"),
             new TranslationTextComponent("skillpage.missing.description")
     ).setHidden();
-    private final Map<ResourceLocation, Skill> rootSkills = new HashMap<>();
+    // TODO Make a resource/skill map to track skills. Make client add skills to the page
+    //  this will only send skill resourcelocation for children. Also, make deserialize be able to add skills from json
+    private final Map<ResourceLocation, Skill> childSkills = new HashMap<>();
     private final Map<String, Criterion> criteria;
     private final String[][] requirements;
     private int index;
@@ -65,8 +67,17 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         displayInfo = skillPage.getDisplayInfo();
         criteria = skillPage.getCriteria();
         requirements = skillPage.getRequirements();
-        rootSkills.putAll(skillPage.getRootSkills());
+        childSkills.putAll(skillPage.childSkills);
         visibilityPredicate = skillPage.visibilityPredicate;
+    }
+
+    public SkillPage(int index, ResourceLocation id, SkillPageDisplayInfo displayInfo, @Nonnull Map<String, Criterion> criteriaIn, @Nonnull String[][] requirementsIn) {
+        setRegistryName(id);
+        this.displayInfo = displayInfo == null ? MISSING : displayInfo;
+        this.index = index;
+
+        this.criteria = ImmutableMap.copyOf(criteriaIn);
+        this.requirements = requirementsIn;
     }
 
     public SkillPage(PacketBuffer buf) {
@@ -86,18 +97,9 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         }
 
         for (int i = buf.readVarInt(); i > 0; i--) {
-            ResourceLocation skillId = buf.readResourceLocation();
-            rootSkills.put(skillId, Skill.NONE);
+            // Should be updated by client
+            childSkills.put(buf.readResourceLocation(), Skill.NONE);
         }
-    }
-
-    public SkillPage(int index, ResourceLocation id, SkillPageDisplayInfo displayInfo, @Nonnull Map<String, Criterion> criteriaIn, @Nonnull String[][] requirementsIn) {
-        setRegistryName(id);
-        this.displayInfo = displayInfo == null ? MISSING : displayInfo;
-        this.index = index;
-
-        this.criteria = ImmutableMap.copyOf(criteriaIn);
-        this.requirements = requirementsIn;
     }
 
     public static int compare(SkillPage in, SkillPage to) {
@@ -218,29 +220,27 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         return this;
     }
 
-    @Override
-    public boolean isVisibleTo(Entity entity) {
-        LootContext lootContext = SkillTreeApi.getLootContext(entity);
-        return lootContext != null && visibilityPredicate.testContext(lootContext);
+    public boolean hasSkill(Skill skill) {
+        return hasSkill(skill.getRegistryName());
     }
 
-    @Override
-    public boolean isConditionallyVisible() {
-        return visibilityPredicate != EntityPredicate.AndPredicate.ANY_AND;
+    public boolean hasSkill(ResourceLocation skillId) {
+        return childSkills.containsKey(skillId);
     }
 
-    public boolean hasRootSkill(Skill skill) {
-        return rootSkills.containsKey(skill.getRegistryName());
+    public SkillPage add(Skill skill) {
+        childSkills.put(skill.getRegistryName(), skill);
+        return this;
     }
 
-    @Override
-    public Map<String, Criterion> getCriteria() {
-        return criteria;
+
+    // TODO Add rarity to display info
+    public ImmutableMap<ResourceLocation, Skill> getChildSkills() {
+        return ImmutableMap.copyOf(childSkills);
     }
 
-    @Override
-    public String[][] getRequirements() {
-        return requirements;
+    public SkillPageDisplayInfo getDisplayInfo() {
+        return displayInfo;
     }
 
     @Override
@@ -264,13 +264,9 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
                 }
             }
 
-        buf.writeVarInt(rootSkills.size());
-        for (ResourceLocation id : rootSkills.keySet())
+        buf.writeVarInt(childSkills.size());
+        for (ResourceLocation id : childSkills.keySet())
             buf.writeResourceLocation(id);
-    }
-
-    public SkillPageDisplayInfo getDisplayInfo() {
-        return displayInfo;
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -281,6 +277,38 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
     @OnlyIn(Dist.CLIENT)
     public void setIndex(int index) {
         this.index = index;
+    }
+
+    @Override
+    public boolean isVisibleTo(Entity entity) {
+        LootContext lootContext = SkillTreeApi.getLootContext(entity);
+        return lootContext != null && visibilityPredicate.testContext(lootContext);
+    }
+
+    @Override
+    public boolean isConditionallyVisible() {
+        return visibilityPredicate != EntityPredicate.AndPredicate.ANY_AND;
+    }
+
+    @Override
+    public Map<String, Criterion> getCriteria() {
+        return criteria;
+    }
+
+    @Override
+    public String[][] getRequirements() {
+        return requirements;
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public SkillPage putFrom(HashMap<ResourceLocation, Skill> skills) {
+        for (ResourceLocation id : childSkills.keySet()) {
+            if (skills.containsKey(id)) {
+                childSkills.put(id, skills.remove(id));
+            }
+        }
+        childSkills.values().removeIf(Skill.NONE::equals);
+        return this;
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -313,10 +341,6 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         return 4210752;
     }
 
-    public SkillPage copy() {
-        return new SkillPage(this);
-    }
-
     @Override
     public String toString() {
         return "SkillPage{" +
@@ -337,20 +361,9 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
             return true;
         else if (!(obj instanceof SkillPage))
             return false;
-        else {
-            return Objects.equals(getRegistryName(), ((SkillPage) obj).getRegistryName());
-        }
+        return Objects.equals(getRegistryName(), ((SkillPage) obj).getRegistryName());
     }
 
-    public void addSkill(Skill skill) {
-        rootSkills.put(skill.getRegistryName(), skill);
-    }
-
-    public Collection<Skill> getSkills() {
-        return rootSkills.values();
-    }
-
-    // TODO Add rarity to display info
     @OnlyIn(Dist.CLIENT)
     public List<ITextComponent> getTooltip(ClientPlayerEntity player, ITooltipFlag.TooltipFlags tooltipFlags) {
         List<ITextComponent> list = new ArrayList<>();
@@ -374,12 +387,8 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         return compare(this, other);
     }
 
-    public Map<ResourceLocation, Skill> getRootSkills() {
-        return ImmutableMap.copyOf(rootSkills);
-    }
-
-    public Skill putRootSkill(ResourceLocation key, Skill skill) {
-        return rootSkills.put(key, skill);
+    public SkillPage copy() {
+        return new SkillPage(this);
     }
 
 }

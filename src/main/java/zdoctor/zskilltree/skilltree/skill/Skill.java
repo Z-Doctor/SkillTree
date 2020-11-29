@@ -103,20 +103,22 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
         if (getVisibilityPredicate() != EntityPredicate.AndPredicate.ANY_AND)
             jsonobject.add("visibility", getVisibilityPredicate().serializeConditions(ConditionArraySerializer.field_235679_a_));
 
-        JsonObject criteriaObject = new JsonObject();
-        for (Map.Entry<String, Criterion> entry : getCriteria().entrySet())
-            criteriaObject.add(entry.getKey(), entry.getValue().serialize());
-        jsonobject.add("criteria", criteriaObject);
+        if (!getCriteria().isEmpty()) {
+            JsonObject criteriaObject = new JsonObject();
+            for (Map.Entry<String, Criterion> entry : getCriteria().entrySet())
+                criteriaObject.add(entry.getKey(), entry.getValue().serialize());
+            jsonobject.add("criteria", criteriaObject);
 
-        JsonArray requirementArray = new JsonArray();
-        for (String[] requirements : getRequirements()) {
-            JsonArray array = new JsonArray();
-            for (String requirement : requirements)
-                array.add(requirement);
+            JsonArray requirementArray = new JsonArray();
+            for (String[] requirements : getRequirements()) {
+                JsonArray array = new JsonArray();
+                for (String requirement : requirements)
+                    array.add(requirement);
 
-            requirementArray.add(array);
+                requirementArray.add(array);
+            }
+            jsonobject.add("requirements", requirementArray);
         }
-        jsonobject.add("requirements", requirementArray);
         return jsonobject;
     }
 
@@ -126,11 +128,6 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
 
     public Skill setVisibilityContext(EntityPredicate.AndPredicate visibilityContext) {
         this.visibilityPredicate = visibilityContext;
-        return this;
-    }
-
-    public Skill setParentPage(ResourceLocation parentPage) {
-        this.parentPage = parentPage;
         return this;
     }
 
@@ -184,6 +181,11 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
 
     public ResourceLocation getParentPage() {
         return parentPage;
+    }
+
+    public Skill setParentPage(ResourceLocation parentPage) {
+        this.parentPage = parentPage;
+        return this;
     }
 
     @Override

@@ -26,11 +26,13 @@ public class AdvancementUnlockedTrigger extends AbstractSkillTreeCriterionTrigge
             ExtendedCriteriaTriggers.ADVANCEMENT_UNLOCKED.triggerListeners((ServerPlayerEntity) event.getPlayer(), event.getAdvancement().getId());
     }
 
+    // TODO Find some other kind of solution for checking if an advancement is
+    //  already unlocked, or scrap that functionality
     @SubscribeEvent
     public static void onProgressRevoked(CriterionTrackerEvent.ProgressRevokedEvent event) {
-        if (event.getOwner() instanceof ServerPlayerEntity) {
-            ExtendedCriteriaTriggers.ADVANCEMENT_UNLOCKED.triggerListeners((ServerPlayerEntity) event.getOwner(), Instance.ANY);
-        }
+//        if (event.getOwner() instanceof ServerPlayerEntity) {
+//            ExtendedCriteriaTriggers.ADVANCEMENT_UNLOCKED.triggerListeners((ServerPlayerEntity) event.getOwner(), Instance.ANY);
+//        }
     }
 
     @SubscribeEvent

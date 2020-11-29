@@ -5,6 +5,7 @@ import net.minecraft.nbt.INBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.INBTSerializable;
 import zdoctor.zskilltree.skilltree.data.criterion.ProgressTracker;
+import zdoctor.zskilltree.skilltree.skill.Skill;
 
 import java.util.Map;
 
@@ -23,7 +24,7 @@ public interface IProgressTracker<T extends INBT> extends INBTSerializable<T> {
 
     void update(CriterionTracker trackable, Map<String, Criterion> criterion, String[][] requirements);
 
-    boolean hasProgress(CriterionTracker tracker);
+    boolean has(CriterionTracker tracker);
 
     ProgressTracker getProgress(CriterionTracker tracker);
 
@@ -35,4 +36,5 @@ public interface IProgressTracker<T extends INBT> extends INBTSerializable<T> {
 
     CriterionTracker getTracker(ResourceLocation key);
 
+    boolean isDone(CriterionTracker tracker);
 }

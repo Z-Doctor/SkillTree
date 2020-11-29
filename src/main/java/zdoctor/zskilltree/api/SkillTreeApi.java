@@ -118,7 +118,7 @@ public class SkillTreeApi {
         }
 
         public static boolean hasSkill(Skill skill) {
-            return perform(Minecraft.getInstance().player, tracker -> tracker.getProgress(skill).isDone());
+            return perform(Minecraft.getInstance().player, tracker -> tracker.isDone(skill));
         }
     }
 }

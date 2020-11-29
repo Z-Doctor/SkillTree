@@ -66,9 +66,8 @@ public class GuiSkillPage extends ImageScreen {
         this.skillPage = page;
         this.pageNumber = page.getIndex() / (page.getAlignment() == SkillPageAlignment.VERTICAL ? MAX_VERTICAL : MAX_HORIZONTAL);
 //        setImage(ImageAssets.DEFAULT_TILE);
-        // TODO Add skills
         int i = 0;
-        for (Skill skill : page.getRootSkills().values()) {
+        for (Skill skill : page.getChildSkills().values()) {
             GuiSkill guiSkill = new GuiSkill(skill, skillTreeScreen);
             guiSkill.setAnchor(skillTreeScreen);
             guiSkill.setOffsets(28 * i + 9, 18);

@@ -48,6 +48,39 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         LOGGER.debug("Attached Skill Tree to {}", owner);
     }
 
+    protected void onProgressCompleted(CriterionTracker trackable) {
+        // TODO Add toast and chat announcement to options
+        MinecraftForge.EVENT_BUS.post(new CriterionTrackerEvent.ProgressGrantedEvent(owner, trackable));
+    }
+
+    protected void onProgressRevoked(CriterionTracker trackable) {
+        startProgress(trackable);
+        MinecraftForge.EVENT_BUS.post(new CriterionTrackerEvent.ProgressRevokedEvent(owner, trackable));
+    }
+
+    protected void onProgressChanged(CriterionTracker tracker) {
+        progressChanged.add(tracker);
+    }
+
+    // TODO Perhaps add triggers to the visibility for checking so we don't have to check every tick or something
+    //  Or I can delay the time between checks
+    private void checkVisibility() {
+        boolean visibleFlag;
+        boolean shouldBeVisible;
+        for (CriterionTracker trackable : conditionallyVisible) {
+            visibleFlag = visible.contains(trackable);
+            shouldBeVisible = trackable.isVisibleTo(getOwner());
+
+            if (visibleFlag && !shouldBeVisible) {
+                visible.remove(trackable);
+                visibilityChanged.add(trackable);
+            } else if (!visibleFlag && shouldBeVisible) {
+                visible.add(trackable);
+                visibilityChanged.add(trackable);
+            }
+        }
+    }
+
     public Set<CriterionTracker> getVisible() {
         return ImmutableSet.copyOf(visible);
     }
@@ -65,11 +98,16 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         return trackableMap.get(key);
     }
 
+    @Override
+    public boolean isDone(CriterionTracker tracker) {
+        return getProgress(tracker).isDone();
+    }
+
     /**
      * Checks to see if the trackable exists and has progress
      */
     @Override
-    public boolean hasProgress(CriterionTracker tracker) {
+    public boolean has(CriterionTracker tracker) {
         ProgressTracker progress = progressTracker.get(tracker);
         return progress != null && progress.hasProgress();
     }
@@ -96,7 +134,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
             progress.disableUpdates();
 
         progressTracker.put(tracker, progress);
-        progressChanged.add(tracker);
+        onProgressChanged(tracker);
     }
 
     @Override
@@ -118,7 +156,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         if (progress.isDone())
             return false;
         progress.grant();
-        progressChanged.add(tracker);
+        onProgressChanged(tracker);
         if (progress.isDone())
             onProgressCompleted(tracker);
         else {
@@ -131,9 +169,9 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     @Override
     public boolean revoke(CriterionTracker tracker) {
         ProgressTracker progress = getProgress(tracker);
-        if (progress == null || !progress.isDone() || !progress.revoke())
+        if (progress == null || !progress.revoke())
             return false;
-        progressChanged.add(tracker);
+        onProgressChanged(tracker);
         onProgressRevoked(tracker);
         return true;
     }
@@ -146,7 +184,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         boolean flag = progress.isDone();
         if (!progress.resetProgress())
             return false;
-        progressChanged.add(tracker);
+        onProgressChanged(tracker);
         if (flag)
             onProgressRevoked(tracker);
         return true;
@@ -158,7 +196,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         if (progress.isDone())
             return false;
         if (progress.grantCriterion(criterionKey)) {
-            progressChanged.add(tracker);
+            onProgressChanged(tracker);
             if (progress.isDone())
                 onProgressCompleted(tracker);
         }
@@ -170,22 +208,12 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         ProgressTracker progress = getProgress(trackable);
         boolean flag = progress.isDone();
         if (progress.revokeCriterion(criterionKey)) {
-            progressChanged.add(trackable);
+            onProgressChanged(trackable);
             if (flag)
                 onProgressRevoked(trackable);
             return true;
         }
         return false;
-    }
-
-    protected void onProgressCompleted(CriterionTracker trackable) {
-        // TODO Add toast and chat announcement to options
-        MinecraftForge.EVENT_BUS.post(new CriterionTrackerEvent.ProgressGrantedEvent(owner, trackable));
-    }
-
-    protected void onProgressRevoked(CriterionTracker trackable) {
-        startProgress(trackable);
-        MinecraftForge.EVENT_BUS.post(new CriterionTrackerEvent.ProgressRevokedEvent(owner, trackable));
     }
 
     @Override
@@ -280,23 +308,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
             }
         }
     }
-
-    private void checkVisibility() {
-        boolean visibleFlag;
-        boolean shouldBeVisible;
-        for (CriterionTracker trackable : conditionallyVisible) {
-            visibleFlag = visible.contains(trackable);
-            shouldBeVisible = trackable.isVisibleTo(getOwner());
-
-            if (visibleFlag && !shouldBeVisible) {
-                visible.remove(trackable);
-                visibilityChanged.add(trackable);
-            } else if (!visibleFlag && shouldBeVisible) {
-                visible.add(trackable);
-                visibilityChanged.add(trackable);
-            }
-        }
-    }
+    // TODO Fix problem when checking if a page is owned because it might be farther down the queue than a skill checking for it
 
     @Override
     public void reload() {
@@ -310,7 +322,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
                 startProgress(trackable);
             else {
                 progress.update(trackable.getCriteria(), trackable.getRequirements());
-                progressChanged.add(trackable);
+                onProgressChanged(trackable);
             }
             if (trackable.isConditionallyVisible())
                 conditionallyVisible.add(trackable);
@@ -339,6 +351,13 @@ public class SkillTreeTracker implements ISkillTreeTracker {
                 if (visible.contains(progressTracker))
                     progressUpdate.put(progressTracker.getRegistryName(), getProgress(progressTracker));
             });
+
+            toAdd.forEach(tracker -> {
+                if (!progressUpdate.containsKey(tracker.getRegistryName()))
+                    progressUpdate.put(tracker.getRegistryName(), getProgress(tracker));
+            });
+
+//            toAdd.forEach(pr;
 
             process(firstSync, toAdd, toRemove, progressUpdate);
 

@@ -41,7 +41,7 @@ public abstract class HasCriteriaTracker implements ILootCondition {
         else if (!criteriaTrackers.isEmpty()) {
             for (Map.Entry<ResourceLocation, ICriteriaPredicate> entry : criteriaTrackers.entrySet()) {
                 CriterionTracker trackable = tracker.getTracker(entry.getKey());
-                if (entry.getValue().test(tracker.getProgress(trackable)))
+                if (trackable == null || !entry.getValue().test(tracker.getProgress(trackable)))
                     return false;
             }
         }

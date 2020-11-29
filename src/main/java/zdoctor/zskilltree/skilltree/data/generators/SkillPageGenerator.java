@@ -34,10 +34,7 @@ public class SkillPageGenerator implements Consumer<Consumer<SkillPage>> {
                 new StringTextComponent("Become an Enchanter"), ImageAssets.NETHERRACK_TILE, SkillPageAlignment.VERTICAL)
 //                .makeTrigger("has_advancement", predicate -> AdvancementUnlockedTrigger.with("story/enchant_item"))
                 .makeTrigger("has_advancement", predicate -> AdvancementUnlockedTrigger.with(predicate, new ResourceLocation("story/enchant_item")))
-                .withCondition(HasSkillPage.builder(LootContext.EntityTarget.THIS, new ResourceLocation(ModMain.MODID, "enchanting_branch")).inverted()
-                        .alternative(HasSkillPage.builder(LootContext.EntityTarget.THIS, new ResourceLocation(ModMain.MODID, "enchanting_branch"))).build())
 //                .buildTrigger(PlayerPredicateBuilder.Builder.create().withBounds(MinMaxBounds.IntBound.atLeast(20)).buildEntity())
-                .withPlayer().withBounds(MinMaxBounds.IntBound.atLeast(15)).make()
-                .unlockable().register(consumer, "enchanting_branch");
+                .make().unlockable().register(consumer, "enchanting_branch");
     }
 }

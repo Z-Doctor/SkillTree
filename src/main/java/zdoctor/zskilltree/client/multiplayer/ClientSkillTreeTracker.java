@@ -17,7 +17,10 @@ import zdoctor.zskilltree.skilltree.skill.Skill;
 import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientSkillTreeTracker extends SkillTreeTracker implements IClientSkillTreeTracker {
@@ -64,23 +67,13 @@ public class ClientSkillTreeTracker extends SkillTreeTracker implements IClientS
             sorted_pages.put(value, new SkillPage[0]);
         }
 
-        Set<ResourceLocation> orphanedSkills = new HashSet<>(skills.keySet());
+        HashMap<ResourceLocation, Skill> orphanedSkills = new HashMap<>(skills);
 
-        pages.values().stream().sorted(SkillPage::compare)
-                .forEach(page -> {
-                    for (ResourceLocation id : page.getRootSkills().keySet()) {
-                        Skill skill = skills.get(id);
-                        if (skill != null) {
-                            page.putRootSkill(id, skill);
-                            orphanedSkills.remove(id);
-                        }
-                    }
-                    addPageSafe(page);
-                });
+        pages.values().stream().sorted(SkillPage::compare).map(page -> page.putFrom(orphanedSkills)).forEach(this::addPageSafe);
 
         if (!orphanedSkills.isEmpty()) {
             LOGGER.debug("Found {} skills that have no page. Perhaps they have the skill but not its parent page. " +
-                    "I should make a system for that. {}", orphanedSkills.size(), Arrays.deepToString(orphanedSkills.toArray()));
+                    "I should make a system for that. {}", orphanedSkills.size(), Arrays.deepToString(orphanedSkills.keySet().toArray()));
         }
 
         maxHorizontal = Math.max(0, sorted_pages.get(SkillPageAlignment.HORIZONTAL).length - 1);
@@ -116,10 +109,7 @@ public class ClientSkillTreeTracker extends SkillTreeTracker implements IClientS
     public void setListener(IListener listener) {
         this.listener = listener;
         if (listener != null) {
-            getVisible().forEach(trackable -> {
-                if (trackable instanceof SkillPage)
-                    listener.skillPageAdded((SkillPage) trackable);
-            });
+            pages.values().forEach(listener::skillPageAdded);
             listener.setSelectedPage(selectedPage);
         }
     }

@@ -1,3 +1,6 @@
 + Revoke and grant commands broken or pages not being told to be removed due to my coding
 + Make sure commands are working and make it possible for skills and skill pages to be shown even if conditions
    aren't met if it is owned (alternative conditions?)
+
++ Make gens not generate empty requirements and criteria in json
++ I think skills are either being rendered or something is getting their image even when not active page
