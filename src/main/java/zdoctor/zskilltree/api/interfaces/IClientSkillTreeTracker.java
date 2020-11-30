@@ -1,7 +1,7 @@
 package zdoctor.zskilltree.api.interfaces;
 
-import zdoctor.zskilltree.skilltree.skill.Skill;
-import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.criterion.Skill;
+import zdoctor.zskilltree.skilltree.criterion.SkillPage;
 
 import javax.annotation.Nullable;
 

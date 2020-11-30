@@ -13,8 +13,8 @@ import zdoctor.zskilltree.api.enums.AnchorPoint;
 import zdoctor.zskilltree.api.interfaces.IClientSkillTreeTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeScreen;
 import zdoctor.zskilltree.client.KeyBindings;
-import zdoctor.zskilltree.skilltree.skill.Skill;
-import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.criterion.Skill;
+import zdoctor.zskilltree.skilltree.criterion.SkillPage;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;

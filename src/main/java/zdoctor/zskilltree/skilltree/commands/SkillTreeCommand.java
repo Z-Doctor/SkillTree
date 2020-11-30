@@ -16,12 +16,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.util.LazyOptional;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
-import zdoctor.zskilltree.skilltree.skill.Skill;
-import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.criterion.Skill;
+import zdoctor.zskilltree.skilltree.criterion.SkillPage;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -37,10 +35,9 @@ public class SkillTreeCommand {
         return ISuggestionProvider.func_212476_a(pages.stream().filter(page -> !page.getCriteria().isEmpty()).map(SkillPage::getRegistryName), builder);
     };
     public static final SuggestionProvider<CommandSource> SUGGEST_SKILL = (context, builder) -> {
-        Collection<Skill> pages = ModMain.getInstance().getSkillManager().getAllSkills();
-        return ISuggestionProvider.func_212476_a(pages.stream().map(Skill::getRegistryName), builder);
+        Collection<Skill> skills = ModMain.getInstance().getSkillManager().getAllSkills();
+        return ISuggestionProvider.func_212476_a(skills.stream().filter(skill -> !skill.getCriteria().isEmpty()).map(Skill::getRegistryName), builder);
     };
-    private static final Logger LOGGER = LogManager.getLogger();
     private static final DynamicCommandExceptionType SKILL_NOT_FOUND =
             new DynamicCommandExceptionType((skill) -> new TranslationTextComponent("commands.skilltree.skillNotFound", skill));
     private static final DynamicCommandExceptionType SKILL_PAGE_NOT_FOUND =
@@ -108,11 +105,11 @@ public class SkillTreeCommand {
         }
 
         if (handlers.length == 1 && i == 1)
-            source.sendFeedback(new TranslationTextComponent("commands.skilltree.grant.page.success.single", page.getDisplayInfo().getPageName(), handlers[0].getOwner().getDisplayName()), true);
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.grant.page.success.single", page.getPageName(), handlers[0].getOwner().getDisplayName()), true);
         else if (i > 1)
-            source.sendFeedback(new TranslationTextComponent("commands.skilltree.grant.page.success.many", page.getDisplayInfo().getPageName(), i), true);
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.grant.page.success.many", page.getPageName(), i), true);
         else
-            source.sendFeedback(new TranslationTextComponent("commands.skilltree.grant.page.fail.none", page.getDisplayInfo().getPageName()), true);
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.grant.page.fail.none", page.getPageName()), true);
         return i;
 
     }
@@ -134,11 +131,11 @@ public class SkillTreeCommand {
         }
 
         if (handlers.length == 1 && i == 1)
-            source.sendFeedback(new TranslationTextComponent("commands.skilltree.grant.skill.success.single", skill.getDisplayInfo().getSkillName(), handlers[0].getOwner().getDisplayName()), true);
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.grant.skill.success.single", skill.getSkillName(), handlers[0].getOwner().getDisplayName()), true);
         else if (i > 1)
-            source.sendFeedback(new TranslationTextComponent("commands.skilltree.grant.skill.success.many", skill.getDisplayInfo().getSkillName(), i), true);
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.grant.skill.success.many", skill.getSkillName(), i), true);
         else
-            source.sendFeedback(new TranslationTextComponent("commands.skilltree.grant.skill.fail.none", skill.getDisplayInfo().getSkillName()), true);
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.grant.skill.fail.none", skill.getSkillName()), true);
         return i;
 
     }
@@ -159,11 +156,11 @@ public class SkillTreeCommand {
         }
 
         if (handlers.length == 1 && i == 1)
-            source.sendFeedback(new TranslationTextComponent("commands.skilltree.revoke.page.success.single", page.getDisplayInfo().getPageName(), handlers[0].getOwner().getDisplayName()), true);
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.revoke.page.success.single", page.getPageName(), handlers[0].getOwner().getDisplayName()), true);
         else if (i > 1)
-            source.sendFeedback(new TranslationTextComponent("commands.skilltree.revoke.page.success.many", page.getDisplayInfo().getPageName(), i), true);
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.revoke.page.success.many", page.getPageName(), i), true);
         else
-            source.sendFeedback(new TranslationTextComponent("commands.skilltree.revoke.page.fail.any", page.getDisplayInfo().getPageName()), true);
+            source.sendFeedback(new TranslationTextComponent("commands.skilltree.revoke.page.fail.any", page.getPageName()), true);
         return i;
 
     }

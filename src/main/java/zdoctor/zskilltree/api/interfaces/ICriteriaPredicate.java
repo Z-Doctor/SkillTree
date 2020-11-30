@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import net.minecraft.advancements.CriterionProgress;
-import zdoctor.zskilltree.skilltree.data.criterion.ProgressTracker;
+import zdoctor.zskilltree.skilltree.criterion.ProgressTracker;
 
 import java.util.function.Predicate;
 

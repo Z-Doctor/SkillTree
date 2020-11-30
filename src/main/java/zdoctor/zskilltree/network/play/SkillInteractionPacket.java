@@ -9,7 +9,7 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.api.SkillTreeApi;
-import zdoctor.zskilltree.skilltree.skill.Skill;
+import zdoctor.zskilltree.skilltree.criterion.Skill;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;

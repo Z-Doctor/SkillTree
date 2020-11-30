@@ -13,7 +13,7 @@ import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.SkillTreeApi;
 import zdoctor.zskilltree.api.annotations.ClassNameMapper;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
-import zdoctor.zskilltree.skilltree.data.criterion.ProgressTracker;
+import zdoctor.zskilltree.skilltree.criterion.ProgressTracker;
 
 import java.util.*;
 import java.util.function.Function;

@@ -11,8 +11,8 @@ import zdoctor.zskilltree.api.enums.Layer;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeScreen;
 import zdoctor.zskilltree.api.interfaces.ImageDisplayInfo;
-import zdoctor.zskilltree.skilltree.skill.Skill;
-import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.criterion.Skill;
+import zdoctor.zskilltree.skilltree.criterion.SkillPage;
 
 public class GuiSkillPage extends ImageScreen {
     public static final ImageAsset[][] TOP_TABS = {
@@ -86,9 +86,8 @@ public class GuiSkillPage extends ImageScreen {
     protected void renderMain(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         // Draws title of page
         if (isSelected()) {
-            if (getSkillPage().drawInForegroundOfTab())
-                this.font.func_243248_b(matrixStack, getSkillPage().getPageName(), root.getTrueOffsetX() + 8,
-                        root.getTrueOffsetY() + 6, getSkillPage().getLabelColor());
+            this.font.func_243248_b(matrixStack, getSkillPage().getPageName(), root.getTrueOffsetX() + 8,
+                    root.getTrueOffsetY() + 6, getSkillPage().getLabelColor());
         }
         // Draws tab
         renderAt(matrixStack, getTrueOffsetX(), getTrueOffsetY(), partialTicks);

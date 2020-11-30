@@ -4,7 +4,7 @@ import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import zdoctor.zskilltree.client.multiplayer.ClientSkillTreeTracker;
-import zdoctor.zskilltree.skilltree.data.providers.CapabilitySkillTreeProvider;
+import zdoctor.zskilltree.skilltree.providers.CapabilitySkillTreeProvider;
 
 public class ClientCapabilityProvider extends CapabilitySkillTreeProvider {
     @Override

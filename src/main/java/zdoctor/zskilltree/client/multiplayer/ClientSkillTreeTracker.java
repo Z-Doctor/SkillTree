@@ -11,10 +11,10 @@ import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.IClientSkillTreeTracker;
 import zdoctor.zskilltree.network.play.SkillInteractionPacket;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
-import zdoctor.zskilltree.skilltree.data.criterion.ProgressTracker;
-import zdoctor.zskilltree.skilltree.data.trackers.SkillTreeTracker;
-import zdoctor.zskilltree.skilltree.skill.Skill;
-import zdoctor.zskilltree.skilltree.skillpages.SkillPage;
+import zdoctor.zskilltree.skilltree.criterion.ProgressTracker;
+import zdoctor.zskilltree.skilltree.trackers.SkillTreeTracker;
+import zdoctor.zskilltree.skilltree.criterion.Skill;
+import zdoctor.zskilltree.skilltree.criterion.SkillPage;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;

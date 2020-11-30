@@ -7,8 +7,8 @@ import zdoctor.zskilltree.api.ImageAsset;
 import zdoctor.zskilltree.api.ImageAssets;
 import zdoctor.zskilltree.api.SkillTreeApi;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeScreen;
-import zdoctor.zskilltree.skilltree.skill.Skill;
-import zdoctor.zskilltree.skilltree.skill.SkillDisplayInfo;
+import zdoctor.zskilltree.skilltree.criterion.Skill;
+import zdoctor.zskilltree.skilltree.displays.SkillDisplayInfo;
 
 public class GuiSkill extends ImageScreen {
     protected static final float xSpacing = 28f;
@@ -19,7 +19,7 @@ public class GuiSkill extends ImageScreen {
     private final SkillDisplayInfo displayInfo;
 
     public GuiSkill(Skill skill, ISkillTreeScreen skillScreen) {
-        super(skill.getDisplayInfo().getSkillName());
+        super(skill.getSkillName());
         this.skill = skill;
         this.skillScreen = skillScreen;
         this.displayInfo = skill.getDisplayInfo();
