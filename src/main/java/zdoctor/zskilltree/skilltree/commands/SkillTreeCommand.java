@@ -7,6 +7,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.mojang.brigadier.suggestion.Suggestions;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.ISuggestionProvider;
@@ -23,6 +24,7 @@ import zdoctor.zskilltree.skilltree.criterion.SkillPage;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 // TODO Add grantAll and revokeAll command
@@ -69,13 +71,13 @@ public class SkillTreeCommand {
     private static LiteralArgumentBuilder<CommandSource> buildGrantCommand() {
         return Commands.literal("grant").then(Commands.argument("targets", EntityArgument.entities())
                 .then(Commands.literal("page").then(buildSkillPageArg().executes(SkillTreeCommand::grantPage)))
-                .then(Commands.literal("skill").then(buildSkillArg()).executes(SkillTreeCommand::grantSkill)));
+                .then(Commands.literal("skill").then(buildSkillArg().executes(SkillTreeCommand::grantSkill))));
     }
 
     private static LiteralArgumentBuilder<CommandSource> buildRevokeCommand() {
         return Commands.literal("revoke").then(Commands.argument("targets", EntityArgument.entities())
                 .then(Commands.literal("page").then(buildSkillPageArg().executes(SkillTreeCommand::revokePage)))
-                .then(Commands.literal("skill").then(buildSkillArg()).executes(SkillTreeCommand::revokeSkill)));
+                .then(Commands.literal("skill").then(buildSkillArg().executes(SkillTreeCommand::revokeSkill))));
 //        return Commands.literal("revoke").then(Commands.argument("targets", EntityArgument.entities())
 //                .then(buildSkillPageArg().executes(SkillTreeCommand::revokePage)))
 //                .then(buildSkillArg().executes(SkillTreeCommand::revokeSkill));

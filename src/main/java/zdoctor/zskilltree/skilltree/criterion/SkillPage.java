@@ -281,8 +281,9 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
 
     @Override
     public boolean isVisibleTo(Entity entity) {
-        LootContext lootContext = SkillTreeApi.getLootContext(entity);
-        return lootContext != null && visibilityPredicate.testContext(lootContext);
+        LootContext lootContext;
+        return SkillTreeApi.obtained(entity, this) && (!isConditionallyVisible() ||
+                (lootContext = SkillTreeApi.getLootContext(entity)) != null && visibilityPredicate.testContext(lootContext));
     }
 
     @Override

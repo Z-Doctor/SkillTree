@@ -43,7 +43,7 @@ public class SkillInteractionPacket {
                     case BUY:
                         LOGGER.debug("{} is trying to buy skill {}", Objects.requireNonNull(ctx.get().getSender()).getDisplayName(), msg.skillId);
                         // TODO Add logic if skill is bought
-                        SkillTreeApi.grantSkill(ctx.get().getSender(), SkillTreeApi.skillFrom(msg.skillId));
+                        SkillTreeApi.grantSkill(ctx.get().getSender(), SkillTreeApi.getSkill(msg.skillId));
                         break;
                     case TOGGLE:
                         // TODO Add logic for toggle

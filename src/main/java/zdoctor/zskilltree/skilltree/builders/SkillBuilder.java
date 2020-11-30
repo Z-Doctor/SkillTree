@@ -121,7 +121,6 @@ public class SkillBuilder extends Builder<SkillBuilder, Skill> {
     public Skill build(ResourceLocation id) {
         if (parentPage == null)
             throw new JsonSyntaxException("Parent page is null");
-        visibility = LootConditionBuilder.create().withCondition(HasSkillPage.builder(LootContext.EntityTarget.THIS, parentPage).build()).build();
         String[][] requirements = requirementsStrategy.createRequirements(criteria.keySet());
         return new Skill(id, display, criteria, requirements).setVisibilityContext(visibility).setParentPage(parentPage);
     }

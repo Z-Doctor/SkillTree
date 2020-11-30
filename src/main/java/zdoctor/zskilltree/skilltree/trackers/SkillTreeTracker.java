@@ -26,6 +26,9 @@ import java.util.Set;
 public class SkillTreeTracker implements ISkillTreeTracker {
     protected static final Logger LOGGER = LogManager.getLogger();
 
+    private final Set<CriterionTracker> completed = new HashSet<>();
+//    private final Set<CriterionTracker> completionChanged = new HashSet<>();
+
     private final Set<CriterionTracker> visible = new HashSet<>();
     private final Set<CriterionTracker> visibilityChanged = new HashSet<>();
     private final Set<CriterionTracker> conditionallyVisible = new HashSet<>();
@@ -34,6 +37,10 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     private final HashMap<CriterionTracker, ProgressTracker> progressTracker = new HashMap<>();
 
     private final HashMap<ResourceLocation, CriterionTracker> trackableMap = new HashMap<>();
+
+    // TODO Make configurable
+    private int updateTicks = 20;
+    private int ticksSinceUpdate;
 
     private boolean firstSync = true;
     private LivingEntity owner;
@@ -62,27 +69,8 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         progressChanged.add(tracker);
     }
 
-    // TODO Perhaps add triggers to the visibility for checking so we don't have to check every tick or something
-    //  Or I can delay the time between checks
-    private void checkVisibility() {
-        boolean visibleFlag;
-        boolean shouldBeVisible;
-        for (CriterionTracker trackable : conditionallyVisible) {
-            visibleFlag = visible.contains(trackable);
-            shouldBeVisible = trackable.isVisibleTo(getOwner());
-
-            if (visibleFlag && !shouldBeVisible) {
-                visible.remove(trackable);
-                visibilityChanged.add(trackable);
-            } else if (!visibleFlag && shouldBeVisible) {
-                visible.add(trackable);
-                visibilityChanged.add(trackable);
-            }
-        }
-    }
-
-    public Set<CriterionTracker> getVisible() {
-        return ImmutableSet.copyOf(visible);
+    public Set<CriterionTracker> getCompleted() {
+        return ImmutableSet.copyOf(completed);
     }
 
     /**
@@ -269,11 +257,12 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     }
 
     protected void reset() {
+        completed.clear();
         visible.clear();
-        visibilityChanged.clear();
         progressChanged.clear();
         conditionallyVisible.clear();
         trackableMap.clear();
+        ticksSinceUpdate = 0;
         firstSync = true;
     }
 
@@ -291,12 +280,12 @@ public class SkillTreeTracker implements ISkillTreeTracker {
                 reset();
 
             for (CriterionTracker trackable : packetIn.getToAdd()) {
-                visible.add(trackableMap.compute(trackable.getRegistryName(), (key, old) -> trackable));
+                completed.add(trackableMap.compute(trackable.getRegistryName(), (key, old) -> trackable));
             }
 
             for (ResourceLocation id : packetIn.getToRemove()) {
                 progressTracker.keySet().removeIf(key -> key.getRegistryName().equals(id));
-                visible.remove(trackableMap.remove(id));
+                completed.remove(trackableMap.remove(id));
             }
 
             for (Map.Entry<ResourceLocation, ProgressTracker> entry : packetIn.getProgressChanged().entrySet()) {
@@ -308,7 +297,6 @@ public class SkillTreeTracker implements ISkillTreeTracker {
             }
         }
     }
-    // TODO Fix problem when checking if a page is owned because it might be farther down the queue than a skill checking for it
 
     @Override
     public void reload() {
@@ -324,27 +312,73 @@ public class SkillTreeTracker implements ISkillTreeTracker {
                 progress.update(trackable.getCriteria(), trackable.getRequirements());
                 onProgressChanged(trackable);
             }
-            if (trackable.isConditionallyVisible())
-                conditionallyVisible.add(trackable);
-            else
-                visible.add(trackable);
-            visibilityChanged.add(trackable);
+            progressChanged.add(trackable);
         }
-        visibilityChanged.addAll(missingTrackers);
+        progressChanged.addAll(missingTrackers);
+        // TODO Make config whether or no to remove lost keys
         missingTrackers.forEach(progressTracker::remove);
     }
 
+    // TODO Fix problem when checking if a page is owned because it might be farther down the queue than a skill checking for it
+    // TODO Perhaps add triggers to the visibility for checking so we don't have to check every tick or something
+    //  Or I can delay the time between checks
+    private void validateVisibility() {
+        ticksSinceUpdate = 0;
+//        conditionallyVisible.iterator().forEachRemaining(this::ensureVisibility);
+        for (CriterionTracker tracker : new HashSet<>(conditionallyVisible)) {
+            ensureVisibility(tracker);
+        }
+    }
+
+    private boolean checkCompletion() {
+        boolean changed = false;
+        boolean completionFlag, isCompleted;
+        for (CriterionTracker trackable : progressChanged) {
+            completionFlag = completed.contains(trackable);
+            isCompleted = isDone(trackable);
+
+            if (completionFlag && !isCompleted) {
+                completed.remove(trackable);
+                ensureVisibility(trackable);
+            } else if (!completionFlag && isCompleted) {
+                completed.add(trackable);
+            }
+            if (completionFlag != isCompleted)
+                changed = true;
+        }
+        return changed;
+    }
+
+    private void ensureVisibility(CriterionTracker trackable) {
+        boolean visibleFlag = visible.contains(trackable);
+        boolean shouldBeVisible = trackable.isVisibleTo(getOwner());
+
+        if (visibleFlag && !shouldBeVisible) {
+            visible.remove(trackable);
+            conditionallyVisible.remove(trackable);
+        } else if (!visibleFlag && shouldBeVisible) {
+            visible.add(trackable);
+            if (trackable.isConditionallyVisible())
+                conditionallyVisible.add(trackable);
+            progressChanged.add(trackable);
+        }
+
+        if (visibleFlag != shouldBeVisible)
+            visibilityChanged.add(trackable);
+    }
+
     public void flushDirty() {
-        checkVisibility();
         if (firstSync || !visibilityChanged.isEmpty() || !progressChanged.isEmpty()) {
             LOGGER.info("Syncing data from {} to players", owner);
+            if (checkCompletion())
+                completed.forEach(this::ensureVisibility);
 
             Set<CriterionTracker> toAdd = new HashSet<>(visibilityChanged);
             toAdd.retainAll(visible);
             visibilityChanged.removeAll(toAdd);
 
             Set<ResourceLocation> toRemove = new HashSet<>();
-            visibilityChanged.forEach(page -> toRemove.add(page.getRegistryName()));
+            visibilityChanged.forEach(trackable -> toRemove.add(trackable.getRegistryName()));
 
             Map<ResourceLocation, ProgressTracker> progressUpdate = new HashMap<>();
             progressChanged.forEach(progressTracker -> {
@@ -352,19 +386,15 @@ public class SkillTreeTracker implements ISkillTreeTracker {
                     progressUpdate.put(progressTracker.getRegistryName(), getProgress(progressTracker));
             });
 
-            toAdd.forEach(tracker -> {
-                if (!progressUpdate.containsKey(tracker.getRegistryName()))
-                    progressUpdate.put(tracker.getRegistryName(), getProgress(tracker));
-            });
-
-//            toAdd.forEach(pr;
-
+            // TODO Alert (event?) that progress has been changed so that it can be acted upon
+            // TODO Let client know about updates even if they can't see it?
             process(firstSync, toAdd, toRemove, progressUpdate);
 
             firstSync = false;
             progressChanged.clear();
             visibilityChanged.clear();
-        }
+        } else if (ticksSinceUpdate++ >= updateTicks)
+            validateVisibility();
     }
 
     protected void process(boolean firstSync, Set<CriterionTracker> toAdd, Set<ResourceLocation> toRemove, Map<ResourceLocation, ProgressTracker> progressUpdate) {

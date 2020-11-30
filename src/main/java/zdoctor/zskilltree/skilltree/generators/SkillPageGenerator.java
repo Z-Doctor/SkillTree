@@ -18,9 +18,9 @@ public class SkillPageGenerator implements Consumer<Consumer<SkillPage>> {
     @Override
     public void accept(Consumer<SkillPage> consumer) {
         // TODO Make it so that you can add an alternative condition of them already having it unlocked
-        SkillPageBuilder.builder().atIndex(0)
-                .withDisplay(new ItemStack(Items.WRITABLE_BOOK), "player_info", SkillPageAlignment.HORIZONTAL)
-                .register(consumer, "player_info");
+//        SkillPageBuilder.builder().atIndex(0)
+//                .withDisplay(new ItemStack(Items.WRITABLE_BOOK), "player_info", SkillPageAlignment.HORIZONTAL)
+//                .register(consumer, "player_info");
 
 
         miscPage = SkillPageBuilder.builder().withDisplay(new ItemStack(Items.DIAMOND_SWORD), "misc_page")

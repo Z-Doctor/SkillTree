@@ -134,15 +134,14 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
 
     @Override
     public boolean isConditionallyVisible() {
-        return true;
+        return visibilityPredicate != EntityPredicate.AndPredicate.ANY_AND;
     }
 
     @Override
     public boolean isVisibleTo(Entity entity) {
-        if (visibilityPredicate == EntityPredicate.AndPredicate.ANY_AND)
-            return true;
-        LootContext lootContext = SkillTreeApi.getLootContext(entity);
-        return lootContext != null && visibilityPredicate.testContext(lootContext);
+        LootContext lootContext;
+        return SkillTreeApi.obtained(entity, this) && (!isConditionallyVisible() ||
+                (lootContext = SkillTreeApi.getLootContext(entity)) != null && visibilityPredicate.testContext(lootContext));
     }
 
     @Override
