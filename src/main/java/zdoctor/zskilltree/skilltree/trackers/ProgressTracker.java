@@ -17,10 +17,9 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
 
     private final Map<String, CriterionProgress> criteria = new HashMap<>();
     private String[][] requirements = EMPTY;
-    private boolean fastDone;
+    private boolean isDone, isDirty = true;
 
     public ProgressTracker() {
-        isDoneUpdate();
     }
 
     public ProgressTracker(PacketBuffer buf) {
@@ -33,7 +32,6 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
                 this.requirements[i][j] = buf.readString();
             }
         }
-        isDoneUpdate();
     }
 
     public void writeTo(PacketBuffer buffer) {
@@ -88,17 +86,22 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
             }
             criteria.put(key, progress);
         }
-        isDoneUpdate();
+        markDirty();
+    }
+
+    public void markDirty() {
+        isDirty = true;
     }
 
     public boolean update(Map<String, Criterion> criteriaIn, String[][] requirements) {
         Set<String> set = criteriaIn.keySet();
         // Removes criteria not in the list
-        this.criteria.entrySet().removeIf(criterion -> !set.contains(criterion.getKey()));
+        boolean changed = this.criteria.entrySet().removeIf(criterion -> !set.contains(criterion.getKey()));
 
         for (String key : set) {
             if (!criteria.containsKey(key)) {
                 criteria.put(key, new CriterionProgress());
+                changed = true;
             }
         }
 
@@ -106,7 +109,9 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
 
         this.requirements = requirements;
 
-        return isDoneFast() != isDoneUpdate();
+        if(changed)
+            markDirty();
+        return changed;
     }
 
     public boolean grant() {
@@ -115,6 +120,7 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
             if (!progress.isObtained()) {
                 flag = true;
                 progress.obtain();
+                markDirty();
             }
         return flag;
     }
@@ -125,6 +131,7 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
             if (progress.isObtained()) {
                 flag = true;
                 progress.reset();
+                markDirty();
             }
         return flag;
     }
@@ -134,17 +141,23 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
         for (CriterionProgress progress : this.criteria.values())
             if (progress.isObtained()) {
                 flag = true;
-                fastDone = false;
+                markDirty();
                 progress.reset();
             }
         return flag;
     }
 
-    public boolean isDoneFast() {
-        return fastDone;
+    public boolean isDone() {
+        if(isDirty) {
+            isDone = checkIsDone();
+            isDirty = false;
+        }
+        return isDone;
     }
 
-    boolean isDoneUpdate() {
+    // TODO Remove isDoneFast and instead make an internal isDirty check so that way if a change is detected it will update
+    //  and if not it will not bother calculating
+    private boolean checkIsDone() {
         for (String[] requirements : this.requirements) {
             boolean flag = false;
             for (String requirement : requirements) {
@@ -156,9 +169,9 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
             }
 
             if (!flag)
-                return fastDone = false;
+                return false;
         }
-        return fastDone = true;
+        return true;
     }
 
     public boolean hasProgress() {
@@ -173,6 +186,7 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
         CriterionProgress criterionprogress = this.criteria.get(criterionIn);
         if (criterionprogress != null && !criterionprogress.isObtained()) {
             criterionprogress.obtain();
+            markDirty();
             return true;
         } else
             return false;
@@ -182,6 +196,7 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
         CriterionProgress criterionprogress = this.criteria.get(criterionIn);
         if (criterionprogress != null && criterionprogress.isObtained()) {
             criterionprogress.reset();
+            markDirty();
             return true;
         } else
             return false;

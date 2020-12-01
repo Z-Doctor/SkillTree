@@ -80,7 +80,7 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
 
     protected void registerListeners(CriterionTracker trackable) {
         ProgressTracker progress = getOrStartProgress(trackable);
-        if (!progress.isDoneFast()) {
+        if (!progress.isDone()) {
             for (Map.Entry<String, Criterion> entry : trackable.getCriteria().entrySet()) {
                 CriterionProgress criterionprogress = progress.getCriterionProgress(entry.getKey());
                 if (criterionprogress != null && !criterionprogress.isObtained()) {
@@ -102,7 +102,7 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
 
         for (Map.Entry<String, Criterion> entry : trackable.getCriteria().entrySet()) {
             CriterionProgress criterionProgress = progress.getCriterionProgress(entry.getKey());
-            if (criterionProgress != null && (criterionProgress.isObtained() || progress.isDoneFast())) {
+            if (criterionProgress != null && (criterionProgress.isObtained() || progress.isDone())) {
                 ICriterionInstance instance = entry.getValue().getCriterionInstance();
                 if (instance != null) {
                     ICriterionTrigger<ICriterionInstance> trigger = CriteriaTriggers.get(instance.getId());

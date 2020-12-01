@@ -19,18 +19,16 @@ import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.loot.GlobalLootModifierSerializer;
-import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DataSerializerEntry;
@@ -39,11 +37,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.api.ImageAsset;
 import zdoctor.zskilltree.api.ImageAssets;
+import zdoctor.zskilltree.api.SkillTreeApi;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
-import zdoctor.zskilltree.client.ClientCapabilityProvider;
 import zdoctor.zskilltree.client.KeyBindings;
+import zdoctor.zskilltree.client.SinglePlayerCapabilityProvider;
 import zdoctor.zskilltree.network.NetworkSerializationRegistry;
 import zdoctor.zskilltree.network.SkillTreePacketHandler;
 import zdoctor.zskilltree.skilltree.commands.SkillTreeCommand;
@@ -56,7 +55,7 @@ import zdoctor.zskilltree.skilltree.loot.conditions.AdditionalConditions;
 import zdoctor.zskilltree.skilltree.managers.SkillManager;
 import zdoctor.zskilltree.skilltree.managers.SkillPageManager;
 import zdoctor.zskilltree.skilltree.managers.SkillTreeDataManager;
-import zdoctor.zskilltree.skilltree.providers.CapabilitySkillTreeProvider;
+import zdoctor.zskilltree.skilltree.providers.MultiplayerSkillTreeProvider;
 import zdoctor.zskilltree.skilltree.providers.SkillPageProvider;
 import zdoctor.zskilltree.skilltree.providers.SkillProvider;
 import zdoctor.zskilltree.skilltree.trackers.SkillTreeTracker;
@@ -74,7 +73,7 @@ public final class ModMain {
     private static ModMain INSTANCE = null;
 
     private Map<String, Function<PacketBuffer, CriterionTracker>> criterionMappings;
-    private CapabilitySkillTreeProvider capabilityProvider;
+    private MultiplayerSkillTreeProvider capabilityProvider;
 
     private SkillTreeDataManager skillTreeDataManager;
 
@@ -90,7 +89,6 @@ public final class ModMain {
         INSTANCE = this;
 
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doServerStuff);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::createProviders);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::createRegistries);
@@ -99,7 +97,6 @@ public final class ModMain {
         FMLJavaModLoadingContext.get().getModEventBus().addGenericListener(GlobalLootModifierSerializer.class, this::registerGlobalLootModifierSerializers);
         FMLJavaModLoadingContext.get().getModEventBus().addGenericListener(SkillPage.class, this::createSkillPages);
 
-        MinecraftForge.EVENT_BUS.addListener(this::onServerStarting);
         MinecraftForge.EVENT_BUS.addListener(this::onAddReloadListeners);
         MinecraftForge.EVENT_BUS.addListener(this::onPlayerTick);
         MinecraftForge.EVENT_BUS.addListener(this::onPlayerLoggedIn);
@@ -173,10 +170,6 @@ public final class ModMain {
         event.getGenerator().addProvider(new SkillProvider(event.getGenerator()));
     }
 
-    private void doServerStuff(FMLDedicatedServerSetupEvent event) {
-        capabilityProvider = new CapabilitySkillTreeProvider();
-    }
-
     private void setup(final FMLCommonSetupEvent event) {
         CapabilityManager.INSTANCE.register(ISkillTreeTracker.class, new Capability.IStorage<ISkillTreeTracker>() {
             @Override
@@ -191,17 +184,19 @@ public final class ModMain {
             }
         }, SkillTreeTracker::new);
 
+        capabilityProvider = DistExecutor.safeRunForDist(() -> SinglePlayerCapabilityProvider::new, () -> MultiplayerSkillTreeProvider::new);
+        skillTreeDataManager = new SkillTreeDataManager();
+
         packetChannel = SkillTreePacketHandler.createChannel();
 
         ExtendedCriteriaTriggers.init();
         criterionMappings = NetworkSerializationRegistry.registerMapping(CriterionTracker.class);
         NetworkSerializationRegistry.register(SkillPage.class, SkillPage::new, CriterionTracker.class);
-        NetworkSerializationRegistry.register(ModMain.MODID + ":skill", Skill::new, CriterionTracker.class);
+        NetworkSerializationRegistry.register(Skill.class, Skill::new, CriterionTracker.class);
     }
 
     private void doClientStuff(final FMLClientSetupEvent event) {
         LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().gameSettings);
-        capabilityProvider = new ClientCapabilityProvider();
         KeyBindings.initBindings();
         event.getMinecraftSupplier().get().getModelManager().getBlockModelShapes().reloadModels();
     }
@@ -210,10 +205,6 @@ public final class ModMain {
     }
 
     private void registerGlobalLootModifierSerializers(RegistryEvent.Register<GlobalLootModifierSerializer<?>> event) {
-    }
-
-    private void onServerStarting(FMLServerStartingEvent event) {
-        skillTreeDataManager = new SkillTreeDataManager();
     }
 
     private void onAddReloadListeners(AddReloadListenerEvent event) {
@@ -228,11 +219,11 @@ public final class ModMain {
 
             @Override
             protected void apply(Void objectIn, IResourceManager resourceManagerIn, IProfiler profilerIn) {
-                if (skillTreeDataManager != null)
-                    skillTreeDataManager.reload();
+                skillTreeDataManager.reload();
             }
         });
         SkillTreeCommand.register(event.getDataPackRegistries().getCommandManager().getDispatcher());
+        skillTreeDataManager.reload();
     }
 
     private void onPlayerTick(TickEvent.PlayerTickEvent event) {
@@ -261,15 +252,7 @@ public final class ModMain {
     private void onPlayerClone(PlayerEvent.Clone event) {
         if (!event.isWasDeath())
             return;
-        LazyOptional<ISkillTreeTracker> oldCap = event.getPlayer().getCapability(SKILL_TREE_CAPABILITY);
-        if (!oldCap.isPresent())
-            return;
-        LazyOptional<ISkillTreeTracker> newCap = event.getPlayer().getCapability(SKILL_TREE_CAPABILITY);
-        if (!newCap.isPresent())
-            return;
-        // TODO Add config for keep on death(Default: true)
-
-        oldCap.ifPresent(oldHandler -> newCap.ifPresent(newHandler ->
-                newHandler.deserializeNBT(oldHandler.serializeNBT())));
+        // TODO Fix cloning and apparently broke the system
+        skillTreeDataManager.onPlayerClone(event.getOriginal(), event.getPlayer());
     }
 }

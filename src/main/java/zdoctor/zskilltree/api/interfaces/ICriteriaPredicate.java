@@ -26,7 +26,7 @@ public interface ICriteriaPredicate extends Predicate<ProgressTracker> {
 
         @Override
         public boolean test(ProgressTracker progress) {
-            return progress != null && progress.isDoneFast() == this.completion;
+            return progress != null && progress.isDone() == this.completion;
         }
     }
 

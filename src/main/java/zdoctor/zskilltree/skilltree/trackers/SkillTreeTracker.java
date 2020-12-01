@@ -7,12 +7,14 @@ import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.registries.ObjectHolder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
+import zdoctor.zskilltree.skilltree.criterion.SkillPage;
 import zdoctor.zskilltree.skilltree.events.CriterionTrackerEvent;
 
 import java.util.HashMap;
@@ -21,6 +23,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class SkillTreeTracker implements ISkillTreeTracker {
+    @ObjectHolder("zskilltree:player_info")
+    public static final SkillPage playerInfo = null;
+
     protected static final Logger LOGGER = LogManager.getLogger();
 
     private final Set<CriterionTracker> visible = new HashSet<>();
@@ -60,6 +65,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
 
     protected void onProgressChanged(CriterionTracker trackable) {
         progressChanged.add(trackable);
+        ensureVisibility(trackable);
     }
 
     /**
@@ -78,7 +84,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     @Override
     public boolean isDone(CriterionTracker tracker) {
         ProgressTracker progress = getProgress(tracker);
-        return progress != null && progress.isDoneFast();
+        return progress != null && progress.isDone();
     }
 
     /**
@@ -102,6 +108,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
             LOGGER.trace("Tried to start duplicate progress.");
             return progress;
         }
+        trackableMap.put(tracker.getRegistryName(), tracker);
         progressTracker.put(tracker, progress = new ProgressTracker());
         updateCriteria(tracker, progress);
         return progress;
@@ -131,8 +138,8 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     public boolean grant(CriterionTracker tracker) {
         ProgressTracker progress = getOrStartProgress(tracker);
         if (progress.grant()) {
-            if (!progress.isDoneFast() && progress.isDoneUpdate())
-                onProgressCompleted(tracker);
+            // TODO Reward, maybe check if first time, also Toast
+            onProgressCompleted(tracker);
             onProgressChanged(tracker);
             return true;
 
@@ -145,8 +152,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         ProgressTracker progress = getOrStartProgress(tracker);
         if (!progress.revoke())
             return false;
-        if (progress.isDoneFast() && !progress.isDoneUpdate())
-            onProgressRevoked(tracker);
+        onProgressRevoked(tracker);
         onProgressChanged(tracker);
         return true;
     }
@@ -154,12 +160,10 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     @Override
     public boolean reset(CriterionTracker tracker) {
         ProgressTracker progress = getOrStartProgress(tracker);
-        if (!progress.hasProgress() && !progress.resetProgress())
+        boolean obtained = isDone(tracker);
+        if (!progress.resetProgress())
             return false;
-        if (!progress.resetProgress()) {
-            return false;
-        }
-        if (progress.isDoneFast() && !progress.isDoneUpdate())
+        if (obtained)
             onProgressRevoked(tracker);
         onProgressChanged(tracker);
         return true;
@@ -169,7 +173,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     public boolean grantCriterion(CriterionTracker tracker, String criterionKey) {
         ProgressTracker progress = getOrStartProgress(tracker);
         if (progress.grantCriterion(criterionKey)) {
-            if (!progress.isDoneFast() && progress.isDoneUpdate())
+            if (progress.isDone())
                 onProgressCompleted(tracker);
             onProgressChanged(tracker);
         }
@@ -179,8 +183,9 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     @Override
     public boolean revokeCriterion(CriterionTracker trackable, String criterionKey) {
         ProgressTracker progress = getOrStartProgress(trackable);
+        boolean obtained = isDone(trackable);
         if (progress.revokeCriterion(criterionKey)) {
-            if (progress.isDoneFast() && !progress.isDoneUpdate())
+            if (obtained)
                 onProgressRevoked(trackable);
             onProgressChanged(trackable);
             return true;
@@ -226,6 +231,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
             progress.deserializeNBT(data.getCompound("criterion"));
             onProgressChanged(trackable);
         });
+//        trackableMap.values().forEach(this::ensureVisibility);
     }
 
     public void dispose() {

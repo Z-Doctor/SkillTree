@@ -24,9 +24,6 @@ import java.util.Set;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientSkillTreeTracker extends SkillTreeTracker implements IClientSkillTreeTracker {
-    @ObjectHolder("zskilltree:player_info")
-    public static final SkillPage playerInfo = null;
-
     private final HashMap<ResourceLocation, SkillPage> originalPages = new HashMap<>();
     private final HashMap<ResourceLocation, SkillPage> pages = new HashMap<>();
     private final HashMap<ResourceLocation, Skill> skills = new HashMap<>();

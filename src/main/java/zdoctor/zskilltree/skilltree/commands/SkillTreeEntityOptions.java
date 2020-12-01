@@ -74,7 +74,7 @@ public class SkillTreeEntityOptions {
                             });
                         } else {
                             boolean isObtained = reader.readBoolean();
-                            map.put(location, progress -> (progress != null && progress.isDoneFast()) == isObtained);
+                            map.put(location, progress -> (progress != null && progress.isDone()) == isObtained);
                         }
                         reader.skipWhitespace();
                         if (reader.canRead() && reader.peek() == ',')

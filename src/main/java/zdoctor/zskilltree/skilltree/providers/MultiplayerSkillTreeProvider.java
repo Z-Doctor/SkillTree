@@ -17,7 +17,7 @@ import zdoctor.zskilltree.skilltree.trackers.SkillTreeTracker;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class CapabilitySkillTreeProvider {
+public class MultiplayerSkillTreeProvider {
 
     public ICapabilityProvider createProvider(Entity entity) {
         if (entity instanceof ServerPlayerEntity)

@@ -1,14 +1,15 @@
 package zdoctor.zskilltree.skilltree.managers;
 
 import com.google.common.collect.ImmutableMap;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
+import zdoctor.zskilltree.api.SkillTreeApi;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
-import zdoctor.zskilltree.skilltree.criterion.Skill;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +22,6 @@ public class SkillTreeDataManager {
     private ImmutableMap<ResourceLocation, CriterionTracker> trackers;
 
     public SkillTreeDataManager() {
-        reload();
     }
 
     public ImmutableMap<ResourceLocation, CriterionTracker> getAllTrackers() {
@@ -74,4 +74,20 @@ public class SkillTreeDataManager {
         playerData.values().forEach(ISkillTreeTracker::reload);
     }
 
+    public void onPlayerClone(PlayerEntity original, PlayerEntity newPlayer) {
+        ISkillTreeTracker old = SkillTreeApi.getTracker(original);
+        ISkillTreeTracker $new = SkillTreeApi.getTracker(newPlayer);
+
+        // TODO Add config for keep on death(Default: true)
+        if (old == null || $new == null)
+            LOGGER.trace("Unable to clone cap from {} to {}", original.getDisplayName(), newPlayer.getDisplayName());
+        else {
+            if(!original.getUniqueID().equals(newPlayer.getUniqueID()))
+                LOGGER.error("Old Player UUID did not match new Player UUID");
+            $new.deserializeNBT(old.serializeNBT());
+            playerData.put(original.getUniqueID(), $new);
+            // TODO re-examine the use of this as it is more of a work around
+            $new.reload();
+        }
+    }
 }

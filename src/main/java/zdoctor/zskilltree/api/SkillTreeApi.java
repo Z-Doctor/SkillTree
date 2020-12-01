@@ -30,6 +30,10 @@ public class SkillTreeApi {
         return SkillTreeOperation.perform(entity, operation);
     }
 
+    public static <R> R perform(Entity entity, SkillTreeOperation<R> operation, R orElse) {
+        return SkillTreeOperation.perform(entity, operation, orElse);
+    }
+
     public static CriterionTracker getTracker(Entity entity, ResourceLocation trackerId) {
         return perform(entity, tracker -> tracker.getTracker(trackerId));
     }
@@ -63,7 +67,7 @@ public class SkillTreeApi {
 
     public static boolean obtained(Entity entity, ResourceLocation id) {
         ProgressTracker progress = getProgress(entity, id);
-        return progress != null && progress.isDoneFast();
+        return progress != null && progress.isDone();
     }
 
     public static LootContext getLootContext(Entity entity) {
@@ -87,24 +91,27 @@ public class SkillTreeApi {
         }
 
         static <R> R perform(Entity entity, SkillTreeOperation<R> operation) {
-            return operation.apply(entity.getCapability(ModMain.SKILL_TREE_CAPABILITY));
+            return SkillTreeOperation.perform(entity, operation, null);
         }
 
-        default R apply(LazyOptional<ISkillTreeTracker> lazyOptional) {
+        static <R> R perform(Entity entity, SkillTreeOperation<R> operation, R orElse) {
+            return operation.apply(entity.getCapability(ModMain.SKILL_TREE_CAPABILITY), orElse);
+        }
+
+        default R apply(LazyOptional<ISkillTreeTracker> lazyOptional, R orElse) {
             Optional<ISkillTreeTracker> optional = lazyOptional.resolve();
-            return optional.map(this).orElse(null);
+            return optional.map(this).orElse(orElse);
         }
 
     }
 
-    @OnlyIn(Dist.CLIENT)
     public static class Client extends SkillTreeApi {
         public static boolean lazyHasSkill(Skill skill) {
-            return perform(Minecraft.getInstance().player, tracker -> tracker.getProgress(skill).isDoneFast());
+            return perform(Minecraft.getInstance().player, tracker -> tracker.getProgress(skill).isDone());
         }
 
         public static boolean hasSkill(Skill skill) {
-            return perform(Minecraft.getInstance().player, tracker -> tracker.getProgress(skill).isDoneFast());
+            return perform(Minecraft.getInstance().player, tracker -> tracker.getProgress(skill).isDone());
         }
     }
 }

@@ -1,4 +1,0 @@
-+ Make some skills with unlock requirements
-+ Test if grant/revoke commands work for them
-+ Perhaps make it so skills aren't unlocked but bought
-+ Add has command

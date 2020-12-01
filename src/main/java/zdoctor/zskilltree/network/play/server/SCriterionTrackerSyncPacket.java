@@ -1,11 +1,12 @@
 package zdoctor.zskilltree.network.play.server;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.network.NetworkEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,13 +22,12 @@ import java.util.function.Supplier;
 
 public class SCriterionTrackerSyncPacket {
     private static final Logger LOGGER = LogManager.getLogger();
+    public final boolean fromServer;
     private final Collection<CriterionTracker> toAdd;
     private final Map<String, List<CriterionTracker>> trackableTypes;
     private final boolean firstSync;
     private final Set<ResourceLocation> toRemove;
     private final Map<ResourceLocation, ProgressTracker> progressChanged;
-
-    public final boolean fromServer;
 
     public SCriterionTrackerSyncPacket(PacketBuffer buf) {
         fromServer = false;
@@ -96,19 +96,17 @@ public class SCriterionTrackerSyncPacket {
     }
 
     public static void handle(SCriterionTrackerSyncPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        if (ctx.get().getDirection() == NetworkDirection.PLAY_TO_SERVER) {
-            LOGGER.error("Client sent Packet to Server");
-        } else if (ctx.get().getDirection() == NetworkDirection.PLAY_TO_CLIENT) {
-            LOGGER.debug("Server sent packet to client: " + Minecraft.getInstance().player);
-            boolean flag = SkillTreeApi.perform(Minecraft.getInstance().player, tracker -> {
-                tracker.read(msg);
-                return true;
-            });
-            if (!flag)
-                LOGGER.fatal("Handler for player {} not found", Minecraft.getInstance().player);
-        }
+//        if (ctx.get().getDirection() == NetworkDirection.PLAY_TO_CLIENT) {
+        Entity player = DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> () -> Minecraft.getInstance().player);
+        LOGGER.debug("Server sent packet to client: " + player.getDisplayName().getString());
+        boolean flag = SkillTreeApi.perform(player, tracker -> {
+            tracker.read(msg);
+            return true;
+        });
+        if (!flag)
+            LOGGER.fatal("Handler for player {} not found", Minecraft.getInstance().player);
 
-        ctx.get().setPacketHandled(true);
+        ctx.get().setPacketHandled(flag);
     }
 
     public void writeTo(PacketBuffer buf) {
