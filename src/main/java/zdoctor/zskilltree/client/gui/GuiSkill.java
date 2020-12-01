@@ -19,7 +19,7 @@ public class GuiSkill extends ImageScreen {
     private final SkillDisplayInfo displayInfo;
 
     public GuiSkill(Skill skill, ISkillTreeScreen skillScreen) {
-        super(skill.getSkillName());
+        super(skill.getDisplayName());
         this.skill = skill;
         this.skillScreen = skillScreen;
         this.displayInfo = skill.getDisplayInfo();

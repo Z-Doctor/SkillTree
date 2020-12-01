@@ -58,6 +58,7 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         displayInfo = MISSING;
         criteria = ImmutableMap.<String, Criterion>builder().build();
         requirements = new String[0][];
+        index = -1;
     }
 
     private SkillPage(SkillPage skillPage) {
@@ -106,7 +107,10 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         // Null values will be treated like they are bigger to be pushed down the list
         if (in == null || to == null)
             return in != null ? -1 : to != null ? 1 : 0;
-        return Integer.compareUnsigned(in.getIndex(), to.getIndex());
+        int cmp = Integer.compareUnsigned(in.getIndex(), to.getIndex());
+        if(cmp != 0)
+            return cmp;
+        return in.getDisplayName().getString().compareTo(to.getDisplayName().getString());
     }
 
     public static SkillPage deserialize(ResourceLocation id, JsonObject json, ConditionArrayParser conditionParser) {
@@ -312,7 +316,8 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         return this;
     }
 
-    public ITextComponent getPageName() {
+    @Override
+    public ITextComponent getDisplayName() {
         return getDisplayInfo().getTitle();
     }
 
@@ -365,7 +370,7 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         if (displayInfo == null)
             return Collections.singletonList(new TranslationTextComponent("skillpage." + Objects.requireNonNull(getRegistryName()).getPath() + ".title"));
 
-        IFormattableTextComponent title = (new StringTextComponent("")).append(getPageName()).mergeStyle(Rarity.EPIC.color);
+        IFormattableTextComponent title = (new StringTextComponent("")).append(getDisplayName()).mergeStyle(Rarity.EPIC.color);
 //        title.mergeStyle(TextFormatting.ITALIC);
         list.add(title);
 

@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import net.minecraft.advancements.CriterionProgress;
-import zdoctor.zskilltree.skilltree.criterion.ProgressTracker;
+import zdoctor.zskilltree.skilltree.trackers.ProgressTracker;
 
 import java.util.function.Predicate;
 
@@ -26,7 +26,7 @@ public interface ICriteriaPredicate extends Predicate<ProgressTracker> {
 
         @Override
         public boolean test(ProgressTracker progress) {
-            return progress != null && progress.isDone() == this.completion;
+            return progress != null && progress.isDoneFast() == this.completion;
         }
     }
 

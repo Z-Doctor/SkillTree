@@ -11,7 +11,7 @@ import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.IClientSkillTreeTracker;
 import zdoctor.zskilltree.network.play.SkillInteractionPacket;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
-import zdoctor.zskilltree.skilltree.criterion.ProgressTracker;
+import zdoctor.zskilltree.skilltree.trackers.ProgressTracker;
 import zdoctor.zskilltree.skilltree.trackers.SkillTreeTracker;
 import zdoctor.zskilltree.skilltree.criterion.Skill;
 import zdoctor.zskilltree.skilltree.criterion.SkillPage;
@@ -27,6 +27,7 @@ public class ClientSkillTreeTracker extends SkillTreeTracker implements IClientS
     @ObjectHolder("zskilltree:player_info")
     public static final SkillPage playerInfo = null;
 
+    private final HashMap<ResourceLocation, SkillPage> originalPages = new HashMap<>();
     private final HashMap<ResourceLocation, SkillPage> pages = new HashMap<>();
     private final HashMap<ResourceLocation, Skill> skills = new HashMap<>();
 
@@ -51,25 +52,31 @@ public class ClientSkillTreeTracker extends SkillTreeTracker implements IClientS
         super.read(packetIn);
         for (CriterionTracker trackable : packetIn.getToAdd()) {
             if (trackable instanceof SkillPage)
-                pages.put(trackable.getRegistryName(), (SkillPage) trackable);
+                originalPages.put(trackable.getRegistryName(), (SkillPage) trackable);
             else if (trackable instanceof Skill)
                 skills.put(trackable.getRegistryName(), (Skill) trackable);
         }
 
 
         for (ResourceLocation id : packetIn.getToRemove()) {
-            pages.remove(id);
+            originalPages.remove(id);
             skills.remove(id);
         }
 
         sorted_pages.clear();
+        pages.clear();
         for (SkillPageAlignment value : SkillPageAlignment.values()) {
             sorted_pages.put(value, new SkillPage[0]);
         }
 
         HashMap<ResourceLocation, Skill> orphanedSkills = new HashMap<>(skills);
 
-        pages.values().stream().sorted(SkillPage::compare).map(page -> page.putFrom(orphanedSkills)).forEach(this::addPageSafe);
+        originalPages.values().stream().sorted(SkillPage::compare).map(original -> {
+            // Copying so that the original index can be preserved
+            SkillPage page = original.copy();
+            page.putFrom(orphanedSkills);
+            return page;
+        }).forEach(this::addPageSafe);
 
         if (!orphanedSkills.isEmpty()) {
             LOGGER.debug("Found {} skills that have no page. Perhaps they have the skill but not its parent page. " +
@@ -158,6 +165,7 @@ public class ClientSkillTreeTracker extends SkillTreeTracker implements IClientS
     }
 
     protected synchronized int addPageSafe(SkillPage page) {
+        pages.put(page.getRegistryName(), page);
         int index = page.getIndex();
         SkillPage[] tabs = sorted_pages.get(page.getAlignment());
         if (index == -1) {

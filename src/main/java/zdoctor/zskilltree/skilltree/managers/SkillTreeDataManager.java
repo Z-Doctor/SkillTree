@@ -6,8 +6,9 @@ import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
-import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
+import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
+import zdoctor.zskilltree.skilltree.criterion.Skill;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,18 +17,22 @@ import java.util.UUID;
 
 public class SkillTreeDataManager {
     private static final Logger LOGGER = LogManager.getLogger();
-    private static ImmutableMap<ResourceLocation, CriterionTracker> trackers;
     private final HashMap<UUID, ISkillTreeTracker> playerData = new HashMap<>();
-
-    public static ImmutableMap<ResourceLocation, CriterionTracker> getAllTrackers() {
-        return trackers;
-    }
+    private ImmutableMap<ResourceLocation, CriterionTracker> trackers;
 
     public SkillTreeDataManager() {
         reload();
     }
 
-    private static void updateAllTrackers() {
+    public ImmutableMap<ResourceLocation, CriterionTracker> getAllTrackers() {
+        return trackers;
+    }
+
+    public CriterionTracker getTracker(ResourceLocation id) {
+        return trackers.get(id);
+    }
+
+    private void updateAllTrackers() {
         Map<ResourceLocation, CriterionTracker> temp = new HashMap<>();
         temp.putAll(ModMain.getInstance().getSkillPageManager().getAllEntries());
         temp.putAll(ModMain.getInstance().getSkillManager().getAllEntries());
@@ -59,7 +64,6 @@ public class SkillTreeDataManager {
             return playerData;
         }));
     }
-
 
     public Optional<ISkillTreeTracker> getSkillData(ServerPlayerEntity player) {
         return player.getCapability(ModMain.SKILL_TREE_CAPABILITY).resolve();

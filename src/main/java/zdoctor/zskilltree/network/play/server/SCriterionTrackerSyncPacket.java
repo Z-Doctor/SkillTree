@@ -13,7 +13,7 @@ import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.SkillTreeApi;
 import zdoctor.zskilltree.api.annotations.ClassNameMapper;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
-import zdoctor.zskilltree.skilltree.criterion.ProgressTracker;
+import zdoctor.zskilltree.skilltree.trackers.ProgressTracker;
 
 import java.util.*;
 import java.util.function.Function;
@@ -69,7 +69,7 @@ public class SCriterionTrackerSyncPacket {
 
         for (count = buf.readVarInt(); count > 0; count--) {
             ResourceLocation id = buf.readResourceLocation();
-            progressChanged.put(id, ProgressTracker.fromNetwork(buf));
+            progressChanged.put(id, new ProgressTracker(buf));
         }
     }
 
@@ -147,7 +147,7 @@ public class SCriterionTrackerSyncPacket {
         buf.writeVarInt(progressChanged.size());
         for (Map.Entry<ResourceLocation, ProgressTracker> entry : progressChanged.entrySet()) {
             buf.writeResourceLocation(entry.getKey());
-            entry.getValue().serializeToNetwork(buf);
+            entry.getValue().writeTo(buf);
         }
     }
 

@@ -132,16 +132,34 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
         return this;
     }
 
+    /**
+     * In the context of skills, being conditionally visible means that the client should know about this skill.
+     * This is defined in the json file about what context (if any) an entity can see the skill.
+     * For players, if a skill is visible it means that they are aware of the progress they have on it.
+     */
     @Override
     public boolean isConditionallyVisible() {
         return visibilityPredicate != EntityPredicate.AndPredicate.ANY_AND;
     }
 
+    /**
+     * Skills will be visible to an entity if they satisfy 1 of the following:
+     * <ol>
+     *     <li>The entity has already obtained the skill</li>
+     *     <li>The entity can see the parent page <b>and</b> one of the following:
+     *         <ul>
+     *              <li>The skill is not conditionally visible</li>
+     *              <li>The entity matches the given visibility context</li>
+     *         </ul>
+     *     </li>
+     *
+     * </ol>
+     */
     @Override
     public boolean isVisibleTo(Entity entity) {
         LootContext lootContext;
-        return SkillTreeApi.obtained(entity, this) && (!isConditionallyVisible() ||
-                (lootContext = SkillTreeApi.getLootContext(entity)) != null && visibilityPredicate.testContext(lootContext));
+        return SkillTreeApi.obtained(entity, this) || (SkillTreeApi.getPage(parentPage).isVisibleTo(entity) && (!isConditionallyVisible()
+                || (lootContext = SkillTreeApi.getLootContext(entity)) != null && visibilityPredicate.testContext(lootContext)));
     }
 
     @Override
@@ -212,7 +230,8 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
         return Objects.requireNonNull(getRegistryName()).hashCode();
     }
 
-    public ITextComponent getSkillName() {
+    @Override
+    public ITextComponent getDisplayName() {
         return getDisplayInfo().getTitle();
     }
 
@@ -222,7 +241,7 @@ public class Skill extends ForgeRegistryEntry.UncheckedRegistryEntry<Skill> impl
         if (displayInfo == null)
             return Collections.singletonList(new TranslationTextComponent("skillpage." + getRegistryName().getPath() + ".title"));
 
-        IFormattableTextComponent title = (new StringTextComponent("")).append(getSkillName()).mergeStyle(Rarity.EPIC.color);
+        IFormattableTextComponent title = (new StringTextComponent("")).append(getDisplayName()).mergeStyle(Rarity.EPIC.color);
 //        title.mergeStyle(TextFormatting.ITALIC);
         list.add(title);
 

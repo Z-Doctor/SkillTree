@@ -44,22 +44,22 @@ import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.client.ClientCapabilityProvider;
 import zdoctor.zskilltree.client.KeyBindings;
-import zdoctor.zskilltree.skilltree.criterion.ExtendedCriteriaTriggers;
 import zdoctor.zskilltree.network.NetworkSerializationRegistry;
 import zdoctor.zskilltree.network.SkillTreePacketHandler;
 import zdoctor.zskilltree.skilltree.commands.SkillTreeCommand;
 import zdoctor.zskilltree.skilltree.commands.SkillTreeEntityOptions;
-import zdoctor.zskilltree.skilltree.trackers.SkillTreeTracker;
+import zdoctor.zskilltree.skilltree.criterion.ExtendedCriteriaTriggers;
+import zdoctor.zskilltree.skilltree.criterion.Skill;
+import zdoctor.zskilltree.skilltree.criterion.SkillPage;
+import zdoctor.zskilltree.skilltree.displays.SkillPageDisplayInfo;
+import zdoctor.zskilltree.skilltree.loot.conditions.AdditionalConditions;
 import zdoctor.zskilltree.skilltree.managers.SkillManager;
 import zdoctor.zskilltree.skilltree.managers.SkillPageManager;
+import zdoctor.zskilltree.skilltree.managers.SkillTreeDataManager;
 import zdoctor.zskilltree.skilltree.providers.CapabilitySkillTreeProvider;
 import zdoctor.zskilltree.skilltree.providers.SkillPageProvider;
 import zdoctor.zskilltree.skilltree.providers.SkillProvider;
-import zdoctor.zskilltree.skilltree.loot.conditions.AdditionalConditions;
-import zdoctor.zskilltree.skilltree.criterion.Skill;
-import zdoctor.zskilltree.skilltree.managers.SkillTreeDataManager;
-import zdoctor.zskilltree.skilltree.criterion.SkillPage;
-import zdoctor.zskilltree.skilltree.displays.SkillPageDisplayInfo;
+import zdoctor.zskilltree.skilltree.trackers.SkillTreeTracker;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -68,11 +68,12 @@ import java.util.function.Function;
 public final class ModMain {
     public static final String MODID = "zskilltree";
     public static final ResourceLocation SKILL_TREE_CAPABILITY_ID = new ResourceLocation(ModMain.MODID, "skill_capability");
-    private static final Logger LOGGER = LogManager.getLogger();
     @CapabilityInject(ISkillTreeTracker.class)
     public static final Capability<ISkillTreeTracker> SKILL_TREE_CAPABILITY = null;
+    private static final Logger LOGGER = LogManager.getLogger();
     private static ModMain INSTANCE = null;
 
+    private Map<String, Function<PacketBuffer, CriterionTracker>> criterionMappings;
     private CapabilitySkillTreeProvider capabilityProvider;
 
     private SkillTreeDataManager skillTreeDataManager;
@@ -80,13 +81,13 @@ public final class ModMain {
     private SkillPageManager skillPageManager;
 
     private SkillManager skillManager;
-    private Map<String, Function<PacketBuffer, CriterionTracker>> criterionMappings;
 
     private SimpleChannel packetChannel;
 
     public ModMain() {
         if (INSTANCE != null)
             return;
+        INSTANCE = this;
 
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doServerStuff);
@@ -107,7 +108,6 @@ public final class ModMain {
         MinecraftForge.EVENT_BUS.addGenericListener(Entity.class, this::attachCapability);
 
         initBootstrap();
-        INSTANCE = this;
     }
 
     public static ModMain getInstance() {
@@ -117,6 +117,10 @@ public final class ModMain {
     private static void initBootstrap() {
         SkillTreeEntityOptions.register();
         AdditionalConditions.init();
+    }
+
+    public SkillTreeDataManager getSkillTreeDataManager() {
+        return skillTreeDataManager;
     }
 
     public SkillPageManager getSkillPageManager() {

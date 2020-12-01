@@ -10,10 +10,8 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.network.PacketDistributor;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
-import zdoctor.zskilltree.skilltree.criterion.ProgressTracker;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
 import zdoctor.zskilltree.skilltree.events.SkillTreeEvent;
-import zdoctor.zskilltree.skilltree.managers.SkillTreeDataManager;
 import zdoctor.zskilltree.skilltree.criterion.SkillTreeListener;
 
 import java.io.File;
@@ -29,8 +27,8 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
     }
 
     @Override
-    protected void startProgress(CriterionTracker tracker, ProgressTracker progress) {
-        super.startProgress(tracker, progress);
+    protected void updateCriteria(CriterionTracker tracker, ProgressTracker progress) {
+        super.updateCriteria(tracker, progress);
         registerListeners(tracker);
     }
 
@@ -66,7 +64,7 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
     public void reload() {
         dispose();
         super.reload();
-        SkillTreeDataManager.getAllTrackers().values().forEach(this::registerListeners);
+        ModMain.getInstance().getSkillTreeDataManager().getAllTrackers().values().forEach(this::registerListeners);
         MinecraftForge.EVENT_BUS.post(new SkillTreeEvent.PlayerReloadedEvent(getPlayer()));
     }
 
@@ -81,8 +79,8 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
     }
 
     protected void registerListeners(CriterionTracker trackable) {
-        ProgressTracker progress = getProgress(trackable);
-        if (!progress.isDone()) {
+        ProgressTracker progress = getOrStartProgress(trackable);
+        if (!progress.isDoneFast()) {
             for (Map.Entry<String, Criterion> entry : trackable.getCriteria().entrySet()) {
                 CriterionProgress criterionprogress = progress.getCriterionProgress(entry.getKey());
                 if (criterionprogress != null && !criterionprogress.isObtained()) {
@@ -100,11 +98,11 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
     }
 
     protected void unregisterListeners(CriterionTracker trackable) {
-        ProgressTracker progress = getProgress(trackable);
+        ProgressTracker progress = getOrStartProgress(trackable);
 
         for (Map.Entry<String, Criterion> entry : trackable.getCriteria().entrySet()) {
             CriterionProgress criterionProgress = progress.getCriterionProgress(entry.getKey());
-            if (criterionProgress != null && (criterionProgress.isObtained() || progress.isDone())) {
+            if (criterionProgress != null && (criterionProgress.isObtained() || progress.isDoneFast())) {
                 ICriterionInstance instance = entry.getValue().getCriterionInstance();
                 if (instance != null) {
                     ICriterionTrigger<ICriterionInstance> trigger = CriteriaTriggers.get(instance.getId());

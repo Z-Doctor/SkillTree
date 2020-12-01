@@ -17,14 +17,24 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public abstract class Builder<T extends Builder<T, R>, R> {
+public abstract class CriterionBuilder<T extends CriterionBuilder<T, R>, R> {
     protected static final Logger LOGGER = LogManager.getLogger();
     protected Map<String, Criterion> criteria = new HashMap<>();
     protected IRequirementsStrategy requirementsStrategy = IRequirementsStrategy.AND;
 
+    protected EntityPredicate.AndPredicate entityAndPredicate = EntityPredicate.AndPredicate.ANY_AND;
+
+
     public LootConditionBuilder<T> makeTrigger(String key, Function<EntityPredicate.AndPredicate, ICriterionInstance> function) {
         Consumer<EntityPredicate.AndPredicate> consumer = predicate -> withTrigger(key, function.apply(predicate));
         return new LootConditionBuilder<>((T) this, consumer);
+    }
+
+    // TODO Perhaps make it so that triggers added can be added with different strategies and build the requirements
+    //  as they are added and not all at the end
+    public T withRequirementsStrategy(IRequirementsStrategy strategy) {
+        this.requirementsStrategy = strategy;
+        return (T) this;
     }
 
     public T withTrigger(String key, ICriterionInstance criterionIn) {
@@ -40,8 +50,8 @@ public abstract class Builder<T extends Builder<T, R>, R> {
         }
     }
 
-    public T withRequirementsStrategy(IRequirementsStrategy strategy) {
-        this.requirementsStrategy = strategy;
+    public T setEntityAndPredicate(EntityPredicate.AndPredicate entityAndPredicate) {
+        this.entityAndPredicate = entityAndPredicate;
         return (T) this;
     }
 
@@ -106,7 +116,7 @@ public abstract class Builder<T extends Builder<T, R>, R> {
                 EntityPredicate player = EntityPredicate.Builder.create().player(playerPredicate).build();
                 make(player);
             };
-            return new Builder.PlayerBuilder<>($return, consumer);
+            return new CriterionBuilder.PlayerBuilder<>($return, consumer);
         }
 
         public LootConditionBuilder<T> withCondition(ILootCondition lootCondition) {

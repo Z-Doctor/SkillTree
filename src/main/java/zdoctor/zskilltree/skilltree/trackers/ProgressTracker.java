@@ -1,58 +1,97 @@
-package zdoctor.zskilltree.skilltree.criterion;
+package zdoctor.zskilltree.skilltree.trackers;
 
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.CriterionProgress;
-import net.minecraft.advancements.IRequirementsStrategy;
 import net.minecraft.nbt.*;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.Constants;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ProgressTracker implements Comparable<ProgressTracker> {
-    private static final Logger LOGGER = LogManager.getLogger();
     private static final String[][] EMPTY = {};
 
     private final Map<String, CriterionProgress> criteria = new HashMap<>();
-    private String[][] requirements;
-    private boolean sendUpdatesToClient;
-    private boolean cachedDone;
+    private String[][] requirements = EMPTY;
+    private boolean fastDone;
 
     public ProgressTracker() {
-        requirements = EMPTY;
+        isDoneUpdate();
     }
 
-    public static ProgressTracker fromNetwork(PacketBuffer buffer) {
-        ProgressTracker progressTracker = new ProgressTracker();
-        int i = buffer.readVarInt();
-
-        for (int j = 0; j < i; ++j)
-            progressTracker.criteria.put(buffer.readString(), CriterionProgress.read(buffer));
-
-        progressTracker.isDone();
-
-        return progressTracker;
+    public ProgressTracker(PacketBuffer buf) {
+        for (int i = buf.readVarInt(); i > 0; i--)
+            this.criteria.put(buf.readString(), CriterionProgress.read(buf));
+        this.requirements = new String[buf.readVarInt()][];
+        for (int i = 0; i < this.requirements.length; i++) {
+            this.requirements[i] = new String[buf.readVarInt()];
+            for (int j = 0; j < this.requirements[i].length; j++) {
+                this.requirements[i][j] = buf.readString();
+            }
+        }
+        isDoneUpdate();
     }
 
-    public boolean sendsUpdatesToClient() {
-        return sendUpdatesToClient;
+    public void writeTo(PacketBuffer buffer) {
+        buffer.writeVarInt(this.criteria.size());
+        for (Map.Entry<String, CriterionProgress> entry : this.criteria.entrySet()) {
+            buffer.writeString(entry.getKey());
+            entry.getValue().write(buffer);
+        }
+
+        buffer.writeVarInt(this.requirements.length);
+        for (String[] requirements : this.requirements) {
+            buffer.writeVarInt(requirements.length);
+            for (String requirement : requirements) {
+                buffer.writeString(requirement);
+            }
+        }
     }
 
-    public void enableUpdates() {
-        sendUpdatesToClient = true;
+    public CompoundNBT serializeNBT() {
+        CompoundNBT compoundNBT = new CompoundNBT();
+
+        ListNBT progressList = new ListNBT();
+        for (Map.Entry<String, CriterionProgress> entry : this.criteria.entrySet()) {
+            CompoundNBT data = new CompoundNBT();
+
+            data.put("key", StringNBT.valueOf(entry.getKey()));
+            CriterionProgress progress = entry.getValue();
+            if (progress.isObtained()) {
+                data.put("obtained", ByteNBT.valueOf(true));
+                data.put("obtained-date", LongNBT.valueOf(progress.getObtained().getTime()));
+            } else
+                data.put("obtained", ByteNBT.valueOf(false));
+            progressList.add(data);
+        }
+        compoundNBT.put("progress_data", progressList);
+
+        return compoundNBT;
     }
 
-    public void disableUpdates() {
-        sendUpdatesToClient = false;
+    public void deserializeNBT(CompoundNBT compoundNBT) {
+        this.criteria.clear();
+        ListNBT progressList = compoundNBT.getList("progress_data", Constants.NBT.TAG_COMPOUND);
+        for (INBT inbt : progressList) {
+            if (!(inbt instanceof CompoundNBT))
+                continue;
+            CompoundNBT data = (CompoundNBT) inbt;
+            String key = data.getString("key");
+            CriterionProgress progress = new CriterionProgress();
+            if (data.getBoolean("obtained")) {
+                progress.obtain();
+                progress.getObtained().setTime(data.getLong("obtained-date"));
+            }
+            criteria.put(key, progress);
+        }
+        isDoneUpdate();
     }
 
-    public void update(Map<String, Criterion> criteriaIn, String[][] requirements) {
+    public boolean update(Map<String, Criterion> criteriaIn, String[][] requirements) {
         Set<String> set = criteriaIn.keySet();
         // Removes criteria not in the list
         this.criteria.entrySet().removeIf(criterion -> !set.contains(criterion.getKey()));
@@ -67,28 +106,20 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
 
         this.requirements = requirements;
 
-        if (criteria.isEmpty() && this.requirements.length > 0) {
-            LOGGER.error("Correcting: Empty Criterion with non-empty requirements: {}", Arrays.deepToString(this.requirements));
-            this.requirements = EMPTY;
-        } else {
-            LOGGER.trace("requirements are null, is this intended? Creating from requirements");
-            this.requirements = IRequirementsStrategy.AND.createRequirements(criteria.keySet());
-        }
-
-        cachedDone = isDone();
+        return isDoneFast() != isDoneUpdate();
     }
 
     public boolean grant() {
-        if (isDone())
-            return false;
-        criteria.values().forEach(CriterionProgress::obtain);
-        return isDone();
+        boolean flag = false;
+        for (CriterionProgress progress : this.criteria.values())
+            if (!progress.isObtained()) {
+                flag = true;
+                progress.obtain();
+            }
+        return flag;
     }
 
-
     public boolean revoke() {
-        if(!isDone())
-            return false;
         boolean flag = false;
         for (CriterionProgress progress : this.criteria.values())
             if (progress.isObtained()) {
@@ -103,21 +134,21 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
         for (CriterionProgress progress : this.criteria.values())
             if (progress.isObtained()) {
                 flag = true;
-                cachedDone = false;
+                fastDone = false;
                 progress.reset();
             }
         return flag;
     }
 
-    public boolean lazyIsDone() {
-        return cachedDone;
+    public boolean isDoneFast() {
+        return fastDone;
     }
 
-    public boolean isDone() {
-        for (String[] requirement : requirements) {
+    boolean isDoneUpdate() {
+        for (String[] requirements : this.requirements) {
             boolean flag = false;
-            for (String s : requirement) {
-                CriterionProgress progress = getCriterionProgress(s);
+            for (String requirement : requirements) {
+                CriterionProgress progress = getCriterionProgress(requirement);
                 if (progress != null && progress.isObtained()) {
                     flag = true;
                     break;
@@ -125,9 +156,9 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
             }
 
             if (!flag)
-                return cachedDone = false;
+                return fastDone = false;
         }
-        return cachedDone = true;
+        return fastDone = true;
     }
 
     public boolean hasProgress() {
@@ -154,62 +185,6 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
             return true;
         } else
             return false;
-    }
-
-    public CompoundNBT serializeNBT() {
-        CompoundNBT compoundNBT = new CompoundNBT();
-
-        ListNBT progressList = new ListNBT();
-        for (Map.Entry<String, CriterionProgress> entry : this.criteria.entrySet()) {
-            CompoundNBT data = new CompoundNBT();
-
-            data.put("key", StringNBT.valueOf(entry.getKey()));
-            CriterionProgress progress = entry.getValue();
-            if (progress.isObtained()) {
-                data.put("obtained", ByteNBT.valueOf(true));
-                data.put("obtained-date", LongNBT.valueOf(progress.getObtained().getTime()));
-            } else
-                data.put("obtained", ByteNBT.valueOf(false));
-            progressList.add(data);
-        }
-        compoundNBT.put("progress_data", progressList);
-
-//        ListNBT requirementList = new ListNBT();
-//        for (String[] requirement : requirements) {
-//            ListNBT requirements = new ListNBT();
-//            for (String s : requirement) {
-//                requirements.add(StringNBT.valueOf(s));
-//            }
-//            requirementList.add(requirements);
-//        }
-//        compoundNBT.put("requirement_data")
-        return compoundNBT;
-    }
-
-    public void deserializeNBT(CompoundNBT compoundNBT) {
-        this.criteria.clear();
-        ListNBT progressList = compoundNBT.getList("progress_data", Constants.NBT.TAG_COMPOUND);
-        for (INBT inbt : progressList) {
-            if (!(inbt instanceof CompoundNBT))
-                continue;
-            CompoundNBT data = (CompoundNBT) inbt;
-            String key = data.getString("key");
-            CriterionProgress progress = new CriterionProgress();
-            if (data.getBoolean("obtained")) {
-                progress.obtain();
-                progress.getObtained().setTime(data.getLong("obtained-date"));
-            }
-            criteria.put(key, progress);
-        }
-    }
-
-    public void serializeToNetwork(PacketBuffer buffer) {
-        buffer.writeVarInt(this.criteria.size());
-
-        for (Map.Entry<String, CriterionProgress> entry : this.criteria.entrySet()) {
-            buffer.writeString(entry.getKey());
-            entry.getValue().write(buffer);
-        }
     }
 
     @Nullable

@@ -2,7 +2,6 @@ package zdoctor.zskilltree.skilltree.builders;
 
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.IRequirementsStrategy;
-import net.minecraft.advancements.criterion.EntityPredicate;
 import net.minecraft.advancements.criterion.ImpossibleTrigger;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IItemProvider;
@@ -18,10 +17,9 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SkillPageBuilder extends Builder<SkillPageBuilder, SkillPage> {
+public class SkillPageBuilder extends CriterionBuilder<SkillPageBuilder, SkillPage> {
     private int index = -1;
     private SkillPageDisplayInfo display;
-    private EntityPredicate.AndPredicate visibility = EntityPredicate.AndPredicate.ANY_AND;
 
     protected SkillPageBuilder() {
     }
@@ -42,6 +40,11 @@ public class SkillPageBuilder extends Builder<SkillPageBuilder, SkillPage> {
 
     public static SkillPageBuilder builder() {
         return new SkillPageBuilder();
+    }
+
+    public SkillPageBuilder unlockable() {
+        withTrigger("unlocked", new ImpossibleTrigger.Instance());
+        return this;
     }
 
     public SkillPageBuilder withDisplay(ITextComponent title, ITextComponent description, ItemStack icon, SkillPageAlignment alignment, ImageAsset background) {
@@ -81,11 +84,6 @@ public class SkillPageBuilder extends Builder<SkillPageBuilder, SkillPage> {
     @Override
     public SkillPage build(ResourceLocation id) {
         String[][] requirements = requirementsStrategy.createRequirements(criteria.keySet());
-        return new SkillPage(index, id, display, criteria, requirements).setVisibilityContext(visibility);
-    }
-
-    public SkillPageBuilder unlockable() {
-        withTrigger("unlocked", new ImpossibleTrigger.Instance());
-        return this;
+        return new SkillPage(index, id, display, criteria, requirements).setVisibilityContext(entityAndPredicate);
     }
 }

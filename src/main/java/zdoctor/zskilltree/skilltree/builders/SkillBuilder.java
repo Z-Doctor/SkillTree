@@ -4,10 +4,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.IRequirementsStrategy;
+import net.minecraft.advancements.criterion.ImpossibleTrigger;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.ConditionArrayParser;
-import net.minecraft.loot.LootContext;
 import net.minecraft.util.IItemProvider;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
@@ -15,20 +15,20 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.ImageAsset;
-import zdoctor.zskilltree.skilltree.loot.conditions.HasSkillPage;
 import zdoctor.zskilltree.skilltree.criterion.Skill;
-import zdoctor.zskilltree.skilltree.displays.SkillDisplayInfo;
 import zdoctor.zskilltree.skilltree.criterion.SkillPage;
+import zdoctor.zskilltree.skilltree.displays.SkillDisplayInfo;
 
 import java.util.HashMap;
 
-public class SkillBuilder extends Builder<SkillBuilder, Skill> {
+public class SkillBuilder extends CriterionBuilder<SkillBuilder, Skill> {
     private SkillDisplayInfo display;
     private ResourceLocation parentPage;
 
-    private EntityPredicate.AndPredicate visibility = EntityPredicate.AndPredicate.ANY_AND;
+    private boolean defaultSkill;
 
     protected SkillBuilder() {
+        requirementsStrategy = IRequirementsStrategy.OR;
     }
 
     protected SkillBuilder(SkillBuilder skillBuilder) {
@@ -113,6 +113,12 @@ public class SkillBuilder extends Builder<SkillBuilder, Skill> {
         return this;
     }
 
+    public SkillBuilder markDefault() {
+        defaultSkill = true;
+        return this;
+    }
+
+    @Override
     public SkillBuilder copy() {
         return new SkillBuilder(this);
     }
@@ -121,7 +127,9 @@ public class SkillBuilder extends Builder<SkillBuilder, Skill> {
     public Skill build(ResourceLocation id) {
         if (parentPage == null)
             throw new JsonSyntaxException("Parent page is null");
+        if (criteria.isEmpty() && !defaultSkill)
+            withTrigger("unlocked", new ImpossibleTrigger.Instance());
         String[][] requirements = requirementsStrategy.createRequirements(criteria.keySet());
-        return new Skill(id, display, criteria, requirements).setVisibilityContext(visibility).setParentPage(parentPage);
+        return new Skill(id, display, criteria, requirements).setVisibilityContext(entityAndPredicate).setParentPage(parentPage);
     }
 }

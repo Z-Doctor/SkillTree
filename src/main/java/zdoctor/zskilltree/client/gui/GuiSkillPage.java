@@ -60,7 +60,7 @@ public class GuiSkillPage extends ImageScreen {
     private int tabType;
 
     public GuiSkillPage(SkillPage page, ISkillTreeScreen skillTreeScreen) {
-        super(page.getPageName());
+        super(page.getDisplayName());
         layer = Layer.BACKGROUND;
         this.skillTreeScreen = skillTreeScreen;
         this.skillPage = page;
@@ -86,7 +86,7 @@ public class GuiSkillPage extends ImageScreen {
     protected void renderMain(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         // Draws title of page
         if (isSelected()) {
-            this.font.func_243248_b(matrixStack, getSkillPage().getPageName(), root.getTrueOffsetX() + 8,
+            this.font.func_243248_b(matrixStack, getSkillPage().getDisplayName(), root.getTrueOffsetX() + 8,
                     root.getTrueOffsetY() + 6, getSkillPage().getLabelColor());
         }
         // Draws tab

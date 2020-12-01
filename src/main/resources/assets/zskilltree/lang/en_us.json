@@ -1,18 +1,31 @@
 {
-  "argument.entity.options.skill_page.description": "Entities with Skill Trees",
-
-  "commands.skilltree.pageNotFound": "No skill page was found by the name '%1$s'",
-  "commands.skilltree.grant.page.success.single": "Granted the skill tree %s to %s",
-  "commands.skilltree.grant.page.success.many": "Granted the skill tree %s to %s players",
-  "commands.skilltree.grant.page.fail.none": "Couldn't find any players to grant the skill tree %s to",
-  "commands.skilltree.revoke.page.success.single": "Revoked the skill tree %s from %s",
-  "commands.skilltree.revoke.page.success.many": "Revoked the skill tree %s to %s players",
-  "commands.skilltree.revoke.page.success.none": "Couldn't find any players to revoke the skill tree %s from",
-
-  "commands.skilltree.skillNotFound": "No skill was found by the name '%1$s",
-
   "skilltree.sad_label": ":(",
   "skilltree.empty": "There doesn't seem to be anything here...",
   "skillpage.player_info.title": "Player Info",
-  "skillpage.player_info.description": "See you character stats here"
+  "skillpage.player_info.description": "See you character stats here",
+  "argument.entity.options.skill_page.description": "Entities with Skill Trees",
+
+  "commands.skilltree.pageNotFound": "No skill page was found by the name '%s'",
+  "commands.skilltree.grant.page.success.single": "Granted the skill page %s to %s",
+  "commands.skilltree.grant.page.success.many": "Granted the skill page %s to %s players",
+  "commands.skilltree.grant.page.fail.none": "Couldn't find any players to grant the skill page %s to",
+  "commands.skilltree.revoke.page.success.single": "Revoked the skill page %s from %s",
+  "commands.skilltree.revoke.page.success.many": "Revoked the skill page %s to %s players",
+  "commands.skilltree.revoke.page.success.none": "Couldn't find any players to revoke the skill page %s from",
+
+  "commands.skilltree.skillNotFound": "No skill was found by the name '%s'",
+  "commands.skilltree.grant.skill.success.single": "Granted the skill %s to %s",
+  "commands.skilltree.grant.skill.success.many": "Granted the skill %s to %s players",
+  "commands.skilltree.grant.skill.fail.none": "Couldn't find any players to grant the skill %s to",
+  "commands.skilltree.revoke.skill.success.single": "Revoked the skill %s from %s",
+  "commands.skilltree.revoke.skill.success.many": "Revoked the skill %s to %s players",
+  "commands.skilltree.revoke.skill.success.none": "Couldn't find any players to revoke the skill %s from",
+
+  "commands.skilltree.trackerNotFound": "No tracker was found by the name '%s'",
+  "commands.skilltree.check.tracker.obtained.single": "%2$s has obtained tracker '%1$s'",
+  "commands.skilltree.check.tracker.unobtained.single": "%2$s has not obtained tracker '%1$s'",
+  "commands.skilltree.check.tracker.obtained.many": "Found %2$s tackers that obtained the tracker '%1$s'",
+  "commands.skilltree.check.tracker.unobtained.many": "Found %2$s tackers that have not obtained the tracker '%1$s'",
+  "commands.skilltree.check.tracker.fail.obtained.none": "Failed to find any trackers that have obtained the tracker '%s'",
+  "commands.skilltree.check.tracker.fail.unobtained.none": "Failed to find any trackers that have not obtained the tracker '%s'"
 }

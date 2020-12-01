@@ -13,7 +13,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
-import zdoctor.zskilltree.skilltree.criterion.ProgressTracker;
+import zdoctor.zskilltree.skilltree.trackers.ProgressTracker;
 import zdoctor.zskilltree.skilltree.criterion.Skill;
 import zdoctor.zskilltree.skilltree.criterion.SkillPage;
 
@@ -58,8 +58,12 @@ public class SkillTreeApi {
     }
 
     public static boolean obtained(Entity entity, CriterionTracker tracker) {
-        ProgressTracker progress = getProgress(entity, tracker.getRegistryName());
-        return progress != null && progress.isDone();
+        return obtained(entity, tracker.getRegistryName());
+    }
+
+    public static boolean obtained(Entity entity, ResourceLocation id) {
+        ProgressTracker progress = getProgress(entity, id);
+        return progress != null && progress.isDoneFast();
     }
 
     public static LootContext getLootContext(Entity entity) {
@@ -71,6 +75,10 @@ public class SkillTreeApi {
                     .withRandom(world.getRandom()).build(LootParameterSets.field_237454_j_);
         }
         return lootContext;
+    }
+
+    public boolean canSee(Entity entity, CriterionTracker tracker) {
+        return tracker.isVisibleTo(entity);
     }
 
     public interface SkillTreeOperation<R> extends Function<ISkillTreeTracker, R> {
@@ -92,11 +100,11 @@ public class SkillTreeApi {
     @OnlyIn(Dist.CLIENT)
     public static class Client extends SkillTreeApi {
         public static boolean lazyHasSkill(Skill skill) {
-            return perform(Minecraft.getInstance().player, tracker -> tracker.getProgress(skill).lazyIsDone());
+            return perform(Minecraft.getInstance().player, tracker -> tracker.getProgress(skill).isDoneFast());
         }
 
         public static boolean hasSkill(Skill skill) {
-            return perform(Minecraft.getInstance().player, tracker -> tracker.isDone(skill));
+            return perform(Minecraft.getInstance().player, tracker -> tracker.getProgress(skill).isDoneFast());
         }
     }
 }

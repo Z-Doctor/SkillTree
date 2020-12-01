@@ -8,7 +8,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TranslationTextComponent;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
-import zdoctor.zskilltree.skilltree.criterion.ProgressTracker;
+import zdoctor.zskilltree.skilltree.trackers.ProgressTracker;
 import zdoctor.zskilltree.skilltree.criterion.SkillPage;
 
 import java.util.HashMap;
@@ -24,6 +24,7 @@ public class SkillTreeEntityOptions {
             return;
         alreadyRegistered = true;
 
+        // TODO See if I can simplify
         EntityOptions.register("skill_page", filter -> {
                     StringReader reader = filter.getReader();
                     Map<ResourceLocation, Predicate<ProgressTracker>> map = new HashMap<>();
@@ -73,7 +74,7 @@ public class SkillTreeEntityOptions {
                             });
                         } else {
                             boolean isObtained = reader.readBoolean();
-                            map.put(location, tracker -> tracker.isDone() == isObtained);
+                            map.put(location, progress -> (progress != null && progress.isDoneFast()) == isObtained);
                         }
                         reader.skipWhitespace();
                         if (reader.canRead() && reader.peek() == ',')
@@ -95,7 +96,7 @@ public class SkillTreeEntityOptions {
                             return true;
                         });
                         // TODO Change to all entities(?)
-                        filter.setIncludeNonPlayers(false);
+                        filter.setIncludeNonPlayers(true);
                     }
                 }, entitySelector -> true,
                 new TranslationTextComponent("argument.entity.options.skill_page.description"));
