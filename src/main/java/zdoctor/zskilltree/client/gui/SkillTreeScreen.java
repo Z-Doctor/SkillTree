@@ -87,6 +87,12 @@ public class SkillTreeScreen extends ImageScreen implements ISkillTreeScreen {
     }
 
     @Override
+    public boolean isPauseScreen() {
+        // TODO Add config
+        return true;
+    }
+
+    @Override
     protected void renderMain(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         RenderSystem.enableBlend();
         super.renderMain(matrixStack, mouseX, mouseY, partialTicks);
