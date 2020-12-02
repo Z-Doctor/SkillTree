@@ -2,6 +2,8 @@ package zdoctor.zskilltree.client.gui;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
 import zdoctor.zskilltree.api.ImageAsset;
@@ -73,7 +75,16 @@ public class GuiSkillPage extends ImageScreen {
             guiSkill.setOffsets(28 * i + 9, 18);
             i++;
             addDisplay(guiSkill);
-            skillTreeScreen.addListener(guiSkill);
+            addListener(guiSkill);
+        }
+    }
+
+    @Override
+    public void init(Minecraft minecraft, int width, int height) {
+        IGuiEventListener[] temp = getEventListeners().toArray(new IGuiEventListener[0]);
+        super.init(minecraft, width, height);
+        for (IGuiEventListener listener : temp) {
+            addListener(listener);
         }
     }
 
@@ -174,7 +185,7 @@ public class GuiSkillPage extends ImageScreen {
                 return true;
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return isSelected() && super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override

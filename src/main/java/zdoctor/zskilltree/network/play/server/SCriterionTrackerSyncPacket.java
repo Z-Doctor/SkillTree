@@ -7,6 +7,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -96,7 +97,11 @@ public class SCriterionTrackerSyncPacket {
     }
 
     public static void handle(SCriterionTrackerSyncPacket msg, Supplier<NetworkEvent.Context> ctx) {
-//        if (ctx.get().getDirection() == NetworkDirection.PLAY_TO_CLIENT) {
+        if (ctx.get().getDirection() != NetworkDirection.PLAY_TO_CLIENT) {
+            LOGGER.trace("Invalid Direction for this packet");
+            return;
+        }
+
         Entity player = DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> () -> Minecraft.getInstance().player);
         LOGGER.debug("Server sent packet to client: " + player.getDisplayName().getString());
         boolean flag = SkillTreeApi.perform(player, tracker -> {

@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.fml.LogicalSide;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
@@ -20,6 +22,10 @@ public class SkillTreeDataManager {
     private static final Logger LOGGER = LogManager.getLogger();
     private final HashMap<UUID, ISkillTreeTracker> playerData = new HashMap<>();
     private ImmutableMap<ResourceLocation, CriterionTracker> trackers;
+
+    // TODO Make configurable
+    private int updateTicks = 10;
+    private int ticksSinceUpdate;
 
     public SkillTreeDataManager() {
     }
@@ -58,12 +64,12 @@ public class SkillTreeDataManager {
         playerData.remove(player.getUniqueID());
     }
 
-    public void onPlayerTick(ServerPlayerEntity player) {
-        playerData.computeIfPresent(player.getUniqueID(), ((uuid, playerData) -> {
-            playerData.flushDirty();
-            return playerData;
-        }));
-    }
+//    public void onPlayerTick(ServerPlayerEntity player) {
+//        playerData.computeIfPresent(player.getUniqueID(), ((uuid, playerData) -> {
+//            playerData.flushDirty();
+//            return playerData;
+//        }));
+//    }
 
     public Optional<ISkillTreeTracker> getSkillData(ServerPlayerEntity player) {
         return player.getCapability(ModMain.SKILL_TREE_CAPABILITY).resolve();
@@ -82,12 +88,25 @@ public class SkillTreeDataManager {
         if (old == null || $new == null)
             LOGGER.trace("Unable to clone cap from {} to {}", original.getDisplayName(), newPlayer.getDisplayName());
         else {
-            if(!original.getUniqueID().equals(newPlayer.getUniqueID()))
+            if (!original.getUniqueID().equals(newPlayer.getUniqueID()))
                 LOGGER.error("Old Player UUID did not match new Player UUID");
             $new.deserializeNBT(old.serializeNBT());
             playerData.put(original.getUniqueID(), $new);
             // TODO re-examine the use of this as it is more of a work around
             $new.reload();
+        }
+    }
+
+    public void onServerTick(LogicalSide side, TickEvent.Phase phase) {
+        // TODO Let the client do the same thing?
+        // TODO Determine if the tracker should handle ever tick or if we should impose a update delay
+        //  maybe add an is dirty check?
+        if (side == LogicalSide.SERVER && phase == TickEvent.Phase.START) {
+            if (ticksSinceUpdate >= updateTicks) {
+                ticksSinceUpdate = 0;
+                playerData.values().forEach(ISkillTreeTracker::flushDirty);
+            } else
+                ticksSinceUpdate++;
         }
     }
 }

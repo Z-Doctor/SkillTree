@@ -1,0 +1,12 @@
+{
+  "package": "zdoctor.zskilltree.mixin",
+  "mixins": [
+    "IntegratedServerMixin"
+  ],
+  "client": [
+    "IntegratedServerMixin"
+  ],
+  "server": [],
+  "setSourceFiles": true,
+  "minVersion": "0.8.2"
+}

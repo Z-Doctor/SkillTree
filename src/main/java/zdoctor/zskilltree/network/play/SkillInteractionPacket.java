@@ -41,7 +41,7 @@ public class SkillInteractionPacket {
             if (ctx.get().getDirection() == NetworkDirection.PLAY_TO_SERVER) {
                 switch (msg.type) {
                     case BUY:
-                        LOGGER.debug("{} is trying to buy skill {}", Objects.requireNonNull(ctx.get().getSender()).getDisplayName(), msg.skillId);
+                        LOGGER.debug("{} is trying to buy skill {}", Objects.requireNonNull(ctx.get().getSender()).getDisplayName().getString(), msg.skillId);
                         // TODO Add logic if skill is bought
                         SkillTreeApi.grantSkill(ctx.get().getSender(), SkillTreeApi.getSkill(msg.skillId));
                         break;

@@ -13,6 +13,7 @@ import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
@@ -25,6 +26,7 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -35,9 +37,9 @@ import net.minecraftforge.registries.DataSerializerEntry;
 import net.minecraftforge.registries.RegistryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.spongepowered.asm.mixin.Mixins;
 import zdoctor.zskilltree.api.ImageAsset;
 import zdoctor.zskilltree.api.ImageAssets;
-import zdoctor.zskilltree.api.SkillTreeApi;
 import zdoctor.zskilltree.api.enums.SkillPageAlignment;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
@@ -51,6 +53,7 @@ import zdoctor.zskilltree.skilltree.criterion.ExtendedCriteriaTriggers;
 import zdoctor.zskilltree.skilltree.criterion.Skill;
 import zdoctor.zskilltree.skilltree.criterion.SkillPage;
 import zdoctor.zskilltree.skilltree.displays.SkillPageDisplayInfo;
+import zdoctor.zskilltree.skilltree.events.IntegratedServerTick;
 import zdoctor.zskilltree.skilltree.loot.conditions.AdditionalConditions;
 import zdoctor.zskilltree.skilltree.managers.SkillManager;
 import zdoctor.zskilltree.skilltree.managers.SkillPageManager;
@@ -97,8 +100,9 @@ public final class ModMain {
         FMLJavaModLoadingContext.get().getModEventBus().addGenericListener(GlobalLootModifierSerializer.class, this::registerGlobalLootModifierSerializers);
         FMLJavaModLoadingContext.get().getModEventBus().addGenericListener(SkillPage.class, this::createSkillPages);
 
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::setupIntegratedServer);
+        DistExecutor.unsafeRunWhenOn(Dist.DEDICATED_SERVER, () -> this::setupServer);
         MinecraftForge.EVENT_BUS.addListener(this::onAddReloadListeners);
-        MinecraftForge.EVENT_BUS.addListener(this::onPlayerTick);
         MinecraftForge.EVENT_BUS.addListener(this::onPlayerLoggedIn);
         MinecraftForge.EVENT_BUS.addListener(this::onPlayerLoggedOut);
         MinecraftForge.EVENT_BUS.addListener(this::onPlayerClone);
@@ -114,6 +118,15 @@ public final class ModMain {
     private static void initBootstrap() {
         SkillTreeEntityOptions.register();
         AdditionalConditions.init();
+    }
+
+    private void setupIntegratedServer() {
+        Mixins.addConfiguration("META-INF/mixin_config.json");
+        MinecraftForge.EVENT_BUS.addListener(this::onIntegratedServerTick);
+    }
+
+    private void setupServer() {
+        MinecraftForge.EVENT_BUS.addListener(this::onServerTick);
     }
 
     public SkillTreeDataManager getSkillTreeDataManager() {
@@ -226,10 +239,12 @@ public final class ModMain {
         skillTreeDataManager.reload();
     }
 
-    private void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.player instanceof ServerPlayerEntity && INSTANCE != null) {
-            skillTreeDataManager.onPlayerTick((ServerPlayerEntity) event.player);
-        }
+    private void onServerTick(TickEvent.ServerTickEvent event) {
+        skillTreeDataManager.onServerTick(event.side, event.phase);
+    }
+
+    private void onIntegratedServerTick(IntegratedServerTick event) {
+        skillTreeDataManager.onServerTick(LogicalSide.SERVER, event.phase);
     }
 
     private void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
@@ -252,7 +267,6 @@ public final class ModMain {
     private void onPlayerClone(PlayerEvent.Clone event) {
         if (!event.isWasDeath())
             return;
-        // TODO Fix cloning and apparently broke the system
         skillTreeDataManager.onPlayerClone(event.getOriginal(), event.getPlayer());
     }
 }

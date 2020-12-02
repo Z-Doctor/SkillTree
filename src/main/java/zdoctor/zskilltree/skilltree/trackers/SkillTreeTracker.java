@@ -37,8 +37,8 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     private final HashMap<ResourceLocation, CriterionTracker> trackableMap = new HashMap<>();
 
     // TODO Make configurable
-    private int updateTicks = 20;
-    private int ticksSinceUpdate = -1;
+//    private int updateTicks = 20;
+//    private int ticksSinceUpdate = -1;
 
     private boolean firstSync = true;
     private LivingEntity owner;
@@ -231,7 +231,6 @@ public class SkillTreeTracker implements ISkillTreeTracker {
             progress.deserializeNBT(data.getCompound("criterion"));
             onProgressChanged(trackable);
         });
-//        trackableMap.values().forEach(this::ensureVisibility);
     }
 
     public void dispose() {
@@ -243,7 +242,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         progressChanged.clear();
         conditionallyVisible.clear();
         trackableMap.clear();
-        ticksSinceUpdate = -1;
+//        ticksSinceUpdate = -1;
         firstSync = true;
     }
 
@@ -300,10 +299,10 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     }
 
     private void validateVisibility() {
-        if (ticksSinceUpdate == 0)
-            return;
+//        if (ticksSinceUpdate == 0)
+//            return;
 
-        ticksSinceUpdate = 0;
+//        ticksSinceUpdate = 0;
         conditionallyVisible.iterator().forEachRemaining(this::ensureVisibility);
     }
 
@@ -350,7 +349,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
 
             progressChanged.clear();
             firstSync = false;
-        } else if (ticksSinceUpdate++ >= updateTicks)
+        } else// if (ticksSinceUpdate++ >= updateTicks)
             validateVisibility();
     }
 
