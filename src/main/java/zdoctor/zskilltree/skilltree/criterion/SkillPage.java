@@ -75,8 +75,6 @@ public class SkillPage extends ForgeRegistryEntry.UncheckedRegistryEntry<SkillPa
         setRegistryName(id);
         this.displayInfo = displayInfo == null ? MISSING : displayInfo;
         this.index = index;
-//        if(criteriaIn.isEmpty())
-//            throw new IllegalArgumentException("Skill Page criteria cannot be empty: " + id);
         this.criteria = ImmutableMap.copyOf(criteriaIn);
         this.requirements = requirementsIn;
     }

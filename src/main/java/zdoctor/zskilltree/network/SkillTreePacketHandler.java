@@ -6,6 +6,7 @@ import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import zdoctor.zskilltree.network.play.SkillInteractionPacket;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
+import zdoctor.zskilltree.network.play.server.SUpdatePausePacket;
 
 import java.util.Optional;
 
@@ -22,6 +23,9 @@ public class SkillTreePacketHandler {
 
         INSTANCE.registerMessage(id++, SkillInteractionPacket.class, SkillInteractionPacket::writeTo,
                 SkillInteractionPacket::new, SkillInteractionPacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+
+        INSTANCE.registerMessage(id++, SUpdatePausePacket.class, SUpdatePausePacket::writeTo,
+                SUpdatePausePacket::new, SUpdatePausePacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 
     public static SimpleChannel createChannel() {

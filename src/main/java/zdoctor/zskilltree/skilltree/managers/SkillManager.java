@@ -13,6 +13,7 @@ import net.minecraft.profiler.IProfiler;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.skilltree.builders.SkillBuilder;
@@ -23,7 +24,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-// TODO Add hard coded way to add more(?) perhaps through an event
 public class SkillManager extends JsonReloadListener {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Gson GSON = (new GsonBuilder()).create();
@@ -48,6 +48,8 @@ public class SkillManager extends JsonReloadListener {
     }
 
     public void build(SkillPageManager skillPageManager) {
+        skills.clear();
+        GameRegistry.findRegistry(Skill.class).getValues().forEach(skill -> skills.put(skill.getRegistryName(), skill));
         for (Map.Entry<ResourceLocation, SkillBuilder> entry : toBuild.entrySet()) {
             ResourceLocation id = entry.getKey();
             SkillBuilder builder = entry.getValue();

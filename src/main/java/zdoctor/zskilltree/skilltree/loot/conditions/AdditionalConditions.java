@@ -5,6 +5,7 @@ import net.minecraft.loot.LootConditionType;
 import net.minecraft.loot.conditions.ILootCondition;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
+import net.minecraftforge.fml.common.Mod;
 
 public class AdditionalConditions {
     public static final LootConditionType HAS_SKILL_PAGE = register("has_skill_page", new HasSkillPage.Serializer());

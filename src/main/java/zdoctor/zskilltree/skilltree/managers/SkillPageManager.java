@@ -18,11 +18,8 @@ import zdoctor.zskilltree.skilltree.criterion.SkillPage;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-// TODO Add hard coded way to add more(?) perhaps through an event
-// TODO Make it so new pages don't override the last page for values not defined by default
-// TODO Make a registry for skill pages for hard coded ones
-//  as well as support for the perhaps also make it so new ones will be registered using deferred
 public class SkillPageManager extends JsonReloadListener {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Gson GSON = (new GsonBuilder()).create();
@@ -43,7 +40,7 @@ public class SkillPageManager extends JsonReloadListener {
 
     public void reset() {
         pages.clear();
-        pages.put(SkillPage.NONE.getRegistryName(), SkillPage.NONE);
+        GameRegistry.findRegistry(SkillPage.class).getValues().forEach(page -> pages.put(page.getRegistryName(), page));
     }
 
     @Override

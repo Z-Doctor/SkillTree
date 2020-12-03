@@ -36,10 +36,6 @@ public class SkillTreeTracker implements ISkillTreeTracker {
 
     private final HashMap<ResourceLocation, CriterionTracker> trackableMap = new HashMap<>();
 
-    // TODO Make configurable
-//    private int updateTicks = 20;
-//    private int ticksSinceUpdate = -1;
-
     private boolean firstSync = true;
     private LivingEntity owner;
 

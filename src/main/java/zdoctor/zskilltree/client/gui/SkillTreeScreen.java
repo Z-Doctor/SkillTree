@@ -13,6 +13,8 @@ import zdoctor.zskilltree.api.enums.AnchorPoint;
 import zdoctor.zskilltree.api.interfaces.IClientSkillTreeTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeScreen;
 import zdoctor.zskilltree.client.KeyBindings;
+import zdoctor.zskilltree.config.SkillTreeConfig;
+import zdoctor.zskilltree.config.SkillTreeGameRules;
 import zdoctor.zskilltree.skilltree.criterion.Skill;
 import zdoctor.zskilltree.skilltree.criterion.SkillPage;
 
@@ -88,8 +90,7 @@ public class SkillTreeScreen extends ImageScreen implements ISkillTreeScreen {
 
     @Override
     public boolean isPauseScreen() {
-        // TODO Add config
-        return true;
+        return minecraft.world.getGameRules().getBoolean(SkillTreeGameRules.DO_SKILL_TREE_PAUSE);
     }
 
     @Override

@@ -45,6 +45,7 @@ public class SkillBuilder extends CriterionBuilder<SkillBuilder, Skill> {
     //  each attribute will be a string and the skill will register itself to the attribute listener if one
     //  of that name exists. Can be user created (maybe can also be tied to mc functions? if so then a command will
     //  need to be added)
+    // TODO Look at and clean up
     public static SkillBuilder deserialize(JsonObject json, ConditionArrayParser conditionParser) {
         SkillBuilder builder = builder();
 
@@ -59,16 +60,16 @@ public class SkillBuilder extends CriterionBuilder<SkillBuilder, Skill> {
             builder.criteria = Criterion.deserializeAll(JSONUtils.getJsonObject(json, "criteria"), conditionParser);
             if (!builder.criteria.isEmpty() && json.has("requirements")) {
                 JsonArray jsonRequirements = JSONUtils.getJsonArray(json, "requirements", new JsonArray());
-                String[][] requirements = new String[jsonRequirements.size()][];
-
-                for (int i = 0; i < jsonRequirements.size(); ++i) {
-                    JsonArray requirement = JSONUtils.getJsonArray(jsonRequirements.get(i), "requirements[" + i + "]");
-                    requirements[i] = new String[requirement.size()];
-
-                    for (int j = 0; j < requirement.size(); ++j) {
-                        requirements[i][j] = JSONUtils.getString(requirement.get(j), "requirements[" + i + "][" + j + "]");
-                    }
-                }
+//                String[][] requirements = new String[jsonRequirements.size()][];
+//
+//                for (int i = 0; i < jsonRequirements.size(); ++i) {
+//                    JsonArray requirement = JSONUtils.getJsonArray(jsonRequirements.get(i), "requirements[" + i + "]");
+//                    requirements[i] = new String[requirement.size()];
+//
+//                    for (int j = 0; j < requirement.size(); ++j) {
+//                        requirements[i][j] = JSONUtils.getString(requirement.get(j), "requirements[" + i + "][" + j + "]");
+//                    }
+//                }
 
             } else if (json.has("requirements"))
                 throw new JsonSyntaxException("Skill has requirements but defines no criteria: " + json.getAsString());

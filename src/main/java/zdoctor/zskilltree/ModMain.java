@@ -27,10 +27,13 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DataSerializerEntry;
@@ -45,6 +48,8 @@ import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
 import zdoctor.zskilltree.client.KeyBindings;
 import zdoctor.zskilltree.client.SinglePlayerCapabilityProvider;
+import zdoctor.zskilltree.config.SkillTreeConfig;
+import zdoctor.zskilltree.config.SkillTreeGameRules;
 import zdoctor.zskilltree.network.NetworkSerializationRegistry;
 import zdoctor.zskilltree.network.SkillTreePacketHandler;
 import zdoctor.zskilltree.skilltree.commands.SkillTreeCommand;
@@ -90,6 +95,8 @@ public final class ModMain {
         if (INSTANCE != null)
             return;
         INSTANCE = this;
+        initBootstrap();
+
 
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
@@ -108,7 +115,6 @@ public final class ModMain {
         MinecraftForge.EVENT_BUS.addListener(this::onPlayerClone);
         MinecraftForge.EVENT_BUS.addGenericListener(Entity.class, this::attachCapability);
 
-        initBootstrap();
     }
 
     public static ModMain getInstance() {
@@ -116,9 +122,15 @@ public final class ModMain {
     }
 
     private static void initBootstrap() {
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, SkillTreeConfig.clientSpec);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, SkillTreeConfig.serverSpec);
+
+
+        SkillTreeGameRules.init();
         SkillTreeEntityOptions.register();
         AdditionalConditions.init();
     }
+
 
     private void setupIntegratedServer() {
         Mixins.addConfiguration("META-INF/mixin_config.json");
@@ -237,6 +249,10 @@ public final class ModMain {
         });
         SkillTreeCommand.register(event.getDataPackRegistries().getCommandManager().getDispatcher());
         skillTreeDataManager.reload();
+    }
+
+    private void onServerStarted(FMLServerStartedEvent event) {
+        skillTreeDataManager.onServerStarted(event.getServer());
     }
 
     private void onServerTick(TickEvent.ServerTickEvent event) {

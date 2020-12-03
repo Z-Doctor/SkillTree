@@ -3,15 +3,19 @@ package zdoctor.zskilltree.skilltree.managers;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.GameRules;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.common.Mod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.SkillTreeApi;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
+import zdoctor.zskilltree.config.SkillTreeGameRules;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,14 +24,17 @@ import java.util.UUID;
 
 public class SkillTreeDataManager {
     private static final Logger LOGGER = LogManager.getLogger();
+    private static int updateTicks = 10;
     private final HashMap<UUID, ISkillTreeTracker> playerData = new HashMap<>();
     private ImmutableMap<ResourceLocation, CriterionTracker> trackers;
-
-    // TODO Make configurable
-    private int updateTicks = 10;
     private int ticksSinceUpdate;
+    private MinecraftServer server;
 
     public SkillTreeDataManager() {
+    }
+
+    public static void onChanged(MinecraftServer minecraftServer, GameRules.IntegerValue value) {
+        updateTicks = value.get();
     }
 
     public ImmutableMap<ResourceLocation, CriterionTracker> getAllTrackers() {
@@ -60,16 +67,16 @@ public class SkillTreeDataManager {
         }
     }
 
-    public void playerLoggedOut(ServerPlayerEntity player) {
-        playerData.remove(player.getUniqueID());
-    }
-
 //    public void onPlayerTick(ServerPlayerEntity player) {
 //        playerData.computeIfPresent(player.getUniqueID(), ((uuid, playerData) -> {
 //            playerData.flushDirty();
 //            return playerData;
 //        }));
 //    }
+
+    public void playerLoggedOut(ServerPlayerEntity player) {
+        playerData.remove(player.getUniqueID());
+    }
 
     public Optional<ISkillTreeTracker> getSkillData(ServerPlayerEntity player) {
         return player.getCapability(ModMain.SKILL_TREE_CAPABILITY).resolve();
@@ -81,10 +88,12 @@ public class SkillTreeDataManager {
     }
 
     public void onPlayerClone(PlayerEntity original, PlayerEntity newPlayer) {
+        if(!server.getGameRules().get(SkillTreeGameRules.KEEP_SKILLS_ON_DEATH).get())
+            return;
+
         ISkillTreeTracker old = SkillTreeApi.getTracker(original);
         ISkillTreeTracker $new = SkillTreeApi.getTracker(newPlayer);
 
-        // TODO Add config for keep on death(Default: true)
         if (old == null || $new == null)
             LOGGER.trace("Unable to clone cap from {} to {}", original.getDisplayName(), newPlayer.getDisplayName());
         else {
@@ -98,9 +107,6 @@ public class SkillTreeDataManager {
     }
 
     public void onServerTick(LogicalSide side, TickEvent.Phase phase) {
-        // TODO Let the client do the same thing?
-        // TODO Determine if the tracker should handle ever tick or if we should impose a update delay
-        //  maybe add an is dirty check?
         if (side == LogicalSide.SERVER && phase == TickEvent.Phase.START) {
             if (ticksSinceUpdate >= updateTicks) {
                 ticksSinceUpdate = 0;
@@ -108,5 +114,10 @@ public class SkillTreeDataManager {
             } else
                 ticksSinceUpdate++;
         }
+    }
+
+    public void onServerStarted(MinecraftServer server) {
+        this.server = server;
+        updateTicks = server.getGameRules().getInt(SkillTreeGameRules.SKILL_TREE_UPDATE_TICKS);
     }
 }

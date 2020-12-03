@@ -155,8 +155,6 @@ public class ProgressTracker implements Comparable<ProgressTracker> {
         return isDone;
     }
 
-    // TODO Remove isDoneFast and instead make an internal isDirty check so that way if a change is detected it will update
-    //  and if not it will not bother calculating
     private boolean checkIsDone() {
         for (String[] requirements : this.requirements) {
             boolean flag = false;
