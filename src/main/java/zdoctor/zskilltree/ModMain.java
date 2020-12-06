@@ -25,6 +25,7 @@ import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -40,6 +41,8 @@ import net.minecraftforge.registries.DataSerializerEntry;
 import net.minecraftforge.registries.RegistryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
 import org.spongepowered.asm.mixin.Mixins;
 import zdoctor.zskilltree.api.ImageAsset;
 import zdoctor.zskilltree.api.ImageAssets;
@@ -73,6 +76,8 @@ import java.util.function.Function;
 
 @Mod(ModMain.MODID)
 public final class ModMain {
+    public static final Marker SKILLTREEMOD = MarkerManager.getMarker("SKILLTREEMOD");
+
     public static final String MODID = "zskilltree";
     public static final ResourceLocation SKILL_TREE_CAPABILITY_ID = new ResourceLocation(ModMain.MODID, "skill_capability");
     @CapabilityInject(ISkillTreeTracker.class)
@@ -97,23 +102,30 @@ public final class ModMain {
         INSTANCE = this;
         initBootstrap();
 
+        final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modEventBus.register(SkillTreeConfig.class);
+        modEventBus.addListener(this::setup);
+        modEventBus.addListener(this::doClientStuff);
+        modEventBus.addListener(this::createProviders);
+        modEventBus.addListener(this::createRegistries);
 
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::createProviders);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::createRegistries);
+        modEventBus.addGenericListener(DataSerializerEntry.class, this::registerDataSerializers);
+        modEventBus.addGenericListener(GlobalLootModifierSerializer.class, this::registerGlobalLootModifierSerializers);
+        modEventBus.addGenericListener(SkillPage.class, this::createSkillPages);
 
-        FMLJavaModLoadingContext.get().getModEventBus().addGenericListener(DataSerializerEntry.class, this::registerDataSerializers);
-        FMLJavaModLoadingContext.get().getModEventBus().addGenericListener(GlobalLootModifierSerializer.class, this::registerGlobalLootModifierSerializers);
-        FMLJavaModLoadingContext.get().getModEventBus().addGenericListener(SkillPage.class, this::createSkillPages);
 
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::setupIntegratedServer);
-        DistExecutor.unsafeRunWhenOn(Dist.DEDICATED_SERVER, () -> this::setupServer);
-        MinecraftForge.EVENT_BUS.addListener(this::onAddReloadListeners);
-        MinecraftForge.EVENT_BUS.addListener(this::onPlayerLoggedIn);
-        MinecraftForge.EVENT_BUS.addListener(this::onPlayerLoggedOut);
-        MinecraftForge.EVENT_BUS.addListener(this::onPlayerClone);
-        MinecraftForge.EVENT_BUS.addGenericListener(Entity.class, this::attachCapability);
+        final IEventBus forgeEventBus = MinecraftForge.EVENT_BUS;
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            Mixins.addConfiguration("META-INF/mixin_config.json");
+            forgeEventBus.addListener(this::onIntegratedServerTick);
+        });
+        DistExecutor.unsafeRunWhenOn(Dist.DEDICATED_SERVER, () -> () -> forgeEventBus.addListener(this::onServerTick));
+        forgeEventBus.addListener(this::onServerStarted);
+        forgeEventBus.addListener(this::onAddReloadListeners);
+        forgeEventBus.addListener(this::onPlayerLoggedIn);
+        forgeEventBus.addListener(this::onPlayerLoggedOut);
+        forgeEventBus.addListener(this::onPlayerClone);
+        forgeEventBus.addGenericListener(Entity.class, this::attachCapability);
 
     }
 
@@ -125,20 +137,9 @@ public final class ModMain {
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, SkillTreeConfig.clientSpec);
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, SkillTreeConfig.serverSpec);
 
-
         SkillTreeGameRules.init();
         SkillTreeEntityOptions.register();
         AdditionalConditions.init();
-    }
-
-
-    private void setupIntegratedServer() {
-        Mixins.addConfiguration("META-INF/mixin_config.json");
-        MinecraftForge.EVENT_BUS.addListener(this::onIntegratedServerTick);
-    }
-
-    private void setupServer() {
-        MinecraftForge.EVENT_BUS.addListener(this::onServerTick);
     }
 
     public SkillTreeDataManager getSkillTreeDataManager() {

@@ -5,16 +5,15 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.GameRules;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.common.Mod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.SkillTreeApi;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
+import zdoctor.zskilltree.config.SkillTreeConfig;
 import zdoctor.zskilltree.config.SkillTreeGameRules;
 
 import java.util.HashMap;
@@ -24,17 +23,12 @@ import java.util.UUID;
 
 public class SkillTreeDataManager {
     private static final Logger LOGGER = LogManager.getLogger();
-    private static int updateTicks = 10;
     private final HashMap<UUID, ISkillTreeTracker> playerData = new HashMap<>();
     private ImmutableMap<ResourceLocation, CriterionTracker> trackers;
     private int ticksSinceUpdate;
     private MinecraftServer server;
 
     public SkillTreeDataManager() {
-    }
-
-    public static void onChanged(MinecraftServer minecraftServer, GameRules.IntegerValue value) {
-        updateTicks = value.get();
     }
 
     public ImmutableMap<ResourceLocation, CriterionTracker> getAllTrackers() {
@@ -63,16 +57,8 @@ public class SkillTreeDataManager {
 
             if (!playerData.containsKey(player.getUniqueID()))
                 LOGGER.error("Player {} did not have Skill Tree Capabilities", player.getDisplayName().getString());
-
         }
     }
-
-//    public void onPlayerTick(ServerPlayerEntity player) {
-//        playerData.computeIfPresent(player.getUniqueID(), ((uuid, playerData) -> {
-//            playerData.flushDirty();
-//            return playerData;
-//        }));
-//    }
 
     public void playerLoggedOut(ServerPlayerEntity player) {
         playerData.remove(player.getUniqueID());
@@ -88,7 +74,7 @@ public class SkillTreeDataManager {
     }
 
     public void onPlayerClone(PlayerEntity original, PlayerEntity newPlayer) {
-        if(!server.getGameRules().get(SkillTreeGameRules.KEEP_SKILLS_ON_DEATH).get())
+        if (!server.getGameRules().get(SkillTreeGameRules.KEEP_SKILLS_ON_DEATH).get())
             return;
 
         ISkillTreeTracker old = SkillTreeApi.getTracker(original);
@@ -108,7 +94,7 @@ public class SkillTreeDataManager {
 
     public void onServerTick(LogicalSide side, TickEvent.Phase phase) {
         if (side == LogicalSide.SERVER && phase == TickEvent.Phase.START) {
-            if (ticksSinceUpdate >= updateTicks) {
+            if (ticksSinceUpdate >= SkillTreeConfig.SERVER.updateTicks.get()) {
                 ticksSinceUpdate = 0;
                 playerData.values().forEach(ISkillTreeTracker::flushDirty);
             } else
@@ -118,6 +104,5 @@ public class SkillTreeDataManager {
 
     public void onServerStarted(MinecraftServer server) {
         this.server = server;
-        updateTicks = server.getGameRules().getInt(SkillTreeGameRules.SKILL_TREE_UPDATE_TICKS);
     }
 }
