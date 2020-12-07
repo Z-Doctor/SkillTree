@@ -84,7 +84,7 @@ public class SkillTreeEntityOptions {
                     reader.expect('}');
                     if (!map.isEmpty()) {
                         filter.addFilter(entity -> {
-                            Optional<ISkillTreeTracker> cap = entity.getCapability(ModMain.SKILL_TREE_CAPABILITY).resolve();
+                            Optional<ISkillTreeTracker> cap = entity.getCapability(ModMain.getSkillTreeCapability()).resolve();
                             if (!cap.isPresent())
                                 return false;
                             ISkillTreeTracker skillTree = cap.get();

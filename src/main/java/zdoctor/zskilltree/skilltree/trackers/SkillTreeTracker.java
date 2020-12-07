@@ -131,6 +131,14 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     }
 
     @Override
+    public ProgressTracker getAndUpdateProgress(CriterionTracker tracker, CompoundNBT data) {
+        ProgressTracker progress = getOrStartProgress(tracker);
+        progress.deserializeNBT(data);
+        onProgressChanged(tracker);
+        return progress;
+    }
+
+    @Override
     public boolean grant(CriterionTracker tracker) {
         ProgressTracker progress = getOrStartProgress(tracker);
         if (progress.grant()) {
@@ -195,6 +203,11 @@ public class SkillTreeTracker implements ISkillTreeTracker {
     }
 
     @Override
+    public ImmutableMap<CriterionTracker, ProgressTracker> getProgressTracker() {
+        return ImmutableMap.copyOf(progressTracker);
+    }
+
+    @Override
     public CompoundNBT serializeNBT() {
         CompoundNBT skillTreeData = new CompoundNBT();
         ListNBT progressList = new ListNBT();
@@ -210,35 +223,32 @@ public class SkillTreeTracker implements ISkillTreeTracker {
 
             progressList.add(progressNbt);
         }
-
         return skillTreeData;
     }
 
     @Override
     public void deserializeNBT(CompoundNBT nbt) {
-        dispose();
-        reset();
+//        dispose();
+//        reset();
         ImmutableMap<ResourceLocation, CriterionTracker> allTrackers = ModMain.getInstance().getSkillTreeDataManager().getAllTrackers();
 
         nbt.getList("progress_list", Constants.NBT.TAG_COMPOUND).stream().map(tag -> (CompoundNBT) tag).forEach(data -> {
             ResourceLocation id = new ResourceLocation(data.getString("id"));
             CriterionTracker trackable = allTrackers.get(id);
-            ProgressTracker progress = getOrStartProgress(trackable);
-            progress.deserializeNBT(data.getCompound("criterion"));
-            onProgressChanged(trackable);
+            getAndUpdateProgress(trackable, data.getCompound("criterion"));
         });
     }
 
-    public void dispose() {
-        progressTracker.clear();
-    }
+    // NOT SURE IF NEEDED
+//    public void dispose() {
+//        progressTracker.clear();
+//    }
 
     protected void reset() {
         visible.clear();
         progressChanged.clear();
         conditionallyVisible.clear();
         trackableMap.clear();
-//        ticksSinceUpdate = -1;
         firstSync = true;
     }
 
@@ -294,11 +304,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         missingTrackers.forEach(progressTracker::remove);
     }
 
-    private void validateVisibility() {
-//        if (ticksSinceUpdate == 0)
-//            return;
-
-//        ticksSinceUpdate = 0;
+    private void checkConditionallyVisibility() {
         conditionallyVisible.iterator().forEachRemaining(this::ensureVisibility);
     }
 
@@ -309,12 +315,15 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         if (visibleFlag != shouldBeVisible) {
             if (visibleFlag) {
                 visible.remove(trackable);
-                conditionallyVisible.remove(trackable);
             } else {
                 visible.add(trackable);
-                if (trackable.isConditionallyVisible())
-                    conditionallyVisible.add(trackable);
+
             }
+            if (trackable.isConditionallyVisible())
+                conditionallyVisible.add(trackable);
+            else
+                conditionallyVisible.remove(trackable);
+
             progressChanged.add(trackable);
         }
     }
@@ -323,7 +332,8 @@ public class SkillTreeTracker implements ISkillTreeTracker {
         // What is firstSync doing for us?
         if (firstSync || !progressChanged.isEmpty()) {
             LOGGER.info("Syncing data from {} to players", owner);
-            validateVisibility();
+            trackableMap.values().forEach(this::ensureVisibility);
+
             Set<CriterionTracker> toAdd = new HashSet<>(progressChanged);
             toAdd.retainAll(visible);
 
@@ -346,7 +356,7 @@ public class SkillTreeTracker implements ISkillTreeTracker {
             progressChanged.clear();
             firstSync = false;
         } else// if (ticksSinceUpdate++ >= updateTicks)
-            validateVisibility();
+            checkConditionallyVisibility();
     }
 
     protected void process(boolean firstSync, Set<CriterionTracker> toAdd, Set<ResourceLocation> toRemove, Map<ResourceLocation, ProgressTracker> progressUpdate) {

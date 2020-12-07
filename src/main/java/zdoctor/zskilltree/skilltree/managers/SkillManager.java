@@ -16,6 +16,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import zdoctor.zskilltree.api.interfaces.CriterionTracker;
+import zdoctor.zskilltree.api.interfaces.ITrackerManager;
 import zdoctor.zskilltree.skilltree.builders.SkillBuilder;
 import zdoctor.zskilltree.skilltree.criterion.Skill;
 import zdoctor.zskilltree.skilltree.criterion.SkillPage;
@@ -24,7 +26,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SkillManager extends JsonReloadListener {
+public class SkillManager extends JsonReloadListener implements ITrackerManager {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Gson GSON = (new GsonBuilder()).create();
     private final HashMap<ResourceLocation, SkillBuilder> toBuild = new HashMap<>();
@@ -34,6 +36,7 @@ public class SkillManager extends JsonReloadListener {
     public SkillManager(LootPredicateManager lootPredicateManager) {
         super(GSON, "skills");
         this.lootPredicateManager = lootPredicateManager;
+        registerManager();
     }
 
     @Override
@@ -66,6 +69,7 @@ public class SkillManager extends JsonReloadListener {
             skills.put(id, skill);
         }
         toBuild.clear();
+        onReloaded();
     }
 
     public SkillPage resolveParent(ResourceLocation location, SkillPageManager skillPageManager) {
@@ -80,7 +84,8 @@ public class SkillManager extends JsonReloadListener {
         return page;
     }
 
-    public Map<ResourceLocation, Skill> getAllEntries() {
+    @Override
+    public Map<ResourceLocation, CriterionTracker> getAllTrackers() {
         return ImmutableMap.copyOf(skills);
     }
 

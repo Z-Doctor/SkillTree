@@ -13,14 +13,15 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import zdoctor.zskilltree.api.interfaces.CriterionTracker;
+import zdoctor.zskilltree.api.interfaces.ITrackerManager;
 import zdoctor.zskilltree.skilltree.criterion.SkillPage;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-public class SkillPageManager extends JsonReloadListener {
+public class SkillPageManager extends JsonReloadListener implements ITrackerManager {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Gson GSON = (new GsonBuilder()).create();
     private final SkillManager skillManager;
@@ -32,6 +33,7 @@ public class SkillPageManager extends JsonReloadListener {
         this.skillManager = skillManager;
         this.lootPredicateManager = lootPredicateManager;
         reset();
+        registerManager();
     }
 
     public SkillPage getPage(ResourceLocation id) {
@@ -67,15 +69,15 @@ public class SkillPageManager extends JsonReloadListener {
 
         pages = newPages;
         skillManager.build(this);
+        onReloaded();
     }
 
     public Collection<SkillPage> getAllSkillPages() {
         return ImmutableSet.copyOf(pages.values());
     }
 
-    public Map<ResourceLocation, SkillPage> getAllEntries() {
+    @Override
+    public Map<ResourceLocation, CriterionTracker> getAllTrackers() {
         return ImmutableMap.copyOf(pages);
     }
-
-
 }

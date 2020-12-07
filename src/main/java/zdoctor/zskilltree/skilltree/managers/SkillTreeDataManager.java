@@ -1,6 +1,8 @@
 package zdoctor.zskilltree.skilltree.managers;
 
 import com.google.common.collect.ImmutableMap;
+import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
+import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -13,6 +15,7 @@ import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.SkillTreeApi;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.api.interfaces.ISkillTreeTracker;
+import zdoctor.zskilltree.api.interfaces.ITrackerManager;
 import zdoctor.zskilltree.config.SkillTreeConfig;
 import zdoctor.zskilltree.config.SkillTreeGameRules;
 
@@ -24,15 +27,41 @@ import java.util.UUID;
 public class SkillTreeDataManager {
     private static final Logger LOGGER = LogManager.getLogger();
     private final HashMap<UUID, ISkillTreeTracker> playerData = new HashMap<>();
-    private ImmutableMap<ResourceLocation, CriterionTracker> trackers;
+    private final Map<ResourceLocation, CriterionTracker> trackers = new HashMap<>();
+    private final Object2BooleanMap<ITrackerManager> updateStatus = new Object2BooleanOpenHashMap<>();
     private int ticksSinceUpdate;
     private MinecraftServer server;
 
     public SkillTreeDataManager() {
     }
 
+    public boolean register(ITrackerManager trackerManager) {
+        return updateStatus.put(trackerManager, false);
+    }
+
+    public void onReload(ITrackerManager trackerManager) {
+        if (!updateStatus.containsKey(trackerManager))
+            LOGGER.error(ModMain.SKILLTREEMOD, "Tried to reload unregistered Tracker Manager");
+        else {
+            LOGGER.debug(ModMain.SKILLTREEMOD, "Reloaded {}", trackerManager.getSimpleName());
+            updateStatus.put(trackerManager, true);
+            if (updateStatus.values().stream().allMatch(Boolean::booleanValue)) {
+                updateStatus.keySet().forEach(key -> updateStatus.put(key, false));
+                reload();
+            }
+        }
+    }
+
+    public void clearManagers() {
+        updateStatus.clear();
+    }
+
+    public void update(ITrackerManager trackerManager) {
+        trackerManager.getAllTrackers().putAll(trackers);
+    }
+
     public ImmutableMap<ResourceLocation, CriterionTracker> getAllTrackers() {
-        return trackers;
+        return ImmutableMap.copyOf(trackers);
     }
 
     public CriterionTracker getTracker(ResourceLocation id) {
@@ -40,10 +69,7 @@ public class SkillTreeDataManager {
     }
 
     private void updateAllTrackers() {
-        Map<ResourceLocation, CriterionTracker> temp = new HashMap<>();
-        temp.putAll(ModMain.getInstance().getSkillPageManager().getAllEntries());
-        temp.putAll(ModMain.getInstance().getSkillManager().getAllEntries());
-        trackers = ImmutableMap.copyOf(temp);
+        updateStatus.keySet().forEach(manager -> trackers.putAll(manager.getAllTrackers()));
     }
 
     public void playerLoggedIn(ServerPlayerEntity player) {
@@ -65,7 +91,7 @@ public class SkillTreeDataManager {
     }
 
     public Optional<ISkillTreeTracker> getSkillData(ServerPlayerEntity player) {
-        return player.getCapability(ModMain.SKILL_TREE_CAPABILITY).resolve();
+        return player.getCapability(ModMain.getSkillTreeCapability()).resolve();
     }
 
     public void reload() {

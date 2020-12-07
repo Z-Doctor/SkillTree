@@ -43,7 +43,7 @@ public class MultiplayerSkillTreeProvider {
         @Nonnull
         @Override
         public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-            if (cap != ModMain.SKILL_TREE_CAPABILITY)
+            if (cap != ModMain.getSkillTreeCapability())
                 return LazyOptional.empty();
             return LazyOptional.of(() -> skillTreeTracker).cast();
         }

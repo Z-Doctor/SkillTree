@@ -5,12 +5,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.Items;
 import net.minecraft.loot.LootPredicateManager;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
@@ -70,6 +67,7 @@ import zdoctor.zskilltree.skilltree.providers.MultiplayerSkillTreeProvider;
 import zdoctor.zskilltree.skilltree.providers.SkillPageProvider;
 import zdoctor.zskilltree.skilltree.providers.SkillProvider;
 import zdoctor.zskilltree.skilltree.trackers.SkillTreeTracker;
+import zdoctor.zskilltree.skilltree.trackers.TrackerCapability;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -80,9 +78,9 @@ public final class ModMain {
 
     public static final String MODID = "zskilltree";
     public static final ResourceLocation SKILL_TREE_CAPABILITY_ID = new ResourceLocation(ModMain.MODID, "skill_capability");
-    @CapabilityInject(ISkillTreeTracker.class)
-    public static final Capability<ISkillTreeTracker> SKILL_TREE_CAPABILITY = null;
     private static final Logger LOGGER = LogManager.getLogger();
+    @CapabilityInject(ISkillTreeTracker.class)
+    static Capability<ISkillTreeTracker> SKILL_TREE_CAPABILITY = null;
     private static ModMain INSTANCE = null;
 
     private Map<String, Function<PacketBuffer, CriterionTracker>> criterionMappings;
@@ -133,8 +131,12 @@ public final class ModMain {
         return INSTANCE;
     }
 
+    public static Capability<ISkillTreeTracker> getSkillTreeCapability() {
+        return SKILL_TREE_CAPABILITY;
+    }
+
     private static void initBootstrap() {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, SkillTreeConfig.clientSpec);
+//        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, SkillTreeConfig.clientSpec);
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, SkillTreeConfig.serverSpec);
 
         SkillTreeGameRules.init();
@@ -197,18 +199,7 @@ public final class ModMain {
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-        CapabilityManager.INSTANCE.register(ISkillTreeTracker.class, new Capability.IStorage<ISkillTreeTracker>() {
-            @Override
-            public INBT writeNBT(Capability<ISkillTreeTracker> capability, ISkillTreeTracker instance, Direction side) {
-                return instance.serializeNBT();
-            }
-
-            @Override
-            public void readNBT(Capability<ISkillTreeTracker> capability, ISkillTreeTracker instance, Direction side, INBT nbt) {
-                if (nbt instanceof CompoundNBT)
-                    instance.deserializeNBT((CompoundNBT) nbt);
-            }
-        }, SkillTreeTracker::new);
+        CapabilityManager.INSTANCE.register(ISkillTreeTracker.class, new TrackerCapability(), SkillTreeTracker::new);
 
         capabilityProvider = DistExecutor.safeRunForDist(() -> SinglePlayerCapabilityProvider::new, () -> MultiplayerSkillTreeProvider::new);
         skillTreeDataManager = new SkillTreeDataManager();
@@ -234,22 +225,11 @@ public final class ModMain {
     }
 
     private void onAddReloadListeners(AddReloadListenerEvent event) {
+        skillTreeDataManager.clearManagers();
         LootPredicateManager lootPredicateManager = event.getDataPackRegistries().getLootPredicateManager();
         event.addListener(skillManager = new SkillManager(lootPredicateManager));
         event.addListener(skillPageManager = new SkillPageManager(skillManager, lootPredicateManager));
-        event.addListener(new ReloadListener<Void>() {
-            @Override
-            protected Void prepare(IResourceManager resourceManagerIn, IProfiler profilerIn) {
-                return null;
-            }
-
-            @Override
-            protected void apply(Void objectIn, IResourceManager resourceManagerIn, IProfiler profilerIn) {
-                skillTreeDataManager.reload();
-            }
-        });
         SkillTreeCommand.register(event.getDataPackRegistries().getCommandManager().getDispatcher());
-        skillTreeDataManager.reload();
     }
 
     private void onServerStarted(FMLServerStartedEvent event) {
@@ -276,6 +256,8 @@ public final class ModMain {
 
     private void attachCapability(AttachCapabilitiesEvent<Entity> event) {
         // TODO Add a config filter for this and who and what skill trees are attached to
+        if (!SkillTreeConfig.SERVER.canAttachTo(event.getObject()))
+            return;
         ICapabilityProvider provider = capabilityProvider.createProvider(event.getObject());
         if (provider != null)
             event.addCapability(SKILL_TREE_CAPABILITY_ID, provider);

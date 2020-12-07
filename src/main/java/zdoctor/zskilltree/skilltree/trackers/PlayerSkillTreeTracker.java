@@ -11,11 +11,14 @@ import net.minecraftforge.fml.network.PacketDistributor;
 import zdoctor.zskilltree.ModMain;
 import zdoctor.zskilltree.api.interfaces.CriterionTracker;
 import zdoctor.zskilltree.network.play.server.SCriterionTrackerSyncPacket;
-import zdoctor.zskilltree.skilltree.events.SkillTreeEvent;
 import zdoctor.zskilltree.skilltree.criterion.SkillTreeListener;
+import zdoctor.zskilltree.skilltree.events.SkillTreeEvent;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 public class PlayerSkillTreeTracker extends SkillTreeTracker {
     // Needed to listen in on advancements, essentially creating our own invitation
@@ -62,7 +65,7 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
 
     @Override
     public void reload() {
-        dispose();
+        CriteriaTriggers.getAll().forEach(t -> t.removeAllListeners(wrapper));
         super.reload();
         ModMain.getInstance().getSkillTreeDataManager().getAllTrackers().values().forEach(this::registerListeners);
         MinecraftForge.EVENT_BUS.post(new SkillTreeEvent.PlayerReloadedEvent(getPlayer()));
@@ -70,12 +73,6 @@ public class PlayerSkillTreeTracker extends SkillTreeTracker {
 
     public SkillTreeAdvancementWrapper getWrapper() {
         return wrapper;
-    }
-
-    @Override
-    public void dispose() {
-        // A super call is not needed because it will clear the trackers
-        CriteriaTriggers.getAll().forEach(t -> t.removeAllListeners(wrapper));
     }
 
     protected void registerListeners(CriterionTracker trackable) {

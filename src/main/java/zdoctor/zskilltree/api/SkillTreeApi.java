@@ -95,7 +95,7 @@ public class SkillTreeApi {
         }
 
         static <R> R perform(Entity entity, SkillTreeOperation<R> operation, R orElse) {
-            return operation.apply(entity.getCapability(ModMain.SKILL_TREE_CAPABILITY), orElse);
+            return operation.apply(entity.getCapability(ModMain.getSkillTreeCapability()), orElse);
         }
 
         default R apply(LazyOptional<ISkillTreeTracker> lazyOptional, R orElse) {

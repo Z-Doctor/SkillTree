@@ -23,10 +23,15 @@ public interface ISkillTreeTracker extends IProgressTracker<CriterionTracker, Co
 
     ProgressTracker getOrStartProgress(CriterionTracker tracker);
 
+    ProgressTracker getAndUpdateProgress(CriterionTracker tracker, CompoundNBT data);
+
     CriterionTracker getTracker(ResourceLocation key);
 
     boolean contains(CriterionTracker tracker);
 
-
     void flushDirty();
+
+    CompoundNBT serializeNBT();
+
+    void deserializeNBT(CompoundNBT nbt);
 }
