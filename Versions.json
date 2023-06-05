@@ -1,10 +1,10 @@
 {
   "homepage": "https://legacy.curseforge.com/minecraft/mc-mods/skill-tree-mod",
-  "1.19": {
+  "1.19.3": {
     "1.0.0.0>": "Initial Version"
   },
   "promos": {
-    "1.19-latest": "1.0.0.0",
-    "1.19-recommended": "1.0.0.0",
+    "1.19.3-latest": "1.0.0.0",
+    "1.19.3-recommended": "1.0.0.0",
   }
 }
