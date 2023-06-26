@@ -1,0 +1,33 @@
+modLoader="javafml"
+loaderVersion="[44,)"
+
+license="All rights reserved"
+issueTrackerURL="https://github.com/Z-Doctor/SkillTree"
+# A list of mods - how many allowed here is determined by the individual mod loader
+[[mods]]
+    modId="skilltreemod"
+    #version="${file.jarVersion}"
+    version="0.1.0.0"
+    displayName="The Skill Tree Mod"
+    updateJSONURL="https://raw.githubusercontent.com/Z-Doctor/SkillTree/Data/update.json"
+    displayURL="https://legacy.curseforge.com/minecraft/mc-mods/skill-tree-mod"
+    logoFile="logo.png"
+    credits="I hope you enjoy"
+    authors="Z_Doctor"
+    displayTest="MATCH_VERSION" # MATCH_VERSION is the default if nothing is specified (#optional)
+    description='''
+Create and use skill trees in a hopefull intuitive way.
+'''
+[[dependencies.skilltreemod]] #optional
+    modId="forge"
+    mandatory=true
+    versionRange="[44,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.skilltreemod]]
+    modId="minecraft"
+    mandatory=true
+# This version range declares a minimum of the current minecraft version up to but not including the next major version
+    versionRange="[1.19.3,1.20)"
+    ordering="NONE"
+    side="BOTH"
