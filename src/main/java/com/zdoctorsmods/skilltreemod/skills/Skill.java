@@ -1,6 +1,5 @@
 package com.zdoctorsmods.skilltreemod.skills;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -14,9 +13,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.CriterionTriggerInstance;
@@ -29,7 +25,6 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
-// TODO Cost Criterion
 public class Skill {
     private Skill parent;
     private ResourceLocation id;
@@ -161,7 +156,6 @@ public class Skill {
         public Builder setSPCost(int cost) {
             if (cost < 0)
                 throw new IllegalArgumentException("Tried setting cost of %s to less than 0 value");
-            // TODO Add cost criterion
             criteria.put("sp_cost", new Criterion());
             return this;
         }
@@ -223,6 +217,12 @@ public class Skill {
                 throw new JsonSyntaxException("Skill tree with defined position detetected");
             } else if (parent != null && displayInfo.getPosition() == null) {
                 throw new JsonSyntaxException("Skill with no position data detected");
+            } else if (parent != null) {
+                if (displayInfo.getPosition().x < 0) {
+                    throw new JsonSyntaxException("Skill x position cannot be less than 0");
+                } else if (displayInfo.getPosition().y < 0) {
+                    throw new JsonSyntaxException("Skill y position cannot be less than 0");
+                }
             }
 
             return new Builder().parent(parent).display(displayInfo);

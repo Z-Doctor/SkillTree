@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 // TODO Add or make sure having an advancement can be used as a criteron
 // TODO Maker sure generators work
 // TODO optimize packet data to send as little as possible
+// TODO Decide whether to add support for negative position and how handle scrolling
 @Mod(SkillTreeMod.MODID)
 public class SkillTreeMod {
     public static final String MODID = "skilltreemod";

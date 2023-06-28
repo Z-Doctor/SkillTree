@@ -42,10 +42,10 @@ public class SkillTreeTab extends GuiComponent {
     private final Set<SkillWidget> roots = Sets.newHashSet();
     private double scrollX;
     private double scrollY;
-    // private int minX = Integer.MAX_VALUE;
-    // private int minY = Integer.MAX_VALUE;
-    // private int maxX = Integer.MIN_VALUE;
-    // private int maxY = Integer.MIN_VALUE;
+    private int minX = Integer.MAX_VALUE;
+    private int minY = Integer.MAX_VALUE;
+    private int maxX = Integer.MIN_VALUE;
+    private int maxY = Integer.MIN_VALUE;
 
     private float fade;
     private boolean centered;
@@ -91,6 +91,10 @@ public class SkillTreeTab extends GuiComponent {
         return this.display;
     }
 
+    public void recenter() {
+        centered = false;
+    }
+
     public void drawTab(PoseStack pPoseStack, int pOffsetX, int pOffsetY, boolean pIsSelected) {
         this.type.draw(pPoseStack, this, pOffsetX, pOffsetY, pIsSelected,
                 this.index);
@@ -108,20 +112,13 @@ public class SkillTreeTab extends GuiComponent {
             RenderSystem.setShaderTexture(0, TextureManager.INTENTIONAL_MISSING_TEXTURE);
         }
 
-        int xOffset = Mth.floor(this.scrollX = 0.0);
-        int yOffset = Mth.floor(this.scrollY = 0.0);
+        int xOffset = Mth.floor(this.scrollX);
+        int yOffset = Mth.floor(this.scrollY);
         int col = xOffset % BACKGROUND_TILE_WIDTH;
         int row = yOffset % BACKGROUND_TILE_HEIGHT;
 
-        RenderSystem.colorMask(true, true, true, true);
-        RenderSystem.enableDepthTest();
-
-        fill(poseStack, WINDOW_INSIDE_WIDTH, WINDOW_INSIDE_HEIGHT, 0, 0,
-                0xFF000000);
-        RenderSystem.depthFunc(GL11.GL_EQUAL);
-
         for (int tileX = -1; tileX <= BACKGROUND_TILE_COUNT_X; ++tileX) {
-            for (int tileY = -1; tileY <= 7; ++tileY) {
+            for (int tileY = -1; tileY <= BACKGROUND_TILE_COUNT_Y; ++tileY) {
                 blit(poseStack, col + BACKGROUND_TILE_WIDTH * tileX, row + BACKGROUND_TILE_HEIGHT * tileY, 0.0F, 0.0F,
                         BACKGROUND_TILE_WIDTH, BACKGROUND_TILE_HEIGHT, BACKGROUND_TILE_WIDTH, BACKGROUND_TILE_HEIGHT);
             }
@@ -129,19 +126,36 @@ public class SkillTreeTab extends GuiComponent {
     }
 
     private void drawSkills(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthFunc(GL11.GL_EQUAL);
         for (SkillWidget child : this.children.values()) {
-            child.draw(poseStack, mouseX, mouseY, partialTick);
+            child.draw(poseStack, mouseX, mouseY, partialTick, Mth.floor(scrollX), Mth.floor(scrollY));
         }
     }
 
     public void drawContents(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
-        // if (!this.centered) {
-        // this.scrollX = (double) (117 - (this.maxX + this.minX) / 2);
-        // this.scrollY = (double) (56 - (this.maxY + this.minY) / 2);
-        // this.centered = true;
-        // }
+        if (!this.centered) {
+            // this.scrollX = (double) (117 - (this.maxX + this.minX) / 2);
+            // this.scrollY = (double) (56 - (this.maxY + this.minY) / 2);
+            this.scrollX = this.scrollY = 0;
+            this.centered = true;
+        }
         poseStack.pushPose();
+        // This moves the z index into the world
+        poseStack.translate(0.0F, 0.0F, 950.0F);
+        RenderSystem.enableDepthTest();
+        // Disable the color write so we can draw, but not to the screen to set our back
+        RenderSystem.colorMask(false, false, false, false);
+        fill(poseStack, -3840, -2160, 3840, 2160, 0xFF000000);
+        RenderSystem.colorMask(true, true, true, true);
+        // Moves back towards us and renders our renderable area we want to draw too
+        poseStack.translate(0.0F, 0.0F, -950.0F);
+        RenderSystem.depthFunc(GL11.GL_GEQUAL);
+        fill(poseStack, WINDOW_INSIDE_WIDTH, WINDOW_INSIDE_HEIGHT, 0, 0, 0xFF000000);
 
+        // Makes it so that it will only draw if the drawn layer is on our renderable
+        // area
+        RenderSystem.depthFunc(GL11.GL_LEQUAL);
         drawBackground(poseStack, mouseX, mouseY, partialTick);
         drawSkills(poseStack, mouseX, mouseY, partialTick);
 
@@ -149,12 +163,13 @@ public class SkillTreeTab extends GuiComponent {
         // this.root.drawConnectivity(pPoseStack, i, j, false);
         // this.root.draw(pPoseStack, i, j);
 
-        // RenderSystem.depthFunc(GL11.GL_GEQUAL);
-        // poseStack.translate(0.0F, 0.0F, -950.0F);
-        // RenderSystem.colorMask(false, false, false, false);
-        // fill(poseStack, 4680, 2260, -4680, -2260, -0x7FFF0000);
-        // RenderSystem.colorMask(true, true, true, true);
-        // RenderSystem.depthFunc(GL11.GL_LEQUAL);
+        // Resets by drawing a front and letting everything behind it be drawn
+        RenderSystem.depthFunc(GL11.GL_GEQUAL);
+        poseStack.translate(0.0F, 0.0F, -950.0F);
+        RenderSystem.colorMask(false, false, false, false);
+        fill(poseStack, -3840, -2160, 3840, 2160, 0xFFFF0000);
+        RenderSystem.colorMask(true, true, true, true);
+        RenderSystem.depthFunc(GL11.GL_LEQUAL);
         poseStack.popPose();
     }
 
@@ -207,16 +222,20 @@ public class SkillTreeTab extends GuiComponent {
     }
 
     public void scroll(double pDragX, double pDragY) {
-        // if (this.maxX - this.minX > 234) {
+        // this.scrollX += pDragX;
+        // this.scrollY += pDragY;
+
+        // this.scrollX = Mth.clamp(this.scrollX + pDragX, minX, maxX);
+
+        // if (this.maxX - this.minX > WINDOW_INSIDE_WIDTH) {
         // this.scrollX = Mth.clamp(this.scrollX + pDragX, (double) (-(this.maxX -
-        // 234)), 0.0D);
+        // 0)), 0.0D);
         // }
 
-        // if (this.maxY - this.minY > 113) {
+        // if (this.maxY - this.minY > WINDOW_INSIDE_HEIGHT) {
         // this.scrollY = Mth.clamp(this.scrollY + pDragY, (double) (-(this.maxY -
-        // 113)), 0.0D);
+        // 0)), 0.0D);
         // }
-
     }
 
     public boolean addSkill(Skill skill) {
@@ -241,14 +260,14 @@ public class SkillTreeTab extends GuiComponent {
 
     private void addWidget(SkillWidget pWidget, Skill skill) {
         this.children.put(skill, pWidget);
-        // int i = pWidget.getX();
-        // int j = i + 28;
-        // int k = pWidget.getY();
-        // int l = k + 27;
-        // this.minX = Math.min(this.minX, i);
-        // this.maxX = Math.max(this.maxX, j);
-        // this.minY = Math.min(this.minY, k);
-        // this.maxY = Math.max(this.maxY, l);
+        int left = pWidget.getX();
+        int right = left + 28;
+        int top = pWidget.getY();
+        int down = top + 27;
+        this.minX = Math.min(this.minX, left);
+        this.maxX = Math.max(this.maxX, right);
+        this.minY = Math.min(this.minY, top);
+        this.maxY = Math.max(this.maxY, down);
     }
 
     public SkillWidget getWidget(Skill skill) {

@@ -7,7 +7,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import com.zdoctorsmods.skilltreemod.client.ClientMain;
 
-import net.minecraft.advancements.Advancement;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.advancements.AdvancementTab;
@@ -17,6 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.Map;
 
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 import org.slf4j.Logger;
 
@@ -67,10 +68,50 @@ public class SkillScreen extends Screen implements SkillList.Listener {
     }
 
     @Override
+    public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
+        if (pButton == 0) {
+            for (SkillTreeTab skillTreeTab : this.tabs.values()) {
+                if (skillTreeTab.getPage() == tabPage && skillTreeTab.isMouseOver(guiLeft, guiTop, pMouseX, pMouseY)) {
+                    ClientMain.SKILLS.setSelectedTab(skillTreeTab.getSkilltree(), true);
+                    break;
+                }
+            }
+        }
+
+        return super.mouseClicked(pMouseX, pMouseY, pButton);
+    }
+
+    @Override
+    public boolean mouseDragged(double pMouseX, double pMouseY, int pButton, double pDragX, double pDragY) {
+        if (pButton != 0) {
+            this.isScrolling = false;
+            return false;
+        } else {
+            if (!this.isScrolling) {
+                this.isScrolling = true;
+            } else if (this.selectedTab != null) {
+                this.selectedTab.scroll(pDragX, pDragY);
+            }
+
+            return true;
+        }
+    }
+
+    @Override
+    public boolean keyReleased(int pKeyCode, int pScanCode, int pModifiers) {
+        if (pModifiers == 0) {
+            if (pKeyCode == GLFW.GLFW_KEY_C) {
+                if (selectedTab != null)
+                    selectedTab.recenter();
+            }
+        }
+        // TODO Auto-generated method stub
+        return super.keyReleased(pKeyCode, pScanCode, pModifiers);
+    }
+
+    @Override
     public void removed() {
         ClientMain.SKILLS.setListener(null);
-        // ModMain.CHANNEL.sendPacketTo(null, null);
-        // clientpacketlistener.send(ServerboundSeenSkillsPacket.closedScreen());
     }
 
     @Override
@@ -119,8 +160,8 @@ public class SkillScreen extends Screen implements SkillList.Listener {
             RenderSystem.applyModelViewMatrix();
             skillTree.drawContents(pose, mouseX, mouseY, partialTick);
             modelViewStack.popPose();
-
             RenderSystem.applyModelViewMatrix();
+            RenderSystem.depthFunc(GL11.GL_LEQUAL);
             RenderSystem.disableDepthTest();
         }
     }
@@ -245,7 +286,7 @@ public class SkillScreen extends Screen implements SkillList.Listener {
         private static final int WINDOW_TITLE_Y = 6;
         public static final int BACKGROUND_TILE_WIDTH = 16;
         public static final int BACKGROUND_TILE_HEIGHT = 16;
-        public static final int BACKGROUND_TILE_COUNT_X = 14;
+        public static final int BACKGROUND_TILE_COUNT_X = 15;
         public static final int BACKGROUND_TILE_COUNT_Y = 7;
         private static final Component VERY_SAD_LABEL = Component.translatable("advancements.sad_label");
         private static final Component NO_SKILLS_LABEL = Component.translatable("advancements.empty");

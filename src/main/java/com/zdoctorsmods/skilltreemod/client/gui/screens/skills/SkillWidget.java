@@ -26,21 +26,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 @OnlyIn(Dist.CLIENT)
 public class SkillWidget extends GuiComponent {
     private static final Minecraft MINECRAFT = Minecraft.getInstance();
-    private static final ResourceLocation WIDGETS_LOCATION = new ResourceLocation(
-            "textures/gui/advancements/widgets.png");
-    private static final int HEIGHT = 26;
-    private static final int BOX_X = 0;
-    private static final int BOX_WIDTH = 200;
-    private static final int FRAME_WIDTH = 26;
-    private static final int ICON_X = 8;
-    private static final int ICON_Y = 5;
-    private static final int ICON_WIDTH = 26;
-    private static final int TITLE_PADDING_LEFT = 3;
-    private static final int TITLE_PADDING_RIGHT = 5;
-    private static final int TITLE_X = 32;
-    private static final int TITLE_Y = 9;
-    private static final int TITLE_MAX_WIDTH = 163;
-    private static final int[] TEST_SPLIT_OFFSETS = new int[] { 0, 10, -10, 25, -25 };
+
     private final SkillTreeTab tab;
     private final Skill skill;
     private final DisplayInfo display;
@@ -82,6 +68,30 @@ public class SkillWidget extends GuiComponent {
         return skill;
     }
 
+    public int getY() {
+        return this.y;
+    }
+
+    public int getX() {
+        return this.x;
+    }
+
+    public void addChild(SkillWidget skillWidget) {
+        this.children.add(skillWidget);
+    }
+
+    public boolean isMouseOver(int pX, int pY, int pMouseX, int pMouseY) {
+        if (!this.display.isHidden()) {
+            int left = pX + this.x;
+            int right = left + Constants.ICON_WIDTH;
+            int top = pY + this.y;
+            int bot = top + Constants.ICON_WIDTH;
+            return pMouseX >= left && pMouseX <= right && pMouseY >= top && pMouseY <= bot;
+        } else {
+            return false;
+        }
+    }
+
     private static float getMaxWidth(StringSplitter pManager, List<FormattedText> pText) {
         return (float) pText.stream().mapToDouble(pManager::stringWidth).max().orElse(0.0D);
     }
@@ -91,7 +101,7 @@ public class SkillWidget extends GuiComponent {
         List<FormattedText> list = null;
         float f = Float.MAX_VALUE;
 
-        for (int i : TEST_SPLIT_OFFSETS) {
+        for (int i : Constants.TEST_SPLIT_OFFSETS) {
             List<FormattedText> list1 = stringsplitter.splitLines(pComponent, pMaxWidth -
                     i, Style.EMPTY);
             float f1 = Math.abs(getMaxWidth(stringsplitter, list1) - (float) pMaxWidth);
@@ -148,7 +158,7 @@ public class SkillWidget extends GuiComponent {
 
     // }
 
-    public void draw(PoseStack pPoseStack, int mouseX, int mouseY, float partialTick) {
+    public void draw(PoseStack pPoseStack, int mouseX, int mouseY, float partialTick, int scrollX, int scrollY) {
         if (!this.display.isHidden()) {
             // float f = this.progress == null ? 0.0F : this.progress.getPercent();
             SkillWidgetType skillWidgetType;
@@ -159,14 +169,16 @@ public class SkillWidget extends GuiComponent {
             // }
 
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
-            RenderSystem.setShaderTexture(0, WIDGETS_LOCATION);
-            this.blit(pPoseStack, x + 3, y, display.getFrame().getTexture(), 128 + skillWidgetType.getIndex() * 26, 26,
-                    26);
-            Minecraft.getInstance().getItemRenderer().renderAndDecorateFakeItem(this.display.getIcon(), x + ICON_X,
-                    y + ICON_Y);
+            RenderSystem.setShaderTexture(0, Constants.WIDGETS_LOCATION);
+            this.blit(pPoseStack, scrollX + x + Constants.TITLE_PADDING_LEFT, scrollY + y,
+                    display.getFrame().getTexture(),
+                    128 + skillWidgetType.getIndex() * Constants.ICON_WIDTH, Constants.ICON_WIDTH,
+                    Constants.ICON_WIDTH);
+            Minecraft.getInstance().getItemRenderer().renderAndDecorateFakeItem(this.display.getIcon(),
+                    scrollX + x + Constants.ICON_X, scrollY + y + Constants.ICON_Y);
 
             for (SkillWidget skillWidget : this.children) {
-                skillWidget.draw(pPoseStack, mouseX, mouseY, partialTick);
+                skillWidget.draw(pPoseStack, mouseX, mouseY, partialTick, scrollX, scrollY);
             }
         }
     }
@@ -174,10 +186,6 @@ public class SkillWidget extends GuiComponent {
     // public void setProgress(SkillEligibility pProgress) {
     // this.progress = pProgress;
     // }
-
-    public void addChild(SkillWidget skillWidget) {
-        this.children.add(skillWidget);
-    }
 
     public void drawHover(PoseStack pPoseStack, int pX, int pY, float pFade, int pWidth, int pHeight) {
         boolean flag = pWidth + pX + this.x + this.width + 26 >= this.tab.getScreen().width;
@@ -212,7 +220,7 @@ public class SkillWidget extends GuiComponent {
 
         int k = this.width - j;
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderTexture(0, WIDGETS_LOCATION);
+        RenderSystem.setShaderTexture(0, Constants.WIDGETS_LOCATION);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.enableBlend();
         int l = pY + this.y;
@@ -325,33 +333,21 @@ public class SkillWidget extends GuiComponent {
 
     }
 
-    public boolean isMouseOver(int pX, int pY, int pMouseX, int pMouseY) {
-        if (!this.display.isHidden()) {
-            int left = pX + this.x;
-            int right = left + 26;
-            int top = pY + this.y;
-            int bot = top + 26;
-            return pMouseX >= left && pMouseX <= right && pMouseY >= top && pMouseY <= bot;
-        } else {
-            return false;
-        }
+    public static class Constants {
+        private static final ResourceLocation WIDGETS_LOCATION = new ResourceLocation(
+                "textures/gui/advancements/widgets.png");
+        private static final int HEIGHT = 26;
+        private static final int BOX_X = 0;
+        private static final int BOX_WIDTH = 200;
+        private static final int FRAME_WIDTH = 26;
+        private static final int ICON_X = 8;
+        private static final int ICON_Y = 5;
+        private static final int ICON_WIDTH = 26;
+        private static final int TITLE_PADDING_LEFT = 3;
+        private static final int TITLE_PADDING_RIGHT = 5;
+        private static final int TITLE_X = 32;
+        private static final int TITLE_Y = 9;
+        private static final int TITLE_MAX_WIDTH = 163;
+        private static final int[] TEST_SPLIT_OFFSETS = new int[] { 0, 10, -10, 25, -25 };
     }
-
-    // public void attachToParent() {
-    // if (this.parent == null && this.skill.getParent() != null) {
-    // this.parent = this.getFirstVisibleParent(this.skill);
-    // if (this.parent != null) {
-    // this.parent.addChild(this);
-    // }
-    // }
-
-    // }
-
-    // public int getY() {
-    // return this.y;
-    // }
-
-    // public int getX() {
-    // return this.x;
-    // }
 }
