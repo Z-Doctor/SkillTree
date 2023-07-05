@@ -12,6 +12,7 @@ import com.zdoctorsmods.skilltreemod.skills.DisplayInfo;
 import com.zdoctorsmods.skilltreemod.skills.Skill;
 import static com.zdoctorsmods.skilltreemod.client.gui.screens.skills.SkillScreen.Constants.*;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -256,6 +257,10 @@ public class SkillTreeTab extends GuiComponent {
         if (added)
             addWidget(skillWidget, skill);
         return added;
+    }
+
+    public Collection<SkillWidget> getSkills() {
+        return children.values();
     }
 
     private void addWidget(SkillWidget pWidget, Skill skill) {

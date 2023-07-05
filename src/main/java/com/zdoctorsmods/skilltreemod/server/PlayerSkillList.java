@@ -5,10 +5,11 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.google.common.collect.Maps;
-import com.zdoctorsmods.skilltreemod.SkillTreeMod;
+import com.zdoctorsmods.skilltreemod.SkillTree;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.common.util.FakePlayer;
 
 public class PlayerSkillList {
 
@@ -24,10 +25,12 @@ public class PlayerSkillList {
     }
 
     public PlayerSkills get(ServerPlayer player) {
+        if (player == null || player instanceof FakePlayer)
+            return null;
         UUID uuid = player.getUUID();
         PlayerSkills playerSkills = skillMap.get(uuid);
         if (playerSkills == null) {
-            File skillDir = this.server.getWorldPath(SkillTreeMod.PLAYER_SKILLS_DIR).toFile();
+            File skillDir = this.server.getWorldPath(SkillTree.PLAYER_SKILLS_DIR).toFile();
             File skillFile = new File(skillDir, uuid + ".json");
             playerSkills = new PlayerSkills(player, skillFile);
             this.skillMap.put(uuid, playerSkills);

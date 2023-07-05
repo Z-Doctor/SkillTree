@@ -3,7 +3,7 @@ package com.zdoctorsmods.skilltreemod.client;
 import org.lwjgl.glfw.GLFW;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.zdoctorsmods.skilltreemod.SkillTreeMod;
+import com.zdoctorsmods.skilltreemod.SkillTree;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraftforge.api.distmarker.Dist;
@@ -13,7 +13,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 
-@Mod.EventBusSubscriber(modid = SkillTreeMod.MODID, bus = Bus.FORGE, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = SkillTree.MODID, bus = Bus.FORGE, value = Dist.CLIENT)
 public class Options {
     public static final Lazy<KeyMapping> OPEN_SKILL_TREE = Lazy
             .of(() -> new KeyMapping("key.skilltree.toggleSkillTree", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K,

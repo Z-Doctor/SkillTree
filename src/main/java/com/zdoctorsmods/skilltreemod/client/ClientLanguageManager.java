@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
-import com.zdoctorsmods.skilltreemod.network.packets.ClientBoundUpdateLocalizationPacket;
+import com.zdoctorsmods.skilltreemod.network.packets.ClientboundUpdateLocalizationPacket;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.locale.Language;
@@ -68,7 +68,7 @@ public class ClientLanguageManager implements ResourceManagerReloadListener {
 
     }
 
-    public void update(ClientBoundUpdateLocalizationPacket packet) {
+    public void update(ClientboundUpdateLocalizationPacket packet) {
         if (packet.isFirstPacket()) {
             languages = packet.getAddedLocalizations();
         } else {

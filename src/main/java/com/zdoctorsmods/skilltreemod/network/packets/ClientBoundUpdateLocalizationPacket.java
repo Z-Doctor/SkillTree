@@ -8,7 +8,7 @@ import com.google.common.collect.Sets;
 
 import net.minecraft.network.FriendlyByteBuf;
 
-public class ClientBoundUpdateLocalizationPacket implements Packet {
+public class ClientboundUpdateLocalizationPacket implements Packet {
 
     private final boolean firstPacket;
 
@@ -17,7 +17,7 @@ public class ClientBoundUpdateLocalizationPacket implements Packet {
     private final Map<String, Set<String>> removedLocalizations;
     private final Map<String, Map<String, String>> changedLocalizations;
 
-    public ClientBoundUpdateLocalizationPacket(FriendlyByteBuf pBuffer) {
+    public ClientboundUpdateLocalizationPacket(FriendlyByteBuf pBuffer) {
         firstPacket = pBuffer.readBoolean();
         localizations = Maps.newHashMap();
         removedLanguages = Sets.newHashSet();
@@ -31,7 +31,7 @@ public class ClientBoundUpdateLocalizationPacket implements Packet {
         }
     }
 
-    public ClientBoundUpdateLocalizationPacket(Map<String, Map<String, String>> localizations) {
+    public ClientboundUpdateLocalizationPacket(Map<String, Map<String, String>> localizations) {
         firstPacket = true;
         this.localizations = localizations;
         removedLanguages = null;
@@ -39,7 +39,7 @@ public class ClientBoundUpdateLocalizationPacket implements Packet {
         changedLocalizations = null;
     }
 
-    public ClientBoundUpdateLocalizationPacket(Set<String> removedLanguages,
+    public ClientboundUpdateLocalizationPacket(Set<String> removedLanguages,
             Map<String, Set<String>> removedLocalizations, Map<String, Map<String, String>> addedLocalizations,
             Map<String, Map<String, String>> changedLocalizations) {
         firstPacket = false;

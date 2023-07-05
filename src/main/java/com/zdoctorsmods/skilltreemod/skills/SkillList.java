@@ -1,23 +1,23 @@
 package com.zdoctorsmods.skilltreemod.skills;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 
 import net.minecraft.resources.ResourceLocation;
 
 public class SkillList {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final Map<ResourceLocation, Skill> skillLookup = Maps.newHashMap();
-   private final Set<Skill> trees = Sets.newLinkedHashSet();
-   private final Set<Skill> skills = Sets.newLinkedHashSet();
+   private final Map<ResourceLocation, Skill> skillLookup = new HashMap<>();
+   private final Set<Skill> trees = new LinkedHashSet<>();
+   private final Set<Skill> skills = new LinkedHashSet<>();
    private Listener listener;
 
    private void remove(Skill skill) {
@@ -57,7 +57,7 @@ public class SkillList {
     * @param skills
     */
    public void add(Map<ResourceLocation, Skill.Builder> skills) {
-      Map<ResourceLocation, Skill.Builder> skillBuilders = Maps.newHashMap(skills);
+      Map<ResourceLocation, Skill.Builder> skillBuilders = new HashMap<>(skills);
 
       while (!skillBuilders.isEmpty()) {
          boolean newSkillAdded = false;
@@ -106,6 +106,7 @@ public class SkillList {
    public void clear() {
       skillLookup.clear();
       trees.clear();
+      skills.clear();
       if (listener != null)
          listener.onSkillsCleared();
    }
@@ -135,14 +136,14 @@ public class SkillList {
       return skills;
    }
 
-   public Iterable<Skill> getSkills(Skill skillTree) {
-      if (skillTree == null || !trees.contains(skillTree))
-         return null;
+   // public Iterable<Skill> getSkills(Skill skillTree) {
+   // if (skillTree == null || !trees.contains(skillTree))
+   // return null;
 
-      Set<Skill> matches = Sets.newHashSet(skills);
-      matches.removeIf(skill -> skill.getTree() != skillTree);
-      return matches;
-   }
+   // Set<Skill> matches = new HashSet<>(skills);
+   // matches.removeIf(skill -> skill.getTree() != skillTree);
+   // return matches;
+   // }
 
    public Skill get(ResourceLocation skillId) {
       return this.skillLookup.get(skillId);
@@ -164,6 +165,7 @@ public class SkillList {
       void onRemoveSkill(Skill skill);
 
       void onSkillsCleared();
-   }
 
+      void onUpdateSkillProgress(Skill skill, SkillProgress progress);
+   }
 }

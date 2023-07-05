@@ -5,7 +5,7 @@ license="All rights reserved"
 issueTrackerURL="https://github.com/Z-Doctor/SkillTree"
 # A list of mods - how many allowed here is determined by the individual mod loader
 [[mods]]
-    modId="skilltreemod"
+    modId="skilltree"
     #version="${file.jarVersion}"
     version="0.1.0.0"
     displayName="The Skill Tree Mod"

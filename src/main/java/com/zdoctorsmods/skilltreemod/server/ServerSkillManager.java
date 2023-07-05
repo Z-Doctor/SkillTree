@@ -11,10 +11,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
-import com.zdoctorsmods.skilltreemod.data.skilltrees.events.RegisterSkillEvent;
 import com.zdoctorsmods.skilltreemod.skills.Skill;
+import com.zdoctorsmods.skilltreemod.skills.SkillEvent;
 import com.zdoctorsmods.skilltreemod.skills.SkillList;
 
+import net.minecraft.advancements.critereon.DeserializationContext;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -28,9 +29,11 @@ public class ServerSkillManager extends SimpleJsonResourceReloadListener {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Gson GSON = (new GsonBuilder()).create();
     private SkillList skills = new SkillList();
+    private final PredicateManager predicateManager;
 
     public ServerSkillManager(PredicateManager predicateManager) {
         super(GSON, "skills");
+        this.predicateManager = predicateManager;
     }
 
     @Override
@@ -43,20 +46,20 @@ public class ServerSkillManager extends SimpleJsonResourceReloadListener {
                 JsonObject jsonobject = GsonHelper.convertToJsonObject(element, "skill");
 
                 LOGGER.debug("Found skill {}", location);
-                Skill.Builder builder = Skill.Builder.fromJson(jsonobject);
+                Skill.Builder builder = Skill.Builder.fromJson(jsonobject,
+                        new DeserializationContext(location, predicateManager));
                 if (builder == null) {
                     LOGGER.debug("Skipping loading skill {} as it's conditions were not met", location);
                     return;
                 }
                 map.put(location, builder);
             } catch (Exception exception) {
-                LOGGER.error("Parsing error skill trees {}: {}", location,
-                        exception.getMessage());
+                LOGGER.error("Parsing error skill trees {}: {}", location, exception.getMessage());
             }
         });
         SkillList skillList = new SkillList();
         skillList.add(map);
-        MinecraftForge.EVENT_BUS.post(new RegisterSkillEvent(LogicalSide.SERVER, skillList));
+        MinecraftForge.EVENT_BUS.post(new SkillEvent.RegisterSkillEvent(skillList));
         this.skills = skillList;
     }
 

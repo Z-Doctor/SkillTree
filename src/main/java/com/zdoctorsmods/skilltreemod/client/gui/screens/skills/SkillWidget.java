@@ -5,9 +5,15 @@ import java.util.List;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.zdoctorsmods.skilltreemod.SkillTree;
+import com.zdoctorsmods.skilltreemod.client.ClientMain;
+import com.zdoctorsmods.skilltreemod.network.packets.ServerboundClientSkillPacket;
 import com.zdoctorsmods.skilltreemod.skills.DisplayInfo;
 import com.zdoctorsmods.skilltreemod.skills.Skill;
+import com.zdoctorsmods.skilltreemod.skills.SkillAction;
+import com.zdoctorsmods.skilltreemod.skills.SkillProgress;
 
+import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.GuiComponent;
@@ -20,6 +26,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.storage.loot.PredicateManager;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -35,7 +42,6 @@ public class SkillWidget extends GuiComponent {
     private final List<FormattedCharSequence> description;
     // private SkillWidget parent;
     private final List<SkillWidget> children = Lists.newArrayList();
-    // private SkillEligibility progress;
     private final int x;
     private final int y;
 
@@ -48,20 +54,22 @@ public class SkillWidget extends GuiComponent {
                 163));
         this.x = Mth.floor(display.getPosition().x * 28.0F);
         this.y = Mth.floor(display.getPosition().y * 27.0F);
-        int i = 1;// pAdvancement.getMaxCriteraRequired();
-        int j = String.valueOf(i).length();
-        int k = i > 1 ? MINECRAFT.font.width(" ") + MINECRAFT.font.width("0") * j * 2 + MINECRAFT.font.width("/")
+        int maxCriteria = skill.getMaxCriteraRequired();
+        int creteriaCountWidth = String.valueOf(maxCriteria).length();
+        int titleCenterOffset = maxCriteria > 1
+                ? MINECRAFT.font.width(" ") + MINECRAFT.font.width("0") * creteriaCountWidth * 2
+                        + MINECRAFT.font.width("/")
                 : 0;
-        int l = 29 + MINECRAFT.font.width(this.title) + k;
+        int titleOffset = 29 + MINECRAFT.font.width(this.title) + titleCenterOffset;
         this.description = Language.getInstance()
                 .getVisualOrder(this.findOptimalLines(ComponentUtils.mergeStyles(display.getDescription().copy(),
-                        Style.EMPTY.withColor(display.getFrame().getChatColor())), l));
+                        Style.EMPTY.withColor(display.getFrame().getChatColor())), titleOffset));
 
         for (FormattedCharSequence formattedcharsequence : this.description) {
-            l = Math.max(l, MINECRAFT.font.width(formattedcharsequence));
+            titleOffset = Math.max(titleOffset, MINECRAFT.font.width(formattedcharsequence));
         }
 
-        this.width = l + 3 + 5;
+        this.width = titleOffset + 3 + 5;
     }
 
     public Skill getSkill() {
@@ -80,7 +88,7 @@ public class SkillWidget extends GuiComponent {
         this.children.add(skillWidget);
     }
 
-    public boolean isMouseOver(int pX, int pY, int pMouseX, int pMouseY) {
+    public boolean isMouseOver(int pX, int pY, double pMouseX, double pMouseY) {
         if (!this.display.isHidden()) {
             int left = pX + this.x;
             int right = left + Constants.ICON_WIDTH;
@@ -90,6 +98,22 @@ public class SkillWidget extends GuiComponent {
         } else {
             return false;
         }
+    }
+
+    public boolean onMouseClick(int button) {
+        if (button == 0) {
+            ServerboundClientSkillPacket packet = null;
+            if (ClientMain.SKILLS.hasSkill(getSkill())) {
+                packet = new ServerboundClientSkillPacket(getSkill(), SkillAction.ACTIVE);
+            } else {
+                // TODO Make packet to query if a skill can be bought and/or cached the result
+                // and listen for changes
+                packet = new ServerboundClientSkillPacket(getSkill(), SkillAction.BUY);
+            }
+            SkillTree.CHANNEL.sendToServer(packet);
+            return true;
+        }
+        return false;
     }
 
     private static float getMaxWidth(StringSplitter pManager, List<FormattedText> pText) {
@@ -160,13 +184,11 @@ public class SkillWidget extends GuiComponent {
 
     public void draw(PoseStack pPoseStack, int mouseX, int mouseY, float partialTick, int scrollX, int scrollY) {
         if (!this.display.isHidden()) {
-            // float f = this.progress == null ? 0.0F : this.progress.getPercent();
             SkillWidgetType skillWidgetType;
-            // if (f >= 1.0F) {
-            // skillWidgetType = SkillWidgetType.OBTAINED;
-            // } else {
-            skillWidgetType = SkillWidgetType.UNOBTAINED;
-            // }
+            if (ClientMain.SKILLS.hasSkill(skill))
+                skillWidgetType = SkillWidgetType.OBTAINED;
+            else
+                skillWidgetType = SkillWidgetType.UNOBTAINED;
 
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             RenderSystem.setShaderTexture(0, Constants.WIDGETS_LOCATION);
@@ -183,16 +205,13 @@ public class SkillWidget extends GuiComponent {
         }
     }
 
-    // public void setProgress(SkillEligibility pProgress) {
-    // this.progress = pProgress;
-    // }
-
     public void drawHover(PoseStack pPoseStack, int pX, int pY, float pFade, int pWidth, int pHeight) {
         boolean flag = pWidth + pX + this.x + this.width + 26 >= this.tab.getScreen().width;
-        String s = null; // this.progress == null ? null : this.progress.getProgressText();
+        SkillProgress progress = ClientMain.SKILLS.getOrStartProgress(skill);
+        String s = progress == null ? null : progress.getProgressText();
         int i = s == null ? 0 : MINECRAFT.font.width(s);
         boolean flag1 = 113 - pY - this.y - 26 <= 6 + this.description.size() * 9;
-        float f = 0; // this.progress == null ? 0.0F : this.progress.getPercent();
+        float f = progress == null ? 0.0F : progress.getPercent();
         int j = Mth.floor(f * (float) this.width);
         SkillWidgetType advancementwidgettype;
         SkillWidgetType advancementwidgettype1;

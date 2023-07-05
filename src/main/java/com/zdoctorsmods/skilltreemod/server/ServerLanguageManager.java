@@ -12,7 +12,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
-import com.zdoctorsmods.skilltreemod.network.packets.ClientBoundUpdateLocalizationPacket;
+import com.zdoctorsmods.skilltreemod.network.packets.ClientboundUpdateLocalizationPacket;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -110,11 +110,11 @@ public class ServerLanguageManager extends SimpleJsonResourceReloadListener {
         changedLocalizations.clear();
     }
 
-    public ClientBoundUpdateLocalizationPacket getUpdatePacket(boolean isFirstPacket) {
+    public ClientboundUpdateLocalizationPacket getUpdatePacket(boolean isFirstPacket) {
         if (isFirstPacket)
-            return new ClientBoundUpdateLocalizationPacket(localizations);
+            return new ClientboundUpdateLocalizationPacket(localizations);
         else if (isDirty())
-            return new ClientBoundUpdateLocalizationPacket(removedLanguages, removedLocalizations, addedLocalizations,
+            return new ClientboundUpdateLocalizationPacket(removedLanguages, removedLocalizations, addedLocalizations,
                     changedLocalizations);
         else
             return null;

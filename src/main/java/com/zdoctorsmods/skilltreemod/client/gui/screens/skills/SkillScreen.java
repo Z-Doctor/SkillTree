@@ -2,6 +2,7 @@ package com.zdoctorsmods.skilltreemod.client.gui.screens.skills;
 
 import com.zdoctorsmods.skilltreemod.skills.Skill;
 import com.zdoctorsmods.skilltreemod.skills.SkillList;
+import com.zdoctorsmods.skilltreemod.skills.SkillProgress;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
@@ -10,7 +11,6 @@ import com.zdoctorsmods.skilltreemod.client.ClientMain;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.advancements.AdvancementTab;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -37,6 +37,11 @@ public class SkillScreen extends Screen implements SkillList.Listener {
         for (var skill : ClientMain.SKILLS.getSkills().getAllSkills()) {
             LOGGER.debug("Found Client Skill: {}", skill);
         }
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
     }
 
     @Override
@@ -73,7 +78,19 @@ public class SkillScreen extends Screen implements SkillList.Listener {
             for (SkillTreeTab skillTreeTab : this.tabs.values()) {
                 if (skillTreeTab.getPage() == tabPage && skillTreeTab.isMouseOver(guiLeft, guiTop, pMouseX, pMouseY)) {
                     ClientMain.SKILLS.setSelectedTab(skillTreeTab.getSkilltree(), true);
-                    break;
+                    return true;
+                }
+            }
+        }
+
+        if (this.selectedTab != null) {
+            for (SkillWidget widget : this.selectedTab.getSkills()) {
+                // mouseX - guiLeft - 9, mouseY - guiTop - 18
+                // if (widget.isMouseOver(guiLeft, guiTop, pMouseX, pMouseY)) {
+                // TODO Clean this up and make more consistent
+                if (widget.isMouseOver(0, 0, pMouseX - guiLeft - 9, pMouseY - guiTop - 18)) {
+                    if (widget.onMouseClick(pButton))
+                        return true;
                 }
             }
         }
@@ -291,6 +308,10 @@ public class SkillScreen extends Screen implements SkillList.Listener {
         private static final Component VERY_SAD_LABEL = Component.translatable("advancements.sad_label");
         private static final Component NO_SKILLS_LABEL = Component.translatable("advancements.empty");
         private static final Component TITLE = Component.translatable("gui.advancements");
+    }
+
+    @Override
+    public void onUpdateSkillProgress(Skill skill, SkillProgress progress) {
     }
 
 }
